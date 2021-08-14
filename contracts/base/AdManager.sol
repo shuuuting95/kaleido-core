@@ -2,8 +2,10 @@
 pragma solidity 0.8.6;
 
 import "../libraries/IDGenerator.sol";
+import "../access/NameAccessor.sol";
+import "../token/DistributionRight.sol";
 
-contract AdManager {
+contract AdManager is NameAccessor {
 	struct PostContent {
 		uint256 postId;
 		string metadata;
@@ -15,6 +17,8 @@ contract AdManager {
 	}
 
 	mapping(uint256 => PostContent) public allPosts;
+
+	constructor(address nameRegistry) NameAccessor(nameRegistry) {}
 
 	function newPost(
 		string memory metadata,
@@ -28,5 +32,10 @@ contract AdManager {
 		post.startTime = block.timestamp;
 		post.endTime = block.timestamp + periodHours;
 		allPosts[post.postId] = post;
+		_right().mint(msg.sender, post.postId);
+	}
+
+	function _right() internal view returns (DistributionRight) {
+		return DistributionRight(distributionRight());
 	}
 }
