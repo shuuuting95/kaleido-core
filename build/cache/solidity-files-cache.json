@@ -88,8 +88,8 @@
       ]
     },
     "/Users/shun/Dev/Fragmetal/fragmental-core/contracts/base/AdManager.sol": {
-      "lastModificationDate": 1628931351000,
-      "contentHash": "beb502907d616a2bee07ed4c22193db7",
+      "lastModificationDate": 1628934519863,
+      "contentHash": "aa3a8e27cba693b7ad22d766aafa2c43",
       "sourceName": "contracts/base/AdManager.sol",
       "solcConfig": {
         "version": "0.8.6",
@@ -134,8 +134,8 @@
       ]
     },
     "/Users/shun/Dev/Fragmetal/fragmental-core/contracts/libraries/IDGenerator.sol": {
-      "lastModificationDate": 1628923558833,
-      "contentHash": "d39100178c87e1d6d8905b882fcce75a",
+      "lastModificationDate": 1628933737788,
+      "contentHash": "f75129a4f62482b1161cf633769ea9c9",
       "sourceName": "contracts/libraries/IDGenerator.sol",
       "solcConfig": {
         "version": "0.8.6",

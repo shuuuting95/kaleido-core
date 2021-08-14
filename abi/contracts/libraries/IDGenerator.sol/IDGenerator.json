@@ -2,6 +2,30 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "postId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "metadata",
+        "type": "string"
+      }
+    ],
+    "name": "computeBidId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "metadata",
         "type": "string"
@@ -12,7 +36,7 @@
         "type": "uint256"
       }
     ],
-    "name": "postId",
+    "name": "computePostId",
     "outputs": [
       {
         "internalType": "uint256",
