@@ -1,0 +1,26 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "metadata",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "blockNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "postId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "allPosts",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "postId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "metadata",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "periodHours",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "endTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "successfulBidder",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "metadata",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "periodHours",
+        "type": "uint256"
+      }
+    ],
+    "name": "newPost",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
