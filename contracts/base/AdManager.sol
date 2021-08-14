@@ -4,6 +4,7 @@ pragma solidity 0.8.6;
 import "../libraries/IDGenerator.sol";
 import "../access/NameAccessor.sol";
 import "../token/DistributionRight.sol";
+import "hardhat/console.sol";
 
 contract AdManager is NameAccessor {
 	struct PostContent {
@@ -43,11 +44,19 @@ contract AdManager is NameAccessor {
 		string metadata
 	);
 
+	event Close(
+		uint256 bitId,
+		uint256 postId,
+		address successfulBidder,
+		uint256 price,
+		string metadata
+	);
+
 	// postId => PostContent
 	mapping(uint256 => PostContent) public allPosts;
 
-	// postId => Bidders
-	mapping(uint256 => Bidder[]) public allBidders;
+	// postId => bidIds
+	mapping(uint256 => uint256[]) public bidders;
 
 	// bidId => Bidder
 	mapping(uint256 => Bidder) public bidderInfo;
@@ -87,7 +96,8 @@ contract AdManager is NameAccessor {
 		bidder.sender = msg.sender;
 		bidder.price = msg.value;
 		bidder.metadata = metadata;
-		allBidders[postId].push(bidder);
+		bidderInfo[bidder.bidId] = bidder;
+		bidders[postId].push(bidder.bidId);
 		emit Bid(
 			bidder.bidId,
 			bidder.postId,
@@ -101,15 +111,32 @@ contract AdManager is NameAccessor {
 		Bidder memory bidder = bidderInfo[bidId];
 		require(bidder.bidId != 0, "AD103");
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
+		// require(allPosts[bidder.postId].endTime > block.timestamp, "AD105");
 
+		allPosts[bidder.postId].successfulBidder = bidder.sender;
 		payable(msg.sender).transfer((bidder.price * 9) / 10);
 		payable(owner()).transfer((bidder.price * 1) / 10);
 		_right().mint(bidder.sender, bidId);
+		emit Close(
+			bidder.bidId,
+			bidder.postId,
+			bidder.sender,
+			bidder.price,
+			bidder.metadata
+		);
 	}
 
 	function refund(uint256 bidId) public {
 		require(bidderInfo[bidId].sender == msg.sender, "AD104");
+		require(
+			allPosts[bidderInfo[bidId].postId].endTime < block.timestamp,
+			"AD105"
+		);
 		payable(msg.sender).transfer(bidderInfo[bidId].price);
+	}
+
+	function bidderList(uint256 postId) public view returns (uint256[] memory) {
+		return bidders[postId];
 	}
 
 	function computePostId(string memory metadata, uint256 blockNumber)
