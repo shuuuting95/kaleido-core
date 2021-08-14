@@ -88,8 +88,8 @@
       ]
     },
     "/Users/shun/Dev/Fragmetal/fragmental-core/contracts/base/AdManager.sol": {
-      "lastModificationDate": 1628935997957,
-      "contentHash": "9da7443888e3c0357994b1fdac8bfcd1",
+      "lastModificationDate": 1628936788313,
+      "contentHash": "33334980895a9b3665baf2da55cc3d42",
       "sourceName": "contracts/base/AdManager.sol",
       "solcConfig": {
         "version": "0.8.6",

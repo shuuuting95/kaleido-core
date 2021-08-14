@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import { BigNumber } from 'ethers'
 import { deployments, network, waffle } from 'hardhat'
 import { ADDRESS_ZERO } from '../utils/address'
+import { parseEth } from './../utils/number'
 import {
   getAdManagerContract,
   getDistributionRightContract,
@@ -22,7 +23,7 @@ describe('AdManager', async () => {
     it('should new a post', async () => {
       const { manager } = await setupTests()
 
-      const metadata = 'abi09nadu2brasfjl'
+      const postMetadata = 'abi09nadu2brasfjl'
       const initialPrice = 10
       const periodHours = 60 * 60 * 24 * 3 // 72 hours
 
@@ -30,16 +31,16 @@ describe('AdManager', async () => {
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
       const postId = await manager.computePostId(
-        metadata,
+        postMetadata,
         (await waffle.provider.getBlockNumber()) + 1
       )
 
-      expect(await manager.newPost(metadata, initialPrice, periodHours))
+      expect(await manager.newPost(postMetadata, initialPrice, periodHours))
         .to.emit(manager, 'NewPost')
         .withArgs(
           postId,
           user1.address,
-          metadata,
+          postMetadata,
           initialPrice,
           periodHours,
           now + 1,
@@ -48,13 +49,40 @@ describe('AdManager', async () => {
       expect(await manager.allPosts(postId)).to.deep.equal([
         postId,
         user1.address,
-        metadata,
+        postMetadata,
         BigNumber.from(initialPrice),
         BigNumber.from(periodHours),
         BigNumber.from(now + 1),
         BigNumber.from(now + 1 + periodHours),
         ADDRESS_ZERO,
       ])
+    })
+
+    it('should bit to a post', async () => {
+      const { manager } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const initialPrice = 10
+      const periodHours = 60 * 60 * 24 * 3 // 72 hours
+
+      const bidMetadata = 'xxxdafakjkjfaj;jf'
+
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const postId = await manager.computePostId(
+        postMetadata,
+        (await waffle.provider.getBlockNumber()) + 1
+      )
+      const bidId = await manager.computeBidId(postId, bidMetadata)
+
+      await manager.newPost(postMetadata, initialPrice, periodHours)
+      expect(
+        await managerByUser2.bid(postId, bidMetadata, { value: parseEth(1.5) })
+      )
+        .to.emit(manager, 'Bid')
+        .withArgs(bidId, postId, user2.address, parseEth(1.5), bidMetadata)
     })
   })
 })

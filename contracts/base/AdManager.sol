@@ -35,6 +35,14 @@ contract AdManager is NameAccessor {
 		uint256 endTime
 	);
 
+	event Bid(
+		uint256 bidId,
+		uint256 postId,
+		address sender,
+		uint256 price,
+		string metadata
+	);
+
 	// postId => PostContent
 	mapping(uint256 => PostContent) public allPosts;
 
@@ -80,6 +88,13 @@ contract AdManager is NameAccessor {
 		bidder.price = msg.value;
 		bidder.metadata = metadata;
 		allBidders[postId].push(bidder);
+		emit Bid(
+			bidder.bidId,
+			bidder.postId,
+			bidder.sender,
+			bidder.price,
+			bidder.metadata
+		);
 	}
 
 	function close(uint256 bidId) public {
@@ -103,6 +118,14 @@ contract AdManager is NameAccessor {
 		returns (uint256)
 	{
 		return IDGenerator.computePostId(metadata, blockNumber);
+	}
+
+	function computeBidId(uint256 postId, string memory metadata)
+		public
+		pure
+		returns (uint256)
+	{
+		return IDGenerator.computeBidId(postId, metadata);
 	}
 
 	function _right() internal view returns (DistributionRight) {
