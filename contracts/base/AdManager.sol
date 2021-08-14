@@ -25,10 +25,22 @@ contract AdManager is NameAccessor {
 		string metadata;
 	}
 
+	event NewPost(
+		uint256 postId,
+		address owner,
+		string metadata,
+		uint256 currentPrice,
+		uint256 periodHours,
+		uint256 startTime,
+		uint256 endTime
+	);
+
 	// postId => PostContent
 	mapping(uint256 => PostContent) public allPosts;
+
 	// postId => Bidders
 	mapping(uint256 => Bidder[]) public allBidders;
+
 	// bidId => Bidder
 	mapping(uint256 => Bidder) public bidderInfo;
 
@@ -36,16 +48,27 @@ contract AdManager is NameAccessor {
 
 	function newPost(
 		string memory metadata,
-		uint256 currentPrice,
+		uint256 initialPrice,
 		uint256 periodHours
 	) public {
 		PostContent memory post;
 		post.postId = IDGenerator.computePostId(metadata, block.number);
+		post.owner = msg.sender;
 		post.metadata = metadata;
-		post.currentPrice = currentPrice;
+		post.currentPrice = initialPrice;
+		post.periodHours = periodHours;
 		post.startTime = block.timestamp;
 		post.endTime = block.timestamp + periodHours;
 		allPosts[post.postId] = post;
+		emit NewPost(
+			post.postId,
+			post.owner,
+			post.metadata,
+			post.currentPrice,
+			post.periodHours = periodHours,
+			post.startTime,
+			post.endTime
+		);
 	}
 
 	function bid(uint256 postId, string memory metadata) public payable {
@@ -72,6 +95,14 @@ contract AdManager is NameAccessor {
 	function refund(uint256 bidId) public {
 		require(bidderInfo[bidId].sender == msg.sender, "AD104");
 		payable(msg.sender).transfer(bidderInfo[bidId].price);
+	}
+
+	function computePostId(string memory metadata, uint256 blockNumber)
+		public
+		pure
+		returns (uint256)
+	{
+		return IDGenerator.computePostId(metadata, blockNumber);
 	}
 
 	function _right() internal view returns (DistributionRight) {

@@ -7,12 +7,16 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts()
   const { deploy } = deployments
   const NameRegistry = await deployments.get('NameRegistry')
+  const IDGenerator = await deployments.get('IDGenerator')
 
   const AdManager = await deploy('AdManager', {
     from: deployer,
     args: [NameRegistry.address],
     log: true,
     deterministicDeployment: false,
+    libraries: {
+      IDGenerator: IDGenerator.address,
+    },
   })
 
   const NameRegistryFactory = await hre.ethers.getContractFactory(
