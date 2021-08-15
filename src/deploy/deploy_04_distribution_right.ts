@@ -10,12 +10,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const DistributionRight = await deploy('DistributionRight', {
     from: deployer,
-    args: [
-      'DistributionRight',
-      'AD_RIGHT',
-      'https://xxx/',
-      NameRegistry.address,
-    ],
+    args: ['DistributionRight', 'AD_RIGHT', 'ipfs://', NameRegistry.address],
     log: true,
     deterministicDeployment: false,
   })

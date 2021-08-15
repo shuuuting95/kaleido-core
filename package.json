@@ -2,6 +2,7 @@
   "scripts": {
     "deploy": "npx hardhat deploy --network hardhat",
     "deploy:rinkeby": "npx hardhat deploy --network rinkeby",
+    "exec:newPost:rinkeby": "NETWORK=rinkeby npx hardhat run scripts/exec/newPost.ts --network rinkeby",
     "test": "npx hardhat test",
     "prettier": "prettier --write 'contracts/**/*.sol'"
   },
@@ -33,6 +34,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.2.0"
+    "@openzeppelin/contracts": "^4.2.0",
+    "ipfs": "^0.57.0"
   }
 }

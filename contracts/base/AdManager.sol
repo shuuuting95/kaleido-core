@@ -14,7 +14,7 @@ contract AdManager is IAdManager, NameAccessor {
 	struct PostContent {
 		uint256 postId;
 		address owner;
-		string metadata;
+		string metadataURI;
 		uint256 currentPrice;
 		uint256 periodHours;
 		uint256 startTime;
@@ -27,7 +27,7 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 postId;
 		address sender;
 		uint256 price;
-		string metadata;
+		string metadataURI;
 	}
 
 	// postId => PostContent
@@ -43,14 +43,14 @@ contract AdManager is IAdManager, NameAccessor {
 
 	/// @inheritdoc IAdManager
 	function newPost(
-		string memory metadata,
+		string memory metadataURI,
 		uint256 initialPrice,
 		uint256 periodHours
 	) public override {
 		PostContent memory post;
-		post.postId = IDGenerator.computePostId(metadata, block.number);
+		post.postId = IDGenerator.computePostId(metadataURI, block.number);
 		post.owner = msg.sender;
-		post.metadata = metadata;
+		post.metadataURI = metadataURI;
 		post.currentPrice = initialPrice;
 		post.periodHours = periodHours;
 		post.startTime = block.timestamp;
@@ -59,7 +59,7 @@ contract AdManager is IAdManager, NameAccessor {
 		emit NewPost(
 			post.postId,
 			post.owner,
-			post.metadata,
+			post.metadataURI,
 			post.currentPrice,
 			post.periodHours = periodHours,
 			post.startTime,
@@ -68,15 +68,19 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function bid(uint256 postId, string memory metadata) public payable override {
+	function bid(uint256 postId, string memory metadataURI)
+		public
+		payable
+		override
+	{
 		require(allPosts[postId].endTime > block.timestamp, "AD101");
 
 		Bidder memory bidder;
-		bidder.bidId = IDGenerator.computeBidId(postId, metadata);
+		bidder.bidId = IDGenerator.computeBidId(postId, metadataURI);
 		bidder.postId = postId;
 		bidder.sender = msg.sender;
 		bidder.price = msg.value;
-		bidder.metadata = metadata;
+		bidder.metadataURI = metadataURI;
 		bidderInfo[bidder.bidId] = bidder;
 		bidders[postId].push(bidder.bidId);
 		emit Bid(
@@ -84,7 +88,7 @@ contract AdManager is IAdManager, NameAccessor {
 			bidder.postId,
 			bidder.sender,
 			bidder.price,
-			bidder.metadata
+			bidder.metadataURI
 		);
 	}
 
@@ -97,13 +101,13 @@ contract AdManager is IAdManager, NameAccessor {
 		allPosts[bidder.postId].successfulBidder = bidder.sender;
 		payable(msg.sender).transfer((bidder.price * 9) / 10);
 		payable(_vault()).transfer((bidder.price * 1) / 10);
-		_right().mint(bidder.sender, bidId);
+		_right().mint(bidder.sender, bidId, allPosts[bidder.postId].metadataURI);
 		emit Close(
 			bidder.bidId,
 			bidder.postId,
 			bidder.sender,
 			bidder.price,
-			bidder.metadata
+			bidder.metadataURI
 		);
 	}
 

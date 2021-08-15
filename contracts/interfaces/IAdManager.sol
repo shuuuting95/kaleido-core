@@ -8,7 +8,7 @@ interface IAdManager {
 	event NewPost(
 		uint256 postId,
 		address owner,
-		string metadata,
+		string metadataURI,
 		uint256 currentPrice,
 		uint256 periodHours,
 		uint256 startTime,
@@ -21,7 +21,7 @@ interface IAdManager {
 		uint256 postId,
 		address sender,
 		uint256 price,
-		string metadata
+		string metadataURI
 	);
 
 	/// @dev Emitted when the post owner decides which one is the successful bidder.
@@ -30,7 +30,7 @@ interface IAdManager {
 		uint256 postId,
 		address successfulBidder,
 		uint256 price,
-		string metadata
+		string metadataURI
 	);
 
 	/// @dev Emitted when the bidder execute refunding.

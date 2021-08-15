@@ -160,6 +160,7 @@ describe('AdManager', async () => {
       expect(await vault.balance()).to.be.eq(parseEth(10))
 
       expect(await right.ownerOf(bidId2)).to.be.eq(user2.address)
+      expect(await right.tokenURI(bidId2)).to.be.eq(`ipfs://${postMetadata}`)
     })
   })
 

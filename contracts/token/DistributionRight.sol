@@ -22,8 +22,13 @@ contract DistributionRight is ERC721Base, NameAccessor {
 	/// @dev Mints a new NFT.
 	/// @param account address of the token owner
 	/// @param tokenId uint256 of the token ID
-	function mint(address account, uint256 tokenId) public onlyAllowedContract {
+	function mint(
+		address account,
+		uint256 tokenId,
+		string memory metadataURI
+	) public onlyAllowedContract {
 		_mint(account, tokenId);
+		_tokenURIs[tokenId] = metadataURI;
 	}
 
 	/// @dev Burns the NFT.

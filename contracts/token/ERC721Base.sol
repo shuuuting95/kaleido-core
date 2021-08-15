@@ -28,6 +28,9 @@ contract ERC721Base is Context, ERC165, IERC721, IERC721Metadata {
 	// Base URI
 	string internal _baseURI;
 
+	// Token URIs
+	mapping(uint256 => string) internal _tokenURIs;
+
 	// Mapping from token ID to owner address
 	mapping(uint256 => address) private _owners;
 
@@ -129,7 +132,7 @@ contract ERC721Base is Context, ERC165, IERC721, IERC721Metadata {
 
 		return
 			bytes(_baseURI).length > 0
-				? string(abi.encodePacked(_baseURI, tokenId.toString()))
+				? string(abi.encodePacked(_baseURI, _tokenURIs[tokenId]))
 				: "";
 	}
 
