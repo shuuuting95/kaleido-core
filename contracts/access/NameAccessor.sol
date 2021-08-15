@@ -32,8 +32,13 @@ contract NameAccessor {
 	}
 
 	/// @dev Gets the address of DistributionRight.
-	function distributionRight() public view returns (address) {
+	function distributionRightAddress() public view returns (address) {
 		return _nameRegistry.get(keccak256(abi.encodePacked("DistributionRight")));
+	}
+
+	/// @dev Gets the address of Vault.
+	function vaultAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("Vault")));
 	}
 
 	/// @dev Gets the owner address.

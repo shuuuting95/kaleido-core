@@ -16,3 +16,9 @@ export const getDistributionRightContract = async () => {
   const contract = await hre.ethers.getContractFactory('DistributionRight')
   return contract.attach(Deployment.address)
 }
+
+export const getVaultContract = async () => {
+  const Deployment = await deployments.get('Vault')
+  const contract = await hre.ethers.getContractFactory('Vault')
+  return contract.attach(Deployment.address)
+}

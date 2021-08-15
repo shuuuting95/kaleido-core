@@ -4,6 +4,7 @@ pragma solidity 0.8.6;
 import "../libraries/IDGenerator.sol";
 import "../access/NameAccessor.sol";
 import "../token/DistributionRight.sol";
+import "./Vault.sol";
 import "hardhat/console.sol";
 
 contract AdManager is NameAccessor {
@@ -116,8 +117,8 @@ contract AdManager is NameAccessor {
 		// require(allPosts[bidder.postId].endTime > block.timestamp, "AD105");
 
 		allPosts[bidder.postId].successfulBidder = bidder.sender;
-		payable(bidder.sender).transfer((bidder.price * 9) / 10);
-		payable(owner()).transfer((bidder.price * 1) / 10);
+		payable(msg.sender).transfer((bidder.price * 9) / 10);
+		payable(_vault()).transfer((bidder.price * 1) / 10);
 		_right().mint(bidder.sender, bidId);
 		emit Close(
 			bidder.bidId,
@@ -130,10 +131,6 @@ contract AdManager is NameAccessor {
 
 	function refund(uint256 bidId) public {
 		require(bidderInfo[bidId].sender == msg.sender, "AD104");
-		require(
-			allPosts[bidderInfo[bidId].postId].successfulBidder != address(0),
-			"AD105"
-		);
 		payable(msg.sender).transfer(bidderInfo[bidId].price);
 		emit Refund(
 			bidId,
@@ -164,6 +161,10 @@ contract AdManager is NameAccessor {
 	}
 
 	function _right() internal view returns (DistributionRight) {
-		return DistributionRight(distributionRight());
+		return DistributionRight(distributionRightAddress());
+	}
+
+	function _vault() internal view returns (Vault) {
+		return Vault(payable(vaultAddress()));
 	}
 }

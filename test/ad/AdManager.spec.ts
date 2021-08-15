@@ -6,6 +6,7 @@ import { parseEth } from './../utils/number'
 import {
   getAdManagerContract,
   getDistributionRightContract,
+  getVaultContract,
 } from './../utils/setup'
 
 describe('AdManager', async () => {
@@ -16,6 +17,7 @@ describe('AdManager', async () => {
     return {
       manager: await getAdManagerContract(),
       right: await getDistributionRightContract(),
+      vault: await getVaultContract(),
     }
   })
 
@@ -98,7 +100,7 @@ describe('AdManager', async () => {
 
   describe('close', async () => {
     it('should close after the period', async () => {
-      const { manager, right } = await setupTests()
+      const { manager, right, vault } = await setupTests()
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
 
@@ -141,6 +143,8 @@ describe('AdManager', async () => {
         .withArgs(bidId2, postId, user2.address, bitPrice2, bidMetadata2)
         .to.emit(right, 'Transfer')
         .withArgs(ADDRESS_ZERO, user2.address, bidId2)
+        .to.emit(vault, 'Received')
+        .withArgs(manager.address, parseEth(10))
       const user1BalanceAfterClose = await user1.getBalance()
       const user2BalanceAfterClose = await user2.getBalance()
 
@@ -150,9 +154,10 @@ describe('AdManager', async () => {
       const user2BalanceDiff = Number(
         user2BalanceAfterClose.sub(user2BalanceBeforeClose)
       )
-      expect(user1BalanceDiff).to.be.lt(Number(parseEth(10.0)))
-      expect(user1BalanceDiff).to.be.gt(Number(parseEth(9.9)))
-      expect(user2BalanceDiff).to.be.eq(Number(parseEth(90)))
+      expect(user1BalanceDiff).to.be.lt(Number(parseEth(90.0)))
+      expect(user1BalanceDiff).to.be.gt(Number(parseEth(89.9)))
+      expect(user2BalanceDiff).to.be.eq(0)
+      expect(await vault.balance()).to.be.eq(parseEth(10))
 
       expect(await right.ownerOf(bidId2)).to.be.eq(user2.address)
     })
@@ -209,6 +214,60 @@ describe('AdManager', async () => {
       )
       expect(user3BalanceDiff).to.be.lt(Number(parseEth(200)))
       expect(user3BalanceDiff).to.be.gt(Number(parseEth(199.9)))
+    })
+  })
+
+  describe('withdraw', async () => {
+    it('should withdraw after the close', async () => {
+      const { manager, vault } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      // POST CONTENT
+      const postMetadata = 'abi09nadu2brasfjl'
+      const initialPrice = 10
+      const periodHours = 60 * 60 * 24 * 3 // 72 hours
+
+      // BIT INFO 2
+      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+      const bitPrice2 = parseEth(100)
+
+      // BIT INFO 3
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const bitPrice3 = parseEth(200)
+
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const postId = await manager.computePostId(
+        postMetadata,
+        (await waffle.provider.getBlockNumber()) + 1
+      )
+      const bidId2 = await manager.computeBidId(postId, bidMetadata2)
+      const bidId3 = await manager.computeBidId(postId, bidMetadata3)
+
+      await manager.newPost(postMetadata, initialPrice, periodHours)
+      await managerByUser2.bid(postId, bidMetadata2, { value: bitPrice2 })
+      await managerByUser3.bid(postId, bidMetadata3, { value: bitPrice3 })
+
+      await network.provider.send('evm_increaseTime', [
+        periodHours + periodHours,
+      ])
+      await network.provider.send('evm_mine')
+      await manager.close(bidId2)
+
+      const user1BalanceBeforeWithdraw = await user1.getBalance()
+      expect(await vault.balance()).to.be.eq(parseEth(10))
+      expect(await vault.withdraw(parseEth(9)))
+        .to.emit(vault, 'Withdraw')
+        .withArgs(user1.address, parseEth(9))
+      expect(await vault.balance()).to.be.eq(parseEth(1))
+      const user1BalanceAfterWithdraw = await user1.getBalance()
+      const user1BalanceDiff = Number(
+        user1BalanceAfterWithdraw.sub(user1BalanceBeforeWithdraw)
+      )
+      expect(user1BalanceDiff).to.be.lt(Number(parseEth(9.0)))
+      expect(user1BalanceDiff).to.be.gt(Number(parseEth(8.9)))
     })
   })
 })
