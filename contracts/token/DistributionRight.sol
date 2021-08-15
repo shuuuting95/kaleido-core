@@ -2,7 +2,7 @@
 pragma solidity 0.8.6;
 
 import "./ERC721Base.sol";
-import "../access/NameAccessor.sol";
+import "../accessors/NameAccessor.sol";
 
 /// @title DistributionRight - represents advertising distribution rights.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>

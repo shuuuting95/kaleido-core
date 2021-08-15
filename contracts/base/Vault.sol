@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.6;
 
-import "../access/Ownable.sol";
+import "../accessors/Ownable.sol";
 import "../common/EtherPaymentFallback.sol";
 
 contract Vault is Ownable, EtherPaymentFallback {

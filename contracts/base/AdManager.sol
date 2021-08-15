@@ -2,12 +2,15 @@
 pragma solidity 0.8.6;
 
 import "../libraries/IDGenerator.sol";
-import "../access/NameAccessor.sol";
+import "../accessors/NameAccessor.sol";
 import "../token/DistributionRight.sol";
+import "../interfaces/IAdManager.sol";
 import "./Vault.sol";
 import "hardhat/console.sol";
 
-contract AdManager is NameAccessor {
+/// @title AdManager - allows anyone to create a post and bit to the post.
+/// @author Shumpei Koike - <shumpei.koike@bridges.inc>
+contract AdManager is IAdManager, NameAccessor {
 	struct PostContent {
 		uint256 postId;
 		address owner;
@@ -27,34 +30,6 @@ contract AdManager is NameAccessor {
 		string metadata;
 	}
 
-	event NewPost(
-		uint256 postId,
-		address owner,
-		string metadata,
-		uint256 currentPrice,
-		uint256 periodHours,
-		uint256 startTime,
-		uint256 endTime
-	);
-
-	event Bid(
-		uint256 bidId,
-		uint256 postId,
-		address sender,
-		uint256 price,
-		string metadata
-	);
-
-	event Close(
-		uint256 bitId,
-		uint256 postId,
-		address successfulBidder,
-		uint256 price,
-		string metadata
-	);
-
-	event Refund(uint256 bitId, uint256 postId, address sender, uint256 price);
-
 	// postId => PostContent
 	mapping(uint256 => PostContent) public allPosts;
 
@@ -66,11 +41,12 @@ contract AdManager is NameAccessor {
 
 	constructor(address nameRegistry) NameAccessor(nameRegistry) {}
 
+	/// @inheritdoc IAdManager
 	function newPost(
 		string memory metadata,
 		uint256 initialPrice,
 		uint256 periodHours
-	) public {
+	) public override {
 		PostContent memory post;
 		post.postId = IDGenerator.computePostId(metadata, block.number);
 		post.owner = msg.sender;
@@ -91,8 +67,10 @@ contract AdManager is NameAccessor {
 		);
 	}
 
-	function bid(uint256 postId, string memory metadata) public payable {
+	/// @inheritdoc IAdManager
+	function bid(uint256 postId, string memory metadata) public payable override {
 		require(allPosts[postId].endTime > block.timestamp, "AD101");
+
 		Bidder memory bidder;
 		bidder.bidId = IDGenerator.computeBidId(postId, metadata);
 		bidder.postId = postId;
@@ -110,11 +88,11 @@ contract AdManager is NameAccessor {
 		);
 	}
 
-	function close(uint256 bidId) public {
+	/// @inheritdoc IAdManager
+	function close(uint256 bidId) public override {
 		Bidder memory bidder = bidderInfo[bidId];
 		require(bidder.bidId != 0, "AD103");
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
-		// require(allPosts[bidder.postId].endTime > block.timestamp, "AD105");
 
 		allPosts[bidder.postId].successfulBidder = bidder.sender;
 		payable(msg.sender).transfer((bidder.price * 9) / 10);
@@ -129,8 +107,10 @@ contract AdManager is NameAccessor {
 		);
 	}
 
-	function refund(uint256 bidId) public {
+	/// @inheritdoc IAdManager
+	function refund(uint256 bidId) public override {
 		require(bidderInfo[bidId].sender == msg.sender, "AD104");
+
 		payable(msg.sender).transfer(bidderInfo[bidId].price);
 		emit Refund(
 			bidId,
