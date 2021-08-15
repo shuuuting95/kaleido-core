@@ -9,7 +9,7 @@ import "hardhat/console.sol";
 contract AdManager is NameAccessor {
 	struct PostContent {
 		uint256 postId;
-		address owner; // TODO:ERC721
+		address owner;
 		string metadata;
 		uint256 currentPrice;
 		uint256 periodHours;
@@ -51,6 +51,8 @@ contract AdManager is NameAccessor {
 		uint256 price,
 		string metadata
 	);
+
+	event Refund(uint256 bitId, uint256 postId, address sender, uint256 price);
 
 	// postId => PostContent
 	mapping(uint256 => PostContent) public allPosts;
@@ -114,7 +116,7 @@ contract AdManager is NameAccessor {
 		// require(allPosts[bidder.postId].endTime > block.timestamp, "AD105");
 
 		allPosts[bidder.postId].successfulBidder = bidder.sender;
-		payable(msg.sender).transfer((bidder.price * 9) / 10);
+		payable(bidder.sender).transfer((bidder.price * 9) / 10);
 		payable(owner()).transfer((bidder.price * 1) / 10);
 		_right().mint(bidder.sender, bidId);
 		emit Close(
@@ -129,10 +131,16 @@ contract AdManager is NameAccessor {
 	function refund(uint256 bidId) public {
 		require(bidderInfo[bidId].sender == msg.sender, "AD104");
 		require(
-			allPosts[bidderInfo[bidId].postId].endTime < block.timestamp,
+			allPosts[bidderInfo[bidId].postId].successfulBidder != address(0),
 			"AD105"
 		);
 		payable(msg.sender).transfer(bidderInfo[bidId].price);
+		emit Refund(
+			bidId,
+			bidderInfo[bidId].postId,
+			msg.sender,
+			bidderInfo[bidId].price
+		);
 	}
 
 	function bidderList(uint256 postId) public view returns (uint256[] memory) {
