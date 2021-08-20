@@ -6,6 +6,7 @@ import "../accessors/NameAccessor.sol";
 import "../token/DistributionRight.sol";
 import "../interfaces/IAdManager.sol";
 import "./Vault.sol";
+import "./AdPool.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - allows anyone to create a post and bit to the post.
@@ -136,6 +137,18 @@ contract AdManager is IAdManager, NameAccessor {
 		);
 	}
 
+	function call(uint256 bidId) public {
+		Bidder memory bidder = bidderInfo[bidId];
+		require(bidder.bidId != 0, "AD103");
+		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
+
+		_right().transferByAllowedContract(
+			msg.sender,
+			adPoolAddress(),
+			bidder.postId
+		);
+	}
+
 	function bidderList(uint256 postId) public view returns (uint256[] memory) {
 		return bidders[postId];
 	}
@@ -162,5 +175,9 @@ contract AdManager is IAdManager, NameAccessor {
 
 	function _vault() internal view returns (Vault) {
 		return Vault(payable(vaultAddress()));
+	}
+
+	function _pool() internal view returns (AdPool) {
+		return AdPool(payable(adPoolAddress()));
 	}
 }

@@ -22,3 +22,9 @@ export const getVaultContract = async () => {
   const contract = await hre.ethers.getContractFactory('Vault')
   return contract.attach(Deployment.address)
 }
+
+export const getAdPoolContract = async () => {
+  const Deployment = await deployments.get('AdPool')
+  const contract = await hre.ethers.getContractFactory('AdPool')
+  return contract.attach(Deployment.address)
+}

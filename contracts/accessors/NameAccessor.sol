@@ -41,6 +41,11 @@ contract NameAccessor {
 		return _nameRegistry.get(keccak256(abi.encodePacked("Vault")));
 	}
 
+	/// @dev Gets the address of AdPool.
+	function adPoolAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("AdPool")));
+	}
+
 	/// @dev Gets the owner address.
 	function owner() public view returns (address) {
 		return _nameRegistry.owner();

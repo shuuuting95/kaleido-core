@@ -5,6 +5,7 @@ import { ADDRESS_ZERO } from '../utils/address'
 import { parseEth } from './../utils/number'
 import {
   getAdManagerContract,
+  getAdPoolContract,
   getDistributionRightContract,
   getVaultContract,
 } from './../utils/setup'
@@ -18,6 +19,7 @@ describe('AdManager', async () => {
       manager: await getAdManagerContract(),
       right: await getDistributionRightContract(),
       vault: await getVaultContract(),
+      pool: await getAdPoolContract(),
     }
   })
 
@@ -259,6 +261,41 @@ describe('AdManager', async () => {
       )
       expect(user1BalanceDiff).to.be.lt(Number(parseEth(9.0)))
       expect(user1BalanceDiff).to.be.gt(Number(parseEth(8.9)))
+    })
+  })
+
+  describe('call', async () => {
+    it('should reserve and call a bid', async () => {
+      const { manager, vault, pool } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.computePostId(
+        postMetadata,
+        fromTimestamp,
+        toTimestamp
+      )
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      const bidMetadata2 = ''
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.computeBidId(
+        postId,
+        user2.address,
+        await waffle.provider.getBlockNumber()
+      )
+      await managerByUser2.bid(postId, bidMetadata2, { value: bitPrice2 })
+
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const bitPrice3 = parseEth(200)
+      await managerByUser3.bid(postId, bidMetadata3, { value: bitPrice3 })
+      await manager.call(bidId2)
     })
   })
 })
