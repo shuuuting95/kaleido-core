@@ -36,4 +36,16 @@ contract DistributionRight is ERC721Base, NameAccessor {
 	function burn(uint256 tokenId) public onlyAllowedContract {
 		_burn(tokenId);
 	}
+
+	/// @dev Transfers the NFT.
+	/// @param from address of the current owner
+	/// @param to address of the next owner
+	/// @param tokenId uint256 of the token ID
+	function transferByAllowedContract(
+		address from,
+		address to,
+		uint256 tokenId
+	) public onlyAllowedContract {
+		_transfer(from, to, tokenId);
+	}
 }

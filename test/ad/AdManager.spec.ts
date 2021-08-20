@@ -23,39 +23,38 @@ describe('AdManager', async () => {
 
   describe('newPost', async () => {
     it('should new a post', async () => {
-      const { manager } = await setupTests()
+      const { manager, right } = await setupTests()
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const initialPrice = 10
-      const periodHours = 60 * 60 * 24 * 3 // 72 hours
-
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+
       const postId = await manager.computePostId(
         postMetadata,
-        (await waffle.provider.getBlockNumber()) + 1
+        fromTimestamp,
+        toTimestamp
       )
 
-      expect(await manager.newPost(postMetadata, initialPrice, periodHours))
+      expect(await manager.newPost(postMetadata, fromTimestamp, toTimestamp))
         .to.emit(manager, 'NewPost')
         .withArgs(
           postId,
           user1.address,
           postMetadata,
-          initialPrice,
-          periodHours,
-          now + 1,
-          now + 1 + periodHours
+          fromTimestamp,
+          toTimestamp
         )
+        .to.emit(right, 'Transfer')
+        .withArgs(ADDRESS_ZERO, user1.address, postId)
       expect(await manager.allPosts(postId)).to.deep.equal([
         postId,
         user1.address,
         postMetadata,
-        BigNumber.from(initialPrice),
-        BigNumber.from(periodHours),
-        BigNumber.from(now + 1),
-        BigNumber.from(now + 1 + periodHours),
+        BigNumber.from(fromTimestamp),
+        BigNumber.from(toTimestamp),
         ADDRESS_ZERO,
       ])
     })
@@ -67,26 +66,29 @@ describe('AdManager', async () => {
       const managerByUser2 = manager.connect(user2)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const initialPrice = 10
-      const periodHours = 60 * 60 * 24 * 3 // 72 hours
-
-      const bidMetadata = 'xxxdafakjkjfaj;jf'
-      const bitPrice = parseEth(1.5)
-
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
       const postId = await manager.computePostId(
         postMetadata,
-        (await waffle.provider.getBlockNumber()) + 1
+        fromTimestamp,
+        toTimestamp
       )
-      const bidId = await manager.computeBidId(postId, bidMetadata)
 
-      await manager.newPost(postMetadata, initialPrice, periodHours)
+      const bidMetadata = 'xxxdafakjkjfaj;jf'
+      const bitPrice = parseEth(1.5)
+      const bidId = await manager.computeBidId(
+        postId,
+        user2.address,
+        (await waffle.provider.getBlockNumber()) + 2
+      )
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       expect(await managerByUser2.bid(postId, bidMetadata, { value: bitPrice }))
         .to.emit(manager, 'Bid')
         .withArgs(bidId, postId, user2.address, bitPrice, bidMetadata)
-
       expect(await manager.bidderInfo(bidId)).to.deep.equal([
         bidId,
         postId,
@@ -104,36 +106,31 @@ describe('AdManager', async () => {
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
 
-      // POST CONTENT
       const postMetadata = 'abi09nadu2brasfjl'
-      const initialPrice = 10
-      const periodHours = 60 * 60 * 24 * 3 // 72 hours
-
-      // BIT INFO 2
-      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
-      const bitPrice2 = parseEth(100)
-
-      // BIT INFO 3
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const bitPrice3 = parseEth(200)
-
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
       const postId = await manager.computePostId(
         postMetadata,
-        (await waffle.provider.getBlockNumber()) + 1
+        fromTimestamp,
+        toTimestamp
       )
-      const bidId2 = await manager.computeBidId(postId, bidMetadata2)
 
-      await manager.newPost(postMetadata, initialPrice, periodHours)
+      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.computeBidId(
+        postId,
+        user2.address,
+        (await waffle.provider.getBlockNumber()) + 2
+      )
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const bitPrice3 = parseEth(200)
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       await managerByUser2.bid(postId, bidMetadata2, { value: bitPrice2 })
       await managerByUser3.bid(postId, bidMetadata3, { value: bitPrice3 })
-
-      await network.provider.send('evm_increaseTime', [
-        periodHours + periodHours,
-      ])
-      await network.provider.send('evm_mine')
 
       const user1BalanceBeforeClose = await user1.getBalance()
       const user2BalanceBeforeClose = await user2.getBalance()
@@ -142,7 +139,7 @@ describe('AdManager', async () => {
         .to.emit(manager, 'Close')
         .withArgs(bidId2, postId, user2.address, bitPrice2, bidMetadata2)
         .to.emit(right, 'Transfer')
-        .withArgs(ADDRESS_ZERO, user2.address, bidId2)
+        .withArgs(user1.address, user2.address, postId)
         .to.emit(vault, 'Received')
         .withArgs(manager.address, parseEth(10))
       const user1BalanceAfterClose = await user1.getBalance()
@@ -159,8 +156,8 @@ describe('AdManager', async () => {
       expect(user2BalanceDiff).to.be.eq(0)
       expect(await vault.balance()).to.be.eq(parseEth(10))
 
-      expect(await right.ownerOf(bidId2)).to.be.eq(user2.address)
-      expect(await right.tokenURI(bidId2)).to.be.eq(`ipfs://${postMetadata}`)
+      expect(await right.ownerOf(postId)).to.be.eq(user2.address)
+      expect(await right.tokenURI(postId)).to.be.eq(`ipfs://${postMetadata}`)
     })
   })
 
@@ -170,37 +167,36 @@ describe('AdManager', async () => {
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
 
-      // POST CONTENT
       const postMetadata = 'abi09nadu2brasfjl'
-      const initialPrice = 10
-      const periodHours = 60 * 60 * 24 * 3 // 72 hours
-
-      // BIT INFO 2
-      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
-      const bitPrice2 = parseEth(100)
-
-      // BIT INFO 3
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const bitPrice3 = parseEth(200)
-
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
       const postId = await manager.computePostId(
         postMetadata,
+        fromTimestamp,
+        toTimestamp
+      )
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.computeBidId(
+        postId,
+        user2.address,
         (await waffle.provider.getBlockNumber()) + 1
       )
-      const bidId2 = await manager.computeBidId(postId, bidMetadata2)
-      const bidId3 = await manager.computeBidId(postId, bidMetadata3)
-
-      await manager.newPost(postMetadata, initialPrice, periodHours)
       await managerByUser2.bid(postId, bidMetadata2, { value: bitPrice2 })
-      await managerByUser3.bid(postId, bidMetadata3, { value: bitPrice3 })
 
-      await network.provider.send('evm_increaseTime', [
-        periodHours + periodHours,
-      ])
-      await network.provider.send('evm_mine')
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const bitPrice3 = parseEth(200)
+      const bidId3 = await manager.computeBidId(
+        postId,
+        user3.address,
+        (await waffle.provider.getBlockNumber()) + 1
+      )
+      await managerByUser3.bid(postId, bidMetadata3, { value: bitPrice3 })
       await manager.close(bidId2)
 
       const user3BalanceBeforeClose = await user3.getBalance()
@@ -224,37 +220,31 @@ describe('AdManager', async () => {
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
 
-      // POST CONTENT
       const postMetadata = 'abi09nadu2brasfjl'
-      const initialPrice = 10
-      const periodHours = 60 * 60 * 24 * 3 // 72 hours
-
-      // BIT INFO 2
-      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
-      const bitPrice2 = parseEth(100)
-
-      // BIT INFO 3
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const bitPrice3 = parseEth(200)
-
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
       const postId = await manager.computePostId(
         postMetadata,
-        (await waffle.provider.getBlockNumber()) + 1
+        fromTimestamp,
+        toTimestamp
       )
-      const bidId2 = await manager.computeBidId(postId, bidMetadata2)
-      const bidId3 = await manager.computeBidId(postId, bidMetadata3)
 
-      await manager.newPost(postMetadata, initialPrice, periodHours)
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.computeBidId(
+        postId,
+        user2.address,
+        await waffle.provider.getBlockNumber()
+      )
       await managerByUser2.bid(postId, bidMetadata2, { value: bitPrice2 })
-      await managerByUser3.bid(postId, bidMetadata3, { value: bitPrice3 })
 
-      await network.provider.send('evm_increaseTime', [
-        periodHours + periodHours,
-      ])
-      await network.provider.send('evm_mine')
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const bitPrice3 = parseEth(200)
+      await managerByUser3.bid(postId, bidMetadata3, { value: bitPrice3 })
       await manager.close(bidId2)
 
       const user1BalanceBeforeWithdraw = await user1.getBalance()

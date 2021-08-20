@@ -9,10 +9,8 @@ interface IAdManager {
 		uint256 postId,
 		address owner,
 		string metadataURI,
-		uint256 currentPrice,
-		uint256 periodHours,
-		uint256 startTime,
-		uint256 endTime
+		uint256 fromTimestamp,
+		uint256 toTimestamp
 	);
 
 	/// @dev Emitted when a new bid is listed.
@@ -40,12 +38,12 @@ interface IAdManager {
 	///      can public the space. The basic infomation of the area is described
 	///      on the storage, which is accessed by the metadata hash.
 	/// @param metadata string of the hashed path to the storage
-	/// @param initialPrice uint256 of the initial price
-	/// @param periodHours uint256 of the period (hours)
+	/// @param fromTimestamp uint256 of the timestamp to display the ad
+	/// @param toTimestamp uint256 of the timestamp to display the ad
 	function newPost(
 		string memory metadata,
-		uint256 initialPrice,
-		uint256 periodHours
+		uint256 fromTimestamp,
+		uint256 toTimestamp
 	) external;
 
 	/// @dev Bids to the post, sharing what kind of Ads would be public.

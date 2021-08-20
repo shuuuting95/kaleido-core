@@ -133,7 +133,7 @@ contract ERC721Base is Context, ERC165, IERC721, IERC721Metadata {
 		return
 			bytes(_baseURI).length > 0
 				? string(abi.encodePacked(_baseURI, _tokenURIs[tokenId]))
-				: "";
+				: _tokenURIs[tokenId];
 	}
 
 	/**
