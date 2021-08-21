@@ -81,11 +81,7 @@ describe('AdManager', async () => {
 
       const bidMetadata = 'xxxdafakjkjfaj;jf'
       const bitPrice = parseEth(1.5)
-      const bidId = await manager.computeBidId(
-        postId,
-        user2.address,
-        (await waffle.provider.getBlockNumber()) + 2
-      )
+      const bidId = await manager.bidId()
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       expect(await managerByUser2.bid(postId, bidMetadata, { value: bitPrice }))
@@ -119,19 +115,15 @@ describe('AdManager', async () => {
         fromTimestamp,
         toTimestamp
       )
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
 
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
       const bitPrice2 = parseEth(100)
-      const bidId2 = await manager.computeBidId(
-        postId,
-        user2.address,
-        (await waffle.provider.getBlockNumber()) + 2
-      )
+      const bidId2 = await manager.bidId()
+      await managerByUser2.bid(postId, bidMetadata2, { value: bitPrice2 })
+
       const bidMetadata3 = 'saedafakjkjfaj;jf'
       const bitPrice3 = parseEth(200)
-
-      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-      await managerByUser2.bid(postId, bidMetadata2, { value: bitPrice2 })
       await managerByUser3.bid(postId, bidMetadata3, { value: bitPrice3 })
 
       const user1BalanceBeforeClose = await user1.getBalance()
@@ -180,24 +172,16 @@ describe('AdManager', async () => {
         fromTimestamp,
         toTimestamp
       )
-
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
       const bitPrice2 = parseEth(100)
-      const bidId2 = await manager.computeBidId(
-        postId,
-        user2.address,
-        (await waffle.provider.getBlockNumber()) + 1
-      )
+      const bidId2 = await manager.bidId()
       await managerByUser2.bid(postId, bidMetadata2, { value: bitPrice2 })
 
       const bidMetadata3 = 'saedafakjkjfaj;jf'
       const bitPrice3 = parseEth(200)
-      const bidId3 = await manager.computeBidId(
-        postId,
-        user3.address,
-        (await waffle.provider.getBlockNumber()) + 1
-      )
+      const bidId3 = await manager.bidId()
       await managerByUser3.bid(postId, bidMetadata3, { value: bitPrice3 })
       await manager.close(bidId2)
 
@@ -233,15 +217,11 @@ describe('AdManager', async () => {
         fromTimestamp,
         toTimestamp
       )
-
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
       const bitPrice2 = parseEth(100)
-      const bidId2 = await manager.computeBidId(
-        postId,
-        user2.address,
-        await waffle.provider.getBlockNumber()
-      )
+      const bidId2 = await manager.bidId()
       await managerByUser2.bid(postId, bidMetadata2, { value: bitPrice2 })
 
       const bidMetadata3 = 'saedafakjkjfaj;jf'
@@ -285,11 +265,7 @@ describe('AdManager', async () => {
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       const bidMetadata2 = ''
       const bitPrice2 = parseEth(100)
-      const bidId2 = await manager.computeBidId(
-        postId,
-        user2.address,
-        await waffle.provider.getBlockNumber()
-      )
+      const bidId2 = await manager.bidId()
       await managerByUser2.bid(postId, bidMetadata2, { value: bitPrice2 })
 
       const bidMetadata3 = 'saedafakjkjfaj;jf'

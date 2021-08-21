@@ -14,14 +14,4 @@ library IDGenerator {
 				keccak256(abi.encodePacked(metadata, fromTimestamp, toTimestamp))
 			) % ID_CAP;
 	}
-
-	function computeBidId(
-		uint256 postId,
-		address sender,
-		uint256 blockNumber
-	) public pure returns (uint256) {
-		return
-			uint256(keccak256(abi.encodePacked(postId, sender, blockNumber))) %
-			ID_CAP;
-	}
 }

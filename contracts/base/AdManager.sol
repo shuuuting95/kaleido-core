@@ -38,6 +38,10 @@ contract AdManager is IAdManager, NameAccessor {
 	// bidId => Bidder
 	mapping(uint256 => Bidder) public bidderInfo;
 
+	uint256 private _nextPostId = 1;
+
+	uint256 private _nextBidId = 1;
+
 	constructor(address nameRegistry) NameAccessor(nameRegistry) {}
 
 	/// @inheritdoc IAdManager
@@ -85,7 +89,7 @@ contract AdManager is IAdManager, NameAccessor {
 
 	function _bid(uint256 postId, string memory metadataURI) public payable {
 		Bidder memory bidder;
-		bidder.bidId = IDGenerator.computeBidId(postId, msg.sender, block.number);
+		bidder.bidId = _nextBidId++;
 		bidder.postId = postId;
 		bidder.sender = msg.sender;
 		bidder.price = msg.value;
@@ -161,12 +165,8 @@ contract AdManager is IAdManager, NameAccessor {
 		return IDGenerator.computePostId(metadata, fromTimestamp, toTimestamp);
 	}
 
-	function computeBidId(
-		uint256 postId,
-		address sender,
-		uint256 blockNumber
-	) public pure returns (uint256) {
-		return IDGenerator.computeBidId(postId, sender, blockNumber);
+	function bidId() public view returns (uint256) {
+		return _nextBidId;
 	}
 
 	function _right() internal view returns (DistributionRight) {
