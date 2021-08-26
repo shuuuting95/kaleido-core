@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.6;
 
-import "../libraries/IDGenerator.sol";
 import "../accessors/NameAccessor.sol";
 import "../token/DistributionRight.sol";
 import "../interfaces/IAdManager.sol";
@@ -15,7 +14,9 @@ contract AdManager is IAdManager, NameAccessor {
 	struct PostContent {
 		uint256 postId;
 		address owner;
-		string metadataURI;
+		string metadata;
+		uint256 width;
+		uint256 height;
 		uint256 fromTimestamp;
 		uint256 toTimestamp;
 		address successfulBidder;
@@ -26,7 +27,15 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 postId;
 		address sender;
 		uint256 price;
-		string metadataURI;
+		string metadata;
+		string originalLink;
+	}
+
+	struct Reservation {
+		uint256 price;
+		address currentBidder;
+		address postOwner;
+		string metadata;
 	}
 
 	// postId => PostContent
@@ -38,62 +47,74 @@ contract AdManager is IAdManager, NameAccessor {
 	// bidId => Bidder
 	mapping(uint256 => Bidder) public bidderInfo;
 
-	uint256 private _nextPostId = 1;
+	// postId => highest price
+	mapping(uint256 => Reservation) public reservations;
 
-	uint256 private _nextBidId = 1;
+	uint256 public nextPostId = 1;
+
+	uint256 public nextBidId = 1;
+
+	string private _baseURI = "https://kaleido.io/";
 
 	constructor(address nameRegistry) NameAccessor(nameRegistry) {}
 
 	/// @inheritdoc IAdManager
 	function newPost(
-		string memory metadataURI,
+		string memory metadata,
+		uint256 width,
+		uint256 height,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) public override {
 		require(fromTimestamp < toTimestamp, "AD");
 		PostContent memory post;
-		post.postId = IDGenerator.computePostId(
-			metadataURI,
-			fromTimestamp,
-			toTimestamp
-		);
+		post.postId = nextPostId++;
 		post.owner = msg.sender;
-		post.metadataURI = metadataURI;
+		post.metadata = metadata;
+		post.width = width;
+		post.height = height;
 		post.fromTimestamp = fromTimestamp;
 		post.toTimestamp = toTimestamp;
 		allPosts[post.postId] = post;
-		_right().mint(msg.sender, post.postId, metadataURI);
+		_right().mint(msg.sender, post.postId, metadata);
 		emit NewPost(
 			post.postId,
 			post.owner,
-			post.metadataURI,
+			post.metadata,
+			post.width,
+			post.height,
 			post.fromTimestamp,
 			post.toTimestamp
 		);
 	}
 
 	/// @inheritdoc IAdManager
-	function bid(uint256 postId, string memory metadataURI)
-		public
-		payable
-		override
-	{
+	function bid(
+		uint256 postId,
+		string memory metadata,
+		string memory originalLink
+	) public payable override {
 		require(allPosts[postId].successfulBidder == address(0), "AD101");
-		_bid(postId, metadataURI);
+		_bid(postId, metadata, originalLink);
 	}
 
 	function reserve(uint256 postId) public payable {
 		require(allPosts[postId].successfulBidder == address(0), "AD101");
-		_bid(postId, "");
+		_bid(postId, "", "");
 	}
 
-	function _bid(uint256 postId, string memory metadataURI) public payable {
+	function _bid(
+		uint256 postId,
+		string memory metadata,
+		string memory originalLink
+	) public payable {
 		Bidder memory bidder;
-		bidder.bidId = _nextBidId++;
+		bidder.bidId = nextBidId++;
 		bidder.postId = postId;
 		bidder.sender = msg.sender;
 		bidder.price = msg.value;
-		bidder.metadataURI = metadataURI;
+		bidder.metadata = metadata;
+		bidder.originalLink = originalLink;
 		bidderInfo[bidder.bidId] = bidder;
 		bidders[postId].push(bidder.bidId);
 		emit Bid(
@@ -101,7 +122,8 @@ contract AdManager is IAdManager, NameAccessor {
 			bidder.postId,
 			bidder.sender,
 			bidder.price,
-			bidder.metadataURI
+			bidder.metadata,
+			bidder.originalLink
 		);
 	}
 
@@ -124,7 +146,7 @@ contract AdManager is IAdManager, NameAccessor {
 			bidder.postId,
 			bidder.sender,
 			bidder.price,
-			bidder.metadataURI
+			bidder.metadata
 		);
 	}
 
@@ -146,27 +168,82 @@ contract AdManager is IAdManager, NameAccessor {
 		require(bidder.bidId != 0, "AD103");
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
 
+		reservations[bidder.postId] = Reservation(
+			bidder.price,
+			bidder.sender,
+			msg.sender,
+			""
+		);
 		_right().transferByAllowedContract(
 			msg.sender,
 			adPoolAddress(),
 			bidder.postId
 		);
+		payable(adPoolAddress()).transfer(bidder.price);
+	}
+
+	function raise(uint256 postId) public payable {
+		address currentBidder = reservations[postId].currentBidder;
+		uint256 amount = msg.value;
+		require(currentBidder != msg.sender, "AD");
+		require(amount < amount, "AD");
+
+		reservations[postId].currentBidder = msg.sender;
+		reservations[postId].price = msg.value;
+		payable(currentBidder).transfer((amount * 95) / 100);
+		payable(reservations[postId].postOwner).transfer((amount * 5) / 100);
+	}
+
+	function propose(uint256 postId, string memory metadata) public {
+		require(reservations[postId].currentBidder == msg.sender, "AD");
+
+		reservations[postId].metadata = metadata;
+	}
+
+	function accept(uint256 postId) public {
+		require(
+			keccak256(abi.encodePacked(reservations[postId].metadata)) !=
+				keccak256(""),
+			"AD"
+		);
+
+		_right().transferByAllowedContract(adPoolAddress(), msg.sender, postId);
+		_pool().receivePooledAmount(msg.sender, reservations[postId].price);
+		delete reservations[postId];
+	}
+
+	function displayIframe(address account, uint256 postIdIndexFrom)
+		public
+		view
+		returns (string memory)
+	{
+		for (uint256 i = 1; i < postIdIndexFrom; i++) {
+			if (
+				allPosts[i].owner == account &&
+				allPosts[i].fromTimestamp < block.timestamp &&
+				allPosts[i].toTimestamp > block.timestamp
+			) {
+				return
+					string(
+						abi.encodePacked(
+							"<iframe id='kaleido'",
+							"title='Kaleido Frame'",
+							"width=",
+							allPosts[i].width,
+							"height=",
+							allPosts[i].height,
+							"src=",
+							_baseURI,
+							allPosts[i].metadata,
+							"</iframe>"
+						)
+					);
+			}
+		}
 	}
 
 	function bidderList(uint256 postId) public view returns (uint256[] memory) {
 		return bidders[postId];
-	}
-
-	function computePostId(
-		string memory metadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp
-	) public pure returns (uint256) {
-		return IDGenerator.computePostId(metadata, fromTimestamp, toTimestamp);
-	}
-
-	function bidId() public view returns (uint256) {
-		return _nextBidId;
 	}
 
 	function _right() internal view returns (DistributionRight) {

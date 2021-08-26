@@ -8,7 +8,9 @@ interface IAdManager {
 	event NewPost(
 		uint256 postId,
 		address owner,
-		string metadataURI,
+		string metadata,
+		uint256 width,
+		uint256 height,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	);
@@ -19,7 +21,8 @@ interface IAdManager {
 		uint256 postId,
 		address sender,
 		uint256 price,
-		string metadataURI
+		string metadata,
+		string originalLink
 	);
 
 	/// @dev Emitted when the post owner decides which one is the successful bidder.
@@ -28,7 +31,7 @@ interface IAdManager {
 		uint256 postId,
 		address successfulBidder,
 		uint256 price,
-		string metadataURI
+		string metadata
 	);
 
 	/// @dev Emitted when the bidder execute refunding.
@@ -38,10 +41,14 @@ interface IAdManager {
 	///      can public the space. The basic infomation of the area is described
 	///      on the storage, which is accessed by the metadata hash.
 	/// @param metadata string of the hashed path to the storage
+	/// @param width uint256 of the display width for the Ad space
+	/// @param height uint256 of the display height for the Ad space
 	/// @param fromTimestamp uint256 of the timestamp to display the ad
 	/// @param toTimestamp uint256 of the timestamp to display the ad
 	function newPost(
 		string memory metadata,
+		uint256 width,
+		uint256 height,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) external;
@@ -51,7 +58,11 @@ interface IAdManager {
 	///      the price but also the preference inside the metadata.
 	/// @param postId uint256 of the post ID
 	/// @param metadata string of the hashed path to the storage
-	function bid(uint256 postId, string memory metadata) external payable;
+	function bid(
+		uint256 postId,
+		string memory metadata,
+		string memory originalLink
+	) external payable;
 
 	/// @dev Closes the offering and mints the NFT to the successful bidder.
 	///      The amount would be paid to the post owner.
