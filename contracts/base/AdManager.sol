@@ -35,6 +35,7 @@ contract AdManager is IAdManager, NameAccessor {
 	enum DraftStatus {
 		CALLED,
 		PROPOSED,
+		DENIED,
 		ACCEPTED
 	}
 
@@ -186,45 +187,49 @@ contract AdManager is IAdManager, NameAccessor {
 		string memory metadata,
 		string memory originalLink
 	) public override {
-		require(bidderByPostId(postId).sender == msg.sender, "AD");
-
 		uint256 bidId = reservedBidIds[postId];
+		require(bidderInfo[bidId].sender == msg.sender, "AD");
+
 		bidderInfo[bidId].metadata = metadata;
 		bidderInfo[bidId].originalLink = originalLink;
 		bidderInfo[bidId].status = DraftStatus.PROPOSED;
 		emit Propose(bidId, postId, metadata, originalLink);
 	}
 
+	/// @inheritdoc IAdManager
 	function recall(
 		uint256 postId,
-		uint256 currentBidId,
-		uint256 nextBidId
+		uint256 fromBidId,
+		uint256 toBidId
 	) public override {
 		require(allPosts[postId].owner == msg.sender, "AD");
 
-		reservedBidIds[postId] = nextBidId;
-		Bidder memory currentBidder = bidderInfo[currentBidId];
-		payable(currentBidder.sender).transfer(currentBidder.price);
+		reservedBidIds[postId] = toBidId;
+		Bidder memory currentBidder = bidderInfo[fromBidId];
+		bidderInfo[fromBidId].status = DraftStatus.DENIED;
+		_pool().receivePooledAmount(currentBidder.sender, currentBidder.price);
 
-		Bidder memory nextBidder = bidderInfo[nextBidId];
-		bidderInfo[nextBidId].status = DraftStatus.CALLED;
-		payable(adPoolAddress()).transfer(nextBidder.price);
+		Bidder memory nextBidder = bidderInfo[toBidId];
+		bidderInfo[toBidId].status = DraftStatus.CALLED;
+		payable(adPoolAddress()).transfer((nextBidder.price * 99) / 100);
+		payable(currentBidder.sender).transfer(currentBidder.price / 100);
+		emit Recall(postId, fromBidId, toBidId);
 	}
 
 	function accept(uint256 postId) public override {
 		_right().transferByAllowedContract(adPoolAddress(), msg.sender, postId);
-		_pool().receivePooledAmount(msg.sender, bidderByPostId(postId).price);
-		// uint256 bidId = reservedBidIds[postId];
-		// bidderInfo[bidId].status = DraftStatus.ACCEPTED;
-		bidderByPostId(postId).status = DraftStatus.ACCEPTED;
-		allPosts[postId].successfulBidId = bidderByPostId(postId).bidId;
+		uint256 bidId = reservedBidIds[postId];
+		_pool().receivePooledAmount(msg.sender, bidderInfo[bidId].price);
+		bidderInfo[bidId].status = DraftStatus.ACCEPTED;
+		allPosts[postId].successfulBidId = bidId;
 	}
 
 	function updateMetadata(uint256 postId, string memory metadata)
 		public
 		override
 	{
-		bidderByPostId(postId).metadata = metadata;
+		uint256 bidId = reservedBidIds[postId];
+		bidderInfo[bidId].metadata = metadata;
 	}
 
 	function display(
@@ -244,44 +249,8 @@ contract AdManager is IAdManager, NameAccessor {
 		revert("AD");
 	}
 
-	// function displayIframe(
-	// 	address account,
-	// 	uint256 fromPostIdIndex,
-	// 	uint256 toPostIdIndex
-	// ) public view override returns (string memory) {
-	// 	for (uint256 i = fromPostIdIndex; i < toPostIdIndex; i++) {
-	// 		if (
-	// 			allPosts[i].owner == account &&
-	// 			allPosts[i].fromTimestamp < block.timestamp &&
-	// 			allPosts[i].toTimestamp > block.timestamp
-	// 		) {
-	// 			return
-	// 				string(
-	// 					abi.encodePacked(
-	// 						"<iframe id='kaleido'",
-	// 						"title='Kaleido Frame'",
-	// 						"width=",
-	// 						allPosts[i].width,
-	// 						"height=",
-	// 						allPosts[i].height,
-	// 						"src=",
-	// 						_baseURI,
-	// 						allPosts[i].metadata,
-	// 						"</iframe>"
-	// 					)
-	// 				);
-	// 		}
-	// 	}
-	// 	revert("AD");
-	// }
-
 	function bidderList(uint256 postId) public view returns (uint256[] memory) {
 		return bidders[postId];
-	}
-
-	function bidderByPostId(uint256 postId) public view returns (Bidder memory) {
-		uint256 bidId = reservedBidIds[postId];
-		return bidderInfo[bidId];
 	}
 
 	function _right() internal view returns (DistributionRight) {

@@ -48,6 +48,9 @@ interface IAdManager {
 		string originalLink
 	);
 
+	/// @dev Emitted when a proposal is denied and a new bidder is selected.
+	event Recall(uint256 postId, uint256 fromBidId, uint256 toBidId);
+
 	/// @dev Creates a new post where the owner who has the advertising area
 	/// can public the space. The basic infomation of the area is described
 	/// on the storage, which is accessed by the metadata hash.
@@ -95,8 +98,8 @@ interface IAdManager {
 
 	function recall(
 		uint256 postId,
-		uint256 currentBidId,
-		uint256 nextBidId
+		uint256 fromBidId,
+		uint256 toBidId
 	) external;
 
 	function accept(uint256 postId) external;
@@ -108,10 +111,4 @@ interface IAdManager {
 		uint256 fromPostIdIndex,
 		uint256 toPostIdIndex
 	) external view returns (string memory);
-
-	// function displayIframe(
-	// 	address account,
-	// 	uint256 fromPostIdIndex,
-	// 	uint256 toPostIdIndex
-	// ) external returns (string memory);
 }
