@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.6;
 
-import "../libraries/IDGenerator.sol";
 import "../accessors/NameAccessor.sol";
 import "../token/DistributionRight.sol";
 import "../interfaces/IAdManager.sol";
@@ -15,10 +14,12 @@ contract AdManager is IAdManager, NameAccessor {
 	struct PostContent {
 		uint256 postId;
 		address owner;
-		string metadataURI;
+		string metadata;
+		uint256 width;
+		uint256 height;
 		uint256 fromTimestamp;
 		uint256 toTimestamp;
-		address successfulBidder;
+		uint256 successfulBidId;
 	}
 
 	struct Bidder {
@@ -26,7 +27,16 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 postId;
 		address sender;
 		uint256 price;
-		string metadataURI;
+		string metadata;
+		string originalLink;
+		DraftStatus status;
+	}
+
+	enum DraftStatus {
+		CALLED,
+		PROPOSED,
+		DENIED,
+		ACCEPTED
 	}
 
 	// postId => PostContent
@@ -35,65 +45,77 @@ contract AdManager is IAdManager, NameAccessor {
 	// postId => bidIds
 	mapping(uint256 => uint256[]) public bidders;
 
+	// postId => reserved bidId
+	mapping(uint256 => uint256) public reservedBidIds;
+
 	// bidId => Bidder
 	mapping(uint256 => Bidder) public bidderInfo;
 
-	uint256 private _nextPostId = 1;
+	uint256 public nextPostId = 1;
 
-	uint256 private _nextBidId = 1;
+	uint256 public nextBidId = 1;
+
+	string private _baseURI = "https://kaleido.io/";
 
 	constructor(address nameRegistry) NameAccessor(nameRegistry) {}
 
 	/// @inheritdoc IAdManager
 	function newPost(
-		string memory metadataURI,
+		string memory metadata,
+		uint256 width,
+		uint256 height,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) public override {
 		require(fromTimestamp < toTimestamp, "AD");
 		PostContent memory post;
-		post.postId = IDGenerator.computePostId(
-			metadataURI,
-			fromTimestamp,
-			toTimestamp
-		);
+		post.postId = nextPostId++;
 		post.owner = msg.sender;
-		post.metadataURI = metadataURI;
+		post.metadata = metadata;
+		post.width = width;
+		post.height = height;
 		post.fromTimestamp = fromTimestamp;
 		post.toTimestamp = toTimestamp;
 		allPosts[post.postId] = post;
-		_right().mint(msg.sender, post.postId, metadataURI);
+		_right().mint(msg.sender, post.postId, metadata);
 		emit NewPost(
 			post.postId,
 			post.owner,
-			post.metadataURI,
+			post.metadata,
+			post.width,
+			post.height,
 			post.fromTimestamp,
 			post.toTimestamp
 		);
 	}
 
 	/// @inheritdoc IAdManager
-	function bid(uint256 postId, string memory metadataURI)
-		public
-		payable
-		override
-	{
-		require(allPosts[postId].successfulBidder == address(0), "AD101");
-		_bid(postId, metadataURI);
+	function bid(
+		uint256 postId,
+		string memory metadata,
+		string memory originalLink
+	) public payable override {
+		require(allPosts[postId].successfulBidId == 0, "AD101");
+		_bid(postId, metadata, originalLink);
 	}
 
 	function reserve(uint256 postId) public payable {
-		require(allPosts[postId].successfulBidder == address(0), "AD101");
-		_bid(postId, "");
+		require(allPosts[postId].successfulBidId == 0, "AD101");
+		_bid(postId, "", "");
 	}
 
-	function _bid(uint256 postId, string memory metadataURI) public payable {
+	function _bid(
+		uint256 postId,
+		string memory metadata,
+		string memory originalLink
+	) public payable {
 		Bidder memory bidder;
-		bidder.bidId = _nextBidId++;
+		bidder.bidId = nextBidId++;
 		bidder.postId = postId;
 		bidder.sender = msg.sender;
 		bidder.price = msg.value;
-		bidder.metadataURI = metadataURI;
+		bidder.metadata = metadata;
+		bidder.originalLink = originalLink;
 		bidderInfo[bidder.bidId] = bidder;
 		bidders[postId].push(bidder.bidId);
 		emit Bid(
@@ -101,7 +123,8 @@ contract AdManager is IAdManager, NameAccessor {
 			bidder.postId,
 			bidder.sender,
 			bidder.price,
-			bidder.metadataURI
+			bidder.metadata,
+			bidder.originalLink
 		);
 	}
 
@@ -111,7 +134,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(bidder.bidId != 0, "AD103");
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
 
-		allPosts[bidder.postId].successfulBidder = bidder.sender;
+		allPosts[bidder.postId].successfulBidId = bidId;
 		payable(msg.sender).transfer((bidder.price * 9) / 10);
 		payable(_vault()).transfer((bidder.price * 1) / 10);
 		_right().transferByAllowedContract(
@@ -124,7 +147,7 @@ contract AdManager is IAdManager, NameAccessor {
 			bidder.postId,
 			bidder.sender,
 			bidder.price,
-			bidder.metadataURI
+			bidder.metadata
 		);
 	}
 
@@ -141,32 +164,97 @@ contract AdManager is IAdManager, NameAccessor {
 		);
 	}
 
-	function call(uint256 bidId) public {
+	/// @inheritdoc IAdManager
+	function call(uint256 bidId) public override {
 		Bidder memory bidder = bidderInfo[bidId];
 		require(bidder.bidId != 0, "AD103");
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
 
+		reservedBidIds[bidder.postId] = bidId;
+		bidder.status = DraftStatus.CALLED;
 		_right().transferByAllowedContract(
 			msg.sender,
 			adPoolAddress(),
 			bidder.postId
 		);
+		payable(adPoolAddress()).transfer(bidder.price);
+		emit Call(bidId, bidder.postId, bidder.sender, bidder.price);
+	}
+
+	/// @inheritdoc IAdManager
+	function propose(
+		uint256 postId,
+		string memory metadata,
+		string memory originalLink
+	) public override {
+		uint256 bidId = reservedBidIds[postId];
+		require(bidderInfo[bidId].sender == msg.sender, "AD");
+
+		bidderInfo[bidId].metadata = metadata;
+		bidderInfo[bidId].originalLink = originalLink;
+		bidderInfo[bidId].status = DraftStatus.PROPOSED;
+		emit Propose(bidId, postId, metadata, originalLink);
+	}
+
+	/// @inheritdoc IAdManager
+	function recall(
+		uint256 postId,
+		uint256 fromBidId,
+		uint256 toBidId
+	) public override {
+		require(allPosts[postId].owner == msg.sender, "AD");
+
+		reservedBidIds[postId] = toBidId;
+		Bidder memory currentBidder = bidderInfo[fromBidId];
+		bidderInfo[fromBidId].status = DraftStatus.DENIED;
+		_pool().receivePooledAmount(currentBidder.sender, currentBidder.price);
+
+		Bidder memory nextBidder = bidderInfo[toBidId];
+		bidderInfo[toBidId].status = DraftStatus.CALLED;
+		payable(adPoolAddress()).transfer((nextBidder.price * 99) / 100);
+		payable(currentBidder.sender).transfer(currentBidder.price / 100);
+		emit Recall(postId, fromBidId, toBidId);
+	}
+
+	/// @inheritdoc IAdManager
+	function accept(uint256 postId) public override {
+		require(allPosts[postId].owner == msg.sender, "AD");
+
+		_right().transferByAllowedContract(adPoolAddress(), msg.sender, postId);
+		uint256 bidId = reservedBidIds[postId];
+		_pool().receivePooledAmount(msg.sender, bidderInfo[bidId].price);
+		bidderInfo[bidId].status = DraftStatus.ACCEPTED;
+		allPosts[postId].successfulBidId = bidId;
+		emit Accept(postId, bidId);
+	}
+
+	function updateMetadata(uint256 postId, string memory metadata)
+		public
+		override
+	{
+		uint256 bidId = reservedBidIds[postId];
+		bidderInfo[bidId].metadata = metadata;
+	}
+
+	function display(
+		address account,
+		uint256 fromPostIdIndex,
+		uint256 toPostIdIndex
+	) public view override returns (string memory) {
+		for (uint256 i = fromPostIdIndex; i < toPostIdIndex; i++) {
+			if (
+				allPosts[i].owner == account &&
+				allPosts[i].fromTimestamp < block.timestamp &&
+				allPosts[i].toTimestamp > block.timestamp
+			) {
+				return bidderInfo[allPosts[i].successfulBidId].metadata;
+			}
+		}
+		revert("AD");
 	}
 
 	function bidderList(uint256 postId) public view returns (uint256[] memory) {
 		return bidders[postId];
-	}
-
-	function computePostId(
-		string memory metadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp
-	) public pure returns (uint256) {
-		return IDGenerator.computePostId(metadata, fromTimestamp, toTimestamp);
-	}
-
-	function bidId() public view returns (uint256) {
-		return _nextBidId;
 	}
 
 	function _right() internal view returns (DistributionRight) {

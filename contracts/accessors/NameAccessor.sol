@@ -36,6 +36,11 @@ contract NameAccessor {
 		return _nameRegistry.get(keccak256(abi.encodePacked("DistributionRight")));
 	}
 
+	/// @dev Gets the address of ReservedRight.
+	function reservedRightAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("ReservedRight")));
+	}
+
 	/// @dev Gets the address of Vault.
 	function vaultAddress() public view returns (address) {
 		return _nameRegistry.get(keccak256(abi.encodePacked("Vault")));
