@@ -81,6 +81,8 @@ interface IAdManager {
 		string memory originalLink
 	) external payable;
 
+	function reserve(uint256 postId) external payable;
+
 	/// @dev Closes the offering and mints the NFT to the successful bidder.
 	/// The amount would be paid to the post owner.
 	/// @param bidId uint256 of the bid ID
@@ -99,11 +101,9 @@ interface IAdManager {
 		string memory originalLink
 	) external;
 
-	function recall(
-		uint256 postId,
-		uint256 fromBidId,
-		uint256 toBidId
-	) external;
+	function recall(uint256 postId, uint256 toBidId) external;
+
+	function deny(uint256 postId) external;
 
 	function accept(uint256 postId) external;
 
