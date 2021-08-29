@@ -304,7 +304,7 @@ describe('AdManager', async () => {
   })
 
   describe('call', async () => {
-    it('should reserve and call a bid', async () => {
+    it('should call a bid', async () => {
       const { manager, vault, pool } = await setupTests()
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
@@ -343,6 +343,55 @@ describe('AdManager', async () => {
       expect(await manager.call(bidId2))
         .to.emit(manager, 'Call')
         .withArgs(bidId2, postId, user2.address, bitPrice2)
+    })
+  })
+
+  describe('propose', async () => {
+    it('should propose on the reservation', async () => {
+      const { manager, vault, pool } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const width = 300
+      const height = 500
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      await manager.newPost(
+        postMetadata,
+        width,
+        height,
+        fromTimestamp,
+        toTimestamp
+      )
+      const bidMetadata2 = ''
+      const originalLink2 = ''
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await managerByUser2.bid(postId, bidMetadata2, originalLink2, {
+        value: bitPrice2,
+      })
+
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const originalLink3 = ''
+      const bitPrice3 = parseEth(200)
+      await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
+        value: bitPrice3,
+      })
+      await manager.call(bidId2)
+
+      const proposedMetadata = 'kjfkajlfjaji3j'
+      const proposedLink = 'https://www.example.com'
+      expect(
+        await managerByUser2.propose(postId, proposedMetadata, proposedLink)
+      )
+        .to.emit(manager, 'Propose')
+        .withArgs(bidId2, postId, proposedMetadata, proposedLink)
     })
   })
 })

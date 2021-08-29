@@ -163,6 +163,7 @@ contract AdManager is IAdManager, NameAccessor {
 		);
 	}
 
+	/// @inheritdoc IAdManager
 	function call(uint256 bidId) public override {
 		Bidder memory bidder = bidderInfo[bidId];
 		require(bidder.bidId != 0, "AD103");
@@ -179,6 +180,7 @@ contract AdManager is IAdManager, NameAccessor {
 		emit Call(bidId, bidder.postId, bidder.sender, bidder.price);
 	}
 
+	/// @inheritdoc IAdManager
 	function propose(
 		uint256 postId,
 		string memory metadata,
@@ -190,6 +192,7 @@ contract AdManager is IAdManager, NameAccessor {
 		bidderInfo[bidId].metadata = metadata;
 		bidderInfo[bidId].originalLink = originalLink;
 		bidderInfo[bidId].status = DraftStatus.PROPOSED;
+		emit Propose(bidId, postId, metadata, originalLink);
 	}
 
 	function recall(

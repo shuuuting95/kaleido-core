@@ -40,6 +40,14 @@ interface IAdManager {
 	/// @dev Emitted when a reservation is approved temporarily.
 	event Call(uint256 bidId, uint256 postId, address sender, uint256 price);
 
+	/// @dev Emitted when a proposed content is submitted.
+	event Propose(
+		uint256 bidId,
+		uint256 postId,
+		string metadata,
+		string originalLink
+	);
+
 	/// @dev Creates a new post where the owner who has the advertising area
 	/// can public the space. The basic infomation of the area is described
 	/// on the storage, which is accessed by the metadata hash.
