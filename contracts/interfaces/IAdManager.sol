@@ -9,8 +9,7 @@ interface IAdManager {
 		uint256 postId,
 		address owner,
 		string metadata,
-		uint256 width,
-		uint256 height,
+		uint8 metadataIndex,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	);
@@ -64,14 +63,10 @@ interface IAdManager {
 	/// can public the space. The basic infomation of the area is described
 	/// on the storage, which is accessed by the metadata hash.
 	/// @param metadata string of the hashed path to the storage
-	/// @param width uint256 of the display width for the Ad space
-	/// @param height uint256 of the display height for the Ad space
 	/// @param fromTimestamp uint256 of the timestamp to display the ad
 	/// @param toTimestamp uint256 of the timestamp to display the ad
 	function newPost(
 		string memory metadata,
-		uint256 width,
-		uint256 height,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) external;
@@ -115,9 +110,10 @@ interface IAdManager {
 
 	function updateMetadata(uint256 postId, string memory metadata) external;
 
-	function display(
-		address account,
-		uint256 fromPostIdIndex,
-		uint256 toPostIdIndex
-	) external view returns (string memory);
+	function display(address account) external view returns (string memory);
+
+	function displayByIndex(address account, uint8 metadataIndex)
+		external
+		view
+		returns (string memory);
 }

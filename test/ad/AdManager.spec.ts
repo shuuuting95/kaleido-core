@@ -28,8 +28,6 @@ describe('AdManager', async () => {
       const { manager, right } = await setupTests()
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const width = 300
-      const height = 500
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
@@ -37,22 +35,13 @@ describe('AdManager', async () => {
       const toTimestamp = now + 7200
 
       const postId = await manager.nextPostId()
-      expect(
-        await manager.newPost(
-          postMetadata,
-          width,
-          height,
-          fromTimestamp,
-          toTimestamp
-        )
-      )
+      expect(await manager.newPost(postMetadata, fromTimestamp, toTimestamp))
         .to.emit(manager, 'NewPost')
         .withArgs(
           postId,
           user1.address,
           postMetadata,
-          width,
-          height,
+          1,
           fromTimestamp,
           toTimestamp
         )
@@ -63,8 +52,7 @@ describe('AdManager', async () => {
         postId,
         user1.address,
         postMetadata,
-        BigNumber.from(width),
-        BigNumber.from(height),
+        1,
         BigNumber.from(fromTimestamp),
         BigNumber.from(toTimestamp),
         BigNumber.from(0),
@@ -78,8 +66,6 @@ describe('AdManager', async () => {
       const managerByUser2 = manager.connect(user2)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const width = 300
-      const height = 500
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
@@ -92,13 +78,7 @@ describe('AdManager', async () => {
       const bitPrice = parseEth(1.5)
       const bidId = await manager.nextBidId()
 
-      await manager.newPost(
-        postMetadata,
-        width,
-        height,
-        fromTimestamp,
-        toTimestamp
-      )
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       expect(
         await managerByUser2.bid(postId, bidMetadata, originalLink, {
           value: bitPrice,
@@ -133,21 +113,13 @@ describe('AdManager', async () => {
       const managerByUser3 = manager.connect(user3)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const width = 300
-      const height = 500
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
       const fromTimestamp = now + 3600
       const toTimestamp = now + 7200
       const postId = await manager.nextPostId()
-      await manager.newPost(
-        postMetadata,
-        width,
-        height,
-        fromTimestamp,
-        toTimestamp
-      )
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
 
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
       const originalLink2 = 'https://coinmedia.io/'
@@ -200,8 +172,6 @@ describe('AdManager', async () => {
       const managerByUser3 = manager.connect(user3)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const width = 300
-      const height = 500
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
@@ -209,13 +179,7 @@ describe('AdManager', async () => {
       const toTimestamp = now + 7200
       const postId = await manager.nextPostId()
 
-      await manager.newPost(
-        postMetadata,
-        width,
-        height,
-        fromTimestamp,
-        toTimestamp
-      )
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
 
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
       const originalLink2 = 'https://coinmedia.io/'
@@ -256,21 +220,13 @@ describe('AdManager', async () => {
       const managerByUser3 = manager.connect(user3)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const width = 300
-      const height = 500
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
       const fromTimestamp = now + 3600
       const toTimestamp = now + 7200
       const postId = await manager.nextPostId()
-      await manager.newPost(
-        postMetadata,
-        width,
-        height,
-        fromTimestamp,
-        toTimestamp
-      )
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
 
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
       const originalLink2 = 'https://coinmedia.io/'
@@ -310,8 +266,6 @@ describe('AdManager', async () => {
       const managerByUser3 = manager.connect(user3)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const width = 300
-      const height = 500
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
@@ -319,13 +273,7 @@ describe('AdManager', async () => {
       const toTimestamp = now + 7200
       const postId = await manager.nextPostId()
 
-      await manager.newPost(
-        postMetadata,
-        width,
-        height,
-        fromTimestamp,
-        toTimestamp
-      )
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       const bidMetadata2 = ''
       const originalLink2 = ''
       const bitPrice2 = parseEth(100)
@@ -353,8 +301,6 @@ describe('AdManager', async () => {
       const managerByUser3 = manager.connect(user3)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const width = 300
-      const height = 500
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
@@ -362,13 +308,7 @@ describe('AdManager', async () => {
       const toTimestamp = now + 7200
       const postId = await manager.nextPostId()
 
-      await manager.newPost(
-        postMetadata,
-        width,
-        height,
-        fromTimestamp,
-        toTimestamp
-      )
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       const bidMetadata2 = ''
       const originalLink2 = ''
       const bitPrice2 = parseEth(100)
@@ -402,8 +342,6 @@ describe('AdManager', async () => {
       const managerByUser3 = manager.connect(user3)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const width = 300
-      const height = 500
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
@@ -411,13 +349,7 @@ describe('AdManager', async () => {
       const toTimestamp = now + 7200
       const postId = await manager.nextPostId()
 
-      await manager.newPost(
-        postMetadata,
-        width,
-        height,
-        fromTimestamp,
-        toTimestamp
-      )
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       const bidMetadata2 = ''
       const originalLink2 = ''
       const bitPrice2 = parseEth(100)
@@ -446,8 +378,6 @@ describe('AdManager', async () => {
       const managerByUser3 = manager.connect(user3)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const width = 300
-      const height = 500
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
@@ -455,13 +385,7 @@ describe('AdManager', async () => {
       const toTimestamp = now + 7200
       const postId = await manager.nextPostId()
 
-      await manager.newPost(
-        postMetadata,
-        width,
-        height,
-        fromTimestamp,
-        toTimestamp
-      )
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       const bidMetadata2 = ''
       const originalLink2 = ''
       const bitPrice2 = parseEth(100)
@@ -494,8 +418,6 @@ describe('AdManager', async () => {
       const managerByUser3 = manager.connect(user3)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const width = 300
-      const height = 500
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
@@ -503,13 +425,7 @@ describe('AdManager', async () => {
       const toTimestamp = now + 7200
       const postId = await manager.nextPostId()
 
-      await manager.newPost(
-        postMetadata,
-        width,
-        height,
-        fromTimestamp,
-        toTimestamp
-      )
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       const bidMetadata2 = ''
       const originalLink2 = ''
       const bitPrice2 = parseEth(100)
