@@ -435,13 +435,55 @@ describe('AdManager', async () => {
       })
       await manager.call(bidId2)
 
+      expect(await manager.recall(postId, bidId3))
+        .to.emit(manager, 'Recall')
+        .withArgs(postId, bidId2, bidId3)
+    })
+
+    it('should revert because it has proposed', async () => {
+      const { manager, vault, pool } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const width = 300
+      const height = 500
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      await manager.newPost(
+        postMetadata,
+        width,
+        height,
+        fromTimestamp,
+        toTimestamp
+      )
+      const bidMetadata2 = ''
+      const originalLink2 = ''
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await managerByUser2.bid(postId, bidMetadata2, originalLink2, {
+        value: bitPrice2,
+      })
+
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const originalLink3 = ''
+      const bitPrice3 = parseEth(200)
+      const bidId3 = await manager.nextBidId()
+      await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
+        value: bitPrice3,
+      })
+      await manager.call(bidId2)
+
       const proposedMetadata = 'kjfkajlfjaji3j'
       const proposedLink = 'https://www.example.com'
       await managerByUser2.propose(postId, proposedMetadata, proposedLink)
 
-      expect(await manager.recall(postId, bidId2, bidId3))
-        .to.emit(manager, 'Recall')
-        .withArgs(postId, bidId2, bidId3)
+      await expect(manager.recall(postId, bidId3)).to.be.revertedWith('AD108')
     })
   })
 
