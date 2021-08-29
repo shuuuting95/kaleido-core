@@ -51,6 +51,9 @@ interface IAdManager {
 	/// @dev Emitted when a proposal is denied and a new bidder is selected.
 	event Recall(uint256 postId, uint256 fromBidId, uint256 toBidId);
 
+	/// @dev Emitted when a proposal is accepted.
+	event Accept(uint256 postId, uint256 bidId);
+
 	/// @dev Creates a new post where the owner who has the advertising area
 	/// can public the space. The basic infomation of the area is described
 	/// on the storage, which is accessed by the metadata hash.

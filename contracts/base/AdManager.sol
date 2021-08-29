@@ -216,12 +216,16 @@ contract AdManager is IAdManager, NameAccessor {
 		emit Recall(postId, fromBidId, toBidId);
 	}
 
+	/// @inheritdoc IAdManager
 	function accept(uint256 postId) public override {
+		require(allPosts[postId].owner == msg.sender, "AD");
+
 		_right().transferByAllowedContract(adPoolAddress(), msg.sender, postId);
 		uint256 bidId = reservedBidIds[postId];
 		_pool().receivePooledAmount(msg.sender, bidderInfo[bidId].price);
 		bidderInfo[bidId].status = DraftStatus.ACCEPTED;
 		allPosts[postId].successfulBidId = bidId;
+		emit Accept(postId, bidId);
 	}
 
 	function updateMetadata(uint256 postId, string memory metadata)
