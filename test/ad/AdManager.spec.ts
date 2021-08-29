@@ -67,7 +67,7 @@ describe('AdManager', async () => {
         BigNumber.from(height),
         BigNumber.from(fromTimestamp),
         BigNumber.from(toTimestamp),
-        ADDRESS_ZERO,
+        BigNumber.from(0),
       ])
     })
   })
@@ -120,6 +120,7 @@ describe('AdManager', async () => {
         bitPrice,
         bidMetadata,
         originalLink,
+        0,
       ])
       expect(await manager.bidderList(postId)).to.deep.equal([bidId])
     })
@@ -339,7 +340,9 @@ describe('AdManager', async () => {
       await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
         value: bitPrice3,
       })
-      await manager.call(bidId2)
+      expect(await manager.call(bidId2))
+        .to.emit(manager, 'Call')
+        .withArgs(bidId2, postId, user2.address, bitPrice2)
     })
   })
 })

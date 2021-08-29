@@ -37,9 +37,12 @@ interface IAdManager {
 	/// @dev Emitted when the bidder execute refunding.
 	event Refund(uint256 bitId, uint256 postId, address sender, uint256 price);
 
+	/// @dev Emitted when a reservation is approved temporarily.
+	event Call(uint256 bidId, uint256 postId, address sender, uint256 price);
+
 	/// @dev Creates a new post where the owner who has the advertising area
-	///      can public the space. The basic infomation of the area is described
-	///      on the storage, which is accessed by the metadata hash.
+	/// can public the space. The basic infomation of the area is described
+	/// on the storage, which is accessed by the metadata hash.
 	/// @param metadata string of the hashed path to the storage
 	/// @param width uint256 of the display width for the Ad space
 	/// @param height uint256 of the display height for the Ad space
@@ -54,8 +57,8 @@ interface IAdManager {
 	) external;
 
 	/// @dev Bids to the post, sharing what kind of Ads would be public.
-	///      The owner of the Ad space can select the one according to not only
-	///      the price but also the preference inside the metadata.
+	/// The owner of the Ad space can select the one according to not only
+	/// the price but also the preference inside the metadata.
 	/// @param postId uint256 of the post ID
 	/// @param metadata string of the hashed path to the storage
 	function bid(
@@ -65,12 +68,42 @@ interface IAdManager {
 	) external payable;
 
 	/// @dev Closes the offering and mints the NFT to the successful bidder.
-	///      The amount would be paid to the post owner.
+	/// The amount would be paid to the post owner.
 	/// @param bidId uint256 of the bid ID
 	function close(uint256 bidId) external;
 
 	/// @dev Can refund the amount if you want to cancel or
-	///      the other is determinted as the successful bidder.
+	/// the other is determinted as the successful bidder.
 	/// @param bidId uint256 of the bid ID
 	function refund(uint256 bidId) external;
+
+	function call(uint256 bidId) external;
+
+	function propose(
+		uint256 postId,
+		string memory metadata,
+		string memory originalLink
+	) external;
+
+	function recall(
+		uint256 postId,
+		uint256 currentBidId,
+		uint256 nextBidId
+	) external;
+
+	function accept(uint256 postId) external;
+
+	function updateMetadata(uint256 postId, string memory metadata) external;
+
+	function display(
+		address account,
+		uint256 fromPostIdIndex,
+		uint256 toPostIdIndex
+	) external view returns (string memory);
+
+	// function displayIframe(
+	// 	address account,
+	// 	uint256 fromPostIdIndex,
+	// 	uint256 toPostIdIndex
+	// ) external returns (string memory);
 }
