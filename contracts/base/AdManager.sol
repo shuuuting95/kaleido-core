@@ -12,10 +12,12 @@ import "hardhat/console.sol";
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is IAdManager, NameAccessor {
 	enum DraftStatus {
+		LISTED,
 		CALLED,
 		PROPOSED,
 		DENIED,
-		ACCEPTED
+		ACCEPTED,
+		REFUNDED
 	}
 
 	struct PostContent {
@@ -105,30 +107,6 @@ contract AdManager is IAdManager, NameAccessor {
 		_bid(postId, "", "");
 	}
 
-	function _bid(
-		uint256 postId,
-		string memory metadata,
-		string memory originalLink
-	) public payable {
-		Bidder memory bidder;
-		bidder.bidId = nextBidId++;
-		bidder.postId = postId;
-		bidder.sender = msg.sender;
-		bidder.price = msg.value;
-		bidder.metadata = metadata;
-		bidder.originalLink = originalLink;
-		bidderInfo[bidder.bidId] = bidder;
-		bidders[postId].push(bidder.bidId);
-		emit Bid(
-			bidder.bidId,
-			bidder.postId,
-			bidder.sender,
-			bidder.price,
-			bidder.metadata,
-			bidder.originalLink
-		);
-	}
-
 	/// @inheritdoc IAdManager
 	function close(uint256 bidId) public override {
 		Bidder memory bidder = bidderInfo[bidId];
@@ -136,6 +114,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
 
 		allPosts[bidder.postId].successfulBidId = bidId;
+		bidder.status = DraftStatus.ACCEPTED;
 		payable(msg.sender).transfer((bidder.price * 9) / 10);
 		payable(_vault()).transfer((bidder.price * 1) / 10);
 		_right().transferByAllowedContract(
@@ -157,6 +136,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(bidderInfo[bidId].sender == msg.sender, "AD104");
 
 		payable(msg.sender).transfer(bidderInfo[bidId].price);
+		bidderInfo[bidId].status = DraftStatus.REFUNDED;
 		emit Refund(
 			bidId,
 			bidderInfo[bidId].postId,
@@ -203,6 +183,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(bidderInfo[bidId].status == DraftStatus.PROPOSED, "AD106");
 
 		bidderInfo[bidId].status = DraftStatus.CALLED;
+		emit Deny(bidId, postId);
 	}
 
 	/// @inheritdoc IAdManager
@@ -237,6 +218,7 @@ contract AdManager is IAdManager, NameAccessor {
 		emit Accept(postId, bidId);
 	}
 
+	/// @inheritdoc IAdManager
 	function updateMetadata(uint256 postId, string memory metadata)
 		public
 		override
@@ -245,6 +227,7 @@ contract AdManager is IAdManager, NameAccessor {
 		bidderInfo[bidId].metadata = metadata;
 	}
 
+	/// @inheritdoc IAdManager
 	function display(
 		address account,
 		uint256 fromPostIdIndex,
@@ -260,6 +243,31 @@ contract AdManager is IAdManager, NameAccessor {
 			}
 		}
 		revert("AD");
+	}
+
+	function _bid(
+		uint256 postId,
+		string memory metadata,
+		string memory originalLink
+	) public payable {
+		Bidder memory bidder;
+		bidder.bidId = nextBidId++;
+		bidder.postId = postId;
+		bidder.sender = msg.sender;
+		bidder.price = msg.value;
+		bidder.metadata = metadata;
+		bidder.originalLink = originalLink;
+		bidder.status = DraftStatus.LISTED;
+		bidderInfo[bidder.bidId] = bidder;
+		bidders[postId].push(bidder.bidId);
+		emit Bid(
+			bidder.bidId,
+			bidder.postId,
+			bidder.sender,
+			bidder.price,
+			bidder.metadata,
+			bidder.originalLink
+		);
 	}
 
 	function bidderList(uint256 postId) public view returns (uint256[] memory) {

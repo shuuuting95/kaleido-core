@@ -25,7 +25,7 @@ interface IAdManager {
 		string originalLink
 	);
 
-	/// @dev Emitted when the post owner decides which one is the successful bidder.
+	/// @dev Emitted when a post owner decides which one is the successful bidder.
 	event Close(
 		uint256 bitId,
 		uint256 postId,
@@ -34,10 +34,10 @@ interface IAdManager {
 		string metadata
 	);
 
-	/// @dev Emitted when the bidder execute refunding.
+	/// @dev Emitted when a bidder refunds.
 	event Refund(uint256 bitId, uint256 postId, address sender, uint256 price);
 
-	/// @dev Emitted when a reservation is approved temporarily.
+	/// @dev Emitted when a reservation is temporarily approved.
 	event Call(uint256 bidId, uint256 postId, address sender, uint256 price);
 
 	/// @dev Emitted when a proposed content is submitted.
@@ -48,11 +48,17 @@ interface IAdManager {
 		string originalLink
 	);
 
+	/// @dev Emitted when a proposal is denied.
+	event Deny(uint256 bidId, uint256 postId);
+
 	/// @dev Emitted when a proposal is denied and a new bidder is selected.
 	event Recall(uint256 postId, uint256 fromBidId, uint256 toBidId);
 
 	/// @dev Emitted when a proposal is accepted.
 	event Accept(uint256 postId, uint256 bidId);
+
+	/// @dev Emitted when the metadata is updated.
+	event UpdateMetadata(uint256 postId, string metadata);
 
 	/// @dev Creates a new post where the owner who has the advertising area
 	/// can public the space. The basic infomation of the area is described
