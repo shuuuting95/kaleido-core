@@ -19,16 +19,13 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     'NameRegistry'
   )
   const name = NameRegistryFactory.attach(NameRegistry.address)
-  const txReceipt = await name.set(
-    utils.solidityKeccak256(['string'], ['AdPool']),
-    AdPool.address,
-    { gasLimit: 4500000 }
-  )
-  await txReceipt.wait()
-  console.log(
-    'AdPool: ',
-    await name.get(utils.solidityKeccak256(['string'], ['AdPool']))
-  )
+  const key = utils.solidityKeccak256(['string'], ['AdPool'])
+  const value = await name.get(key)
+  if (value !== AdPool.address) {
+    const txReceipt = await name.set(key, AdPool.address, { gasLimit: 4500000 })
+    await txReceipt.wait()
+    console.log('AdPool: ', await name.get(key))
+  }
 }
 
 export default deploy

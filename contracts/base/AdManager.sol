@@ -24,8 +24,7 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 postId;
 		address owner;
 		string metadata;
-		uint256 width;
-		uint256 height;
+		uint8 metadataIndex;
 		uint256 fromTimestamp;
 		uint256 toTimestamp;
 		uint256 successfulBidId;
@@ -53,6 +52,12 @@ contract AdManager is IAdManager, NameAccessor {
 	// bidId => Bidder
 	mapping(uint256 => Bidder) public bidderInfo;
 
+	// EOA => metadata[]
+	mapping(address => string[]) public mediaMetadata;
+
+	// EOA => metadata => registered
+	mapping(address => mapping(string => bool)) public registered;
+
 	uint256 public nextPostId = 1;
 
 	uint256 public nextBidId = 1;
@@ -64,8 +69,6 @@ contract AdManager is IAdManager, NameAccessor {
 	/// @inheritdoc IAdManager
 	function newPost(
 		string memory metadata,
-		uint256 width,
-		uint256 height,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) public override {
@@ -74,18 +77,20 @@ contract AdManager is IAdManager, NameAccessor {
 		post.postId = nextPostId++;
 		post.owner = msg.sender;
 		post.metadata = metadata;
-		post.width = width;
-		post.height = height;
 		post.fromTimestamp = fromTimestamp;
 		post.toTimestamp = toTimestamp;
+		if (!registered[msg.sender][metadata]) {
+			registered[msg.sender][metadata] = true;
+			mediaMetadata[msg.sender].push(metadata);
+		}
+		post.metadataIndex = uint8(mediaMetadata[msg.sender].length);
 		allPosts[post.postId] = post;
 		_right().mint(msg.sender, post.postId, metadata);
 		emit NewPost(
 			post.postId,
 			post.owner,
 			post.metadata,
-			post.width,
-			post.height,
+			post.metadataIndex,
 			post.fromTimestamp,
 			post.toTimestamp
 		);
@@ -228,14 +233,35 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function display(
+	function display(address account)
+		public
+		view
+		override
+		returns (string memory)
+	{
+		return displayBetween(account, 1, 0, nextPostId);
+	}
+
+	/// @inheritdoc IAdManager
+	function displayByIndex(address account, uint8 metadataIndex)
+		public
+		view
+		override
+		returns (string memory)
+	{
+		return displayBetween(account, metadataIndex, 0, nextPostId);
+	}
+
+	function displayBetween(
 		address account,
+		uint8 metadataIndex,
 		uint256 fromPostIdIndex,
 		uint256 toPostIdIndex
-	) public view override returns (string memory) {
+	) public view returns (string memory) {
 		for (uint256 i = fromPostIdIndex; i < toPostIdIndex; i++) {
 			if (
 				allPosts[i].owner == account &&
+				allPosts[i].metadataIndex == metadataIndex &&
 				allPosts[i].fromTimestamp < block.timestamp &&
 				allPosts[i].toTimestamp > block.timestamp
 			) {
