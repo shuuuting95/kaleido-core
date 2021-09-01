@@ -50,9 +50,6 @@ interface IAdManager {
 	/// @dev Emitted when a proposal is denied.
 	event Deny(uint256 bidId, uint256 postId);
 
-	/// @dev Emitted when a proposal is denied and a new bidder is selected.
-	event Recall(uint256 postId, uint256 fromBidId, uint256 toBidId);
-
 	/// @dev Emitted when a proposal is accepted.
 	event Accept(uint256 postId, uint256 bidId);
 
@@ -82,7 +79,9 @@ interface IAdManager {
 		string memory originalLink
 	) external payable;
 
-	function reserve(uint256 postId) external payable;
+	/// @dev Books to the post without any specific metadata.
+	/// @param postId uint256 of the post ID
+	function book(uint256 postId) external payable;
 
 	/// @dev Closes the offering and mints the NFT to the successful bidder.
 	/// The amount would be paid to the post owner.
@@ -94,24 +93,38 @@ interface IAdManager {
 	/// @param bidId uint256 of the bid ID
 	function refund(uint256 bidId) external;
 
+	/// @dev Calls the book related with the bidId. The NFT representing a right to propose
+	/// is sent to the bidder in this function.
+	/// @param bidId uint256 of the bid ID
 	function call(uint256 bidId) external;
 
+	/// @dev Proposes metadata and an original link to the book.
+	/// @param postId uint256 of the post ID
+	/// @param metadata string of the hashed path to the storage
+	/// @param originalLink string of the url that links to your site
 	function propose(
 		uint256 postId,
 		string memory metadata,
 		string memory originalLink
 	) external;
 
-	function recall(uint256 postId, uint256 toBidId) external;
-
+	/// @dev Denies the proposal if you dislike the content.
+	/// @param postId uint256 of the post ID
 	function deny(uint256 postId) external;
 
+	/// @dev Accepts the proposal if you like the content.
+	/// @param postId uint256 of the post ID
 	function accept(uint256 postId) external;
 
-	function updateMetadata(uint256 postId, string memory metadata) external;
-
+	/// @dev Returns metadata hash that the account is supposed to deliver.
+	/// If the account has several posts, the index 1 would be applied.
+	/// @param account address of the post owner
 	function display(address account) external view returns (string memory);
 
+	/// @dev Returns metadata hash that the account is supposed to deliver.
+	/// You can designate the index number.
+	/// @param account address of the post owner
+	/// @param metadataIndex uint8 of the metadata index
 	function displayByIndex(address account, uint8 metadataIndex)
 		external
 		view

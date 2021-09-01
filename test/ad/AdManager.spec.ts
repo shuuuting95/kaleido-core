@@ -1,7 +1,6 @@
 import { expect } from 'chai'
 import { BigNumber } from 'ethers'
 import { deployments, network, waffle } from 'hardhat'
-import { ADDRESS_ZERO } from '../utils/address'
 import { parseEth } from './../utils/number'
 import {
   getAdManagerContract,
@@ -45,8 +44,6 @@ describe('AdManager', async () => {
           fromTimestamp,
           toTimestamp
         )
-        .to.emit(right, 'Transfer')
-        .withArgs(ADDRESS_ZERO, user1.address, postId)
 
       expect(await manager.allPosts(postId)).to.deep.equal([
         postId,
@@ -142,8 +139,6 @@ describe('AdManager', async () => {
       expect(await manager.close(bidId2))
         .to.emit(manager, 'Close')
         .withArgs(bidId2, postId, user2.address, bitPrice2, bidMetadata2)
-        .to.emit(right, 'Transfer')
-        .withArgs(user1.address, user2.address, postId)
         .to.emit(vault, 'Received')
         .withArgs(manager.address, parseEth(10))
       const user1BalanceAfterClose = await user1.getBalance()
@@ -159,9 +154,6 @@ describe('AdManager', async () => {
       expect(user1BalanceDiff).to.be.gt(Number(parseEth(89.9)))
       expect(user2BalanceDiff).to.be.eq(0)
       expect(await vault.balance()).to.be.eq(parseEth(10))
-
-      expect(await right.ownerOf(postId)).to.be.eq(user2.address)
-      expect(await right.tokenURI(postId)).to.be.eq(`ipfs://${postMetadata}`)
     })
   })
 
@@ -261,7 +253,7 @@ describe('AdManager', async () => {
 
   describe('call', async () => {
     it('should call a bid', async () => {
-      const { manager, vault, pool } = await setupTests()
+      const { manager, right } = await setupTests()
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
 
@@ -291,11 +283,14 @@ describe('AdManager', async () => {
       expect(await manager.call(bidId2))
         .to.emit(manager, 'Call')
         .withArgs(bidId2, postId, user2.address, bitPrice2)
+
+      expect(await right.ownerOf(postId)).to.be.eq(user2.address)
+      expect(await right.tokenURI(postId)).to.be.eq(`ipfs://${postMetadata}`)
     })
   })
 
   describe('propose', async () => {
-    it('should propose on the reservation', async () => {
+    it('should propose on the book', async () => {
       const { manager, vault, pool } = await setupTests()
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
@@ -335,85 +330,9 @@ describe('AdManager', async () => {
     })
   })
 
-  describe('recall', async () => {
-    it('should recall the bid', async () => {
-      const { manager, vault, pool } = await setupTests()
-      const managerByUser2 = manager.connect(user2)
-      const managerByUser3 = manager.connect(user3)
-
-      const postMetadata = 'abi09nadu2brasfjl'
-      const now = Date.now()
-      await network.provider.send('evm_setNextBlockTimestamp', [now])
-      await network.provider.send('evm_mine')
-      const fromTimestamp = now + 3600
-      const toTimestamp = now + 7200
-      const postId = await manager.nextPostId()
-
-      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-      const bidMetadata2 = ''
-      const originalLink2 = ''
-      const bitPrice2 = parseEth(100)
-      const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, originalLink2, {
-        value: bitPrice2,
-      })
-
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const originalLink3 = ''
-      const bitPrice3 = parseEth(200)
-      const bidId3 = await manager.nextBidId()
-      await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
-        value: bitPrice3,
-      })
-      await manager.call(bidId2)
-
-      expect(await manager.recall(postId, bidId3))
-        .to.emit(manager, 'Recall')
-        .withArgs(postId, bidId2, bidId3)
-    })
-
-    it('should revert because it has proposed', async () => {
-      const { manager, vault, pool } = await setupTests()
-      const managerByUser2 = manager.connect(user2)
-      const managerByUser3 = manager.connect(user3)
-
-      const postMetadata = 'abi09nadu2brasfjl'
-      const now = Date.now()
-      await network.provider.send('evm_setNextBlockTimestamp', [now])
-      await network.provider.send('evm_mine')
-      const fromTimestamp = now + 3600
-      const toTimestamp = now + 7200
-      const postId = await manager.nextPostId()
-
-      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-      const bidMetadata2 = ''
-      const originalLink2 = ''
-      const bitPrice2 = parseEth(100)
-      const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, originalLink2, {
-        value: bitPrice2,
-      })
-
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const originalLink3 = ''
-      const bitPrice3 = parseEth(200)
-      const bidId3 = await manager.nextBidId()
-      await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
-        value: bitPrice3,
-      })
-      await manager.call(bidId2)
-
-      const proposedMetadata = 'kjfkajlfjaji3j'
-      const proposedLink = 'https://www.example.com'
-      await managerByUser2.propose(postId, proposedMetadata, proposedLink)
-
-      await expect(manager.recall(postId, bidId3)).to.be.revertedWith('AD108')
-    })
-  })
-
   describe('accept', async () => {
     it('should accept the proposal', async () => {
-      const { manager, vault, pool } = await setupTests()
+      const { manager, vault } = await setupTests()
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
 
