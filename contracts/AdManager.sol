@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.6;
 
-import "../accessors/NameAccessor.sol";
-import "../token/DistributionRight.sol";
-import "../interfaces/IAdManager.sol";
-import "./Vault.sol";
-import "./AdPool.sol";
+import "./accessors/NameAccessor.sol";
+import "./token/DistributionRight.sol";
+import "./interfaces/IAdManager.sol";
+import "./base/Vault.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - allows anyone to create a post and bit to the post.
@@ -269,9 +268,5 @@ contract AdManager is IAdManager, NameAccessor {
 
 	function _vault() internal view returns (Vault) {
 		return Vault(payable(vaultAddress()));
-	}
-
-	function _pool() internal view returns (AdPool) {
-		return AdPool(payable(adPoolAddress()));
 	}
 }
