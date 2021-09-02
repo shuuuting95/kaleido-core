@@ -234,7 +234,7 @@ contract AdManager is IAdManager, NameAccessor {
 		revert("AD");
 	}
 
-	function _book(uint256 postId) public payable {
+	function _book(uint256 postId) internal {
 		uint256 bidId = nextBidId++;
 		__bid(postId, bidId, "", "", DraftStatus.BOOKED);
 		emit Book(bidId, postId, msg.sender, msg.value);
@@ -244,7 +244,7 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 postId,
 		string memory metadata,
 		string memory originalLink
-	) public payable {
+	) internal {
 		uint256 bidId = nextBidId++;
 		__bid(postId, bidId, metadata, originalLink, DraftStatus.LISTED);
 		emit Bid(bidId, postId, msg.sender, msg.value, metadata, originalLink);
@@ -256,7 +256,7 @@ contract AdManager is IAdManager, NameAccessor {
 		string memory metadata,
 		string memory originalLink,
 		DraftStatus status
-	) public payable {
+	) internal {
 		Bidder memory bidder;
 		bidder.bidId = bidId;
 		bidder.postId = postId;
