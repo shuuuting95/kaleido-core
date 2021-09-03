@@ -35,7 +35,6 @@ contract AdManager is IAdManager, NameAccessor {
 		address sender;
 		uint256 price;
 		string metadata;
-		string originalLink;
 		DraftStatus status;
 	}
 
@@ -95,19 +94,15 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function bid(
-		uint256 postId,
-		string memory metadata,
-		string memory originalLink
-	) public payable override {
+	function bid(uint256 postId, string memory metadata) public payable override {
 		require(allPosts[postId].successfulBidId == 0, "AD102");
-		_bid(postId, metadata, originalLink);
+		_bid(postId, metadata);
 	}
 
 	/// @inheritdoc IAdManager
 	function book(uint256 postId) public payable override {
 		require(allPosts[postId].successfulBidId == 0, "AD102");
-		_bid(postId, "", "");
+		_bid(postId, "");
 	}
 
 	/// @inheritdoc IAdManager
@@ -162,18 +157,13 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function propose(
-		uint256 postId,
-		string memory metadata,
-		string memory originalLink
-	) public override {
+	function propose(uint256 postId, string memory metadata) public override {
 		uint256 bidId = bookedBidIds[postId];
 		require(bidderInfo[bidId].sender == msg.sender, "AD105");
 
 		bidderInfo[bidId].metadata = metadata;
-		bidderInfo[bidId].originalLink = originalLink;
 		bidderInfo[bidId].status = DraftStatus.PROPOSED;
-		emit Propose(bidId, postId, metadata, originalLink);
+		emit Propose(bidId, postId, metadata);
 	}
 
 	/// @inheritdoc IAdManager
@@ -234,18 +224,13 @@ contract AdManager is IAdManager, NameAccessor {
 		revert("AD");
 	}
 
-	function _bid(
-		uint256 postId,
-		string memory metadata,
-		string memory originalLink
-	) public payable {
+	function _bid(uint256 postId, string memory metadata) public payable {
 		Bidder memory bidder;
 		bidder.bidId = nextBidId++;
 		bidder.postId = postId;
 		bidder.sender = msg.sender;
 		bidder.price = msg.value;
 		bidder.metadata = metadata;
-		bidder.originalLink = originalLink;
 		bidder.status = DraftStatus.LISTED;
 		bidderInfo[bidder.bidId] = bidder;
 		bidders[postId].push(bidder.bidId);
@@ -254,8 +239,7 @@ contract AdManager is IAdManager, NameAccessor {
 			bidder.postId,
 			bidder.sender,
 			bidder.price,
-			bidder.metadata,
-			bidder.originalLink
+			bidder.metadata
 		);
 	}
 
