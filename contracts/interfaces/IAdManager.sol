@@ -23,6 +23,9 @@ interface IAdManager {
 		string metadata
 	);
 
+	/// @dev Emitted when a new book is listed.
+	event Book(uint256 bidId, uint256 postId, address sender, uint256 price);
+
 	/// @dev Emitted when a post owner decides which one is the successful bidder.
 	event Close(
 		uint256 bitId,
