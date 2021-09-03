@@ -11,6 +11,7 @@ import "hardhat/console.sol";
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is IAdManager, NameAccessor {
 	enum DraftStatus {
+		BOOKED,
 		LISTED,
 		CALLED,
 		PROPOSED,
@@ -107,7 +108,7 @@ contract AdManager is IAdManager, NameAccessor {
 	/// @inheritdoc IAdManager
 	function book(uint256 postId) public payable override {
 		require(allPosts[postId].successfulBidId == 0, "AD102");
-		_bid(postId, "", "");
+		_book(postId);
 	}
 
 	/// @inheritdoc IAdManager
@@ -234,29 +235,39 @@ contract AdManager is IAdManager, NameAccessor {
 		revert("AD");
 	}
 
+	function _book(uint256 postId) internal {
+		uint256 bidId = nextBidId++;
+		__bid(postId, bidId, "", "", DraftStatus.BOOKED);
+		emit Book(bidId, postId, msg.sender, msg.value);
+	}
+
 	function _bid(
 		uint256 postId,
 		string memory metadata,
 		string memory originalLink
-	) public payable {
+	) internal {
+		uint256 bidId = nextBidId++;
+		__bid(postId, bidId, metadata, originalLink, DraftStatus.LISTED);
+		emit Bid(bidId, postId, msg.sender, msg.value, metadata, originalLink);
+	}
+
+	function __bid(
+		uint256 postId,
+		uint256 bidId,
+		string memory metadata,
+		string memory originalLink,
+		DraftStatus status
+	) internal {
 		Bidder memory bidder;
-		bidder.bidId = nextBidId++;
+		bidder.bidId = bidId;
 		bidder.postId = postId;
 		bidder.sender = msg.sender;
 		bidder.price = msg.value;
 		bidder.metadata = metadata;
 		bidder.originalLink = originalLink;
-		bidder.status = DraftStatus.LISTED;
+		bidder.status = status;
 		bidderInfo[bidder.bidId] = bidder;
 		bidders[postId].push(bidder.bidId);
-		emit Bid(
-			bidder.bidId,
-			bidder.postId,
-			bidder.sender,
-			bidder.price,
-			bidder.metadata,
-			bidder.originalLink
-		);
 	}
 
 	function bidderList(uint256 postId) public view returns (uint256[] memory) {

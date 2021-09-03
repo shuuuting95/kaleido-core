@@ -97,6 +97,43 @@ describe('AdManager', async () => {
         bitPrice,
         bidMetadata,
         originalLink,
+        1,
+      ])
+      expect(await manager.bidderList(postId)).to.deep.equal([bidId])
+    })
+  })
+
+  describe('book', async () => {
+    it('should book to a post', async () => {
+      const { manager } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      const bitPrice = parseEth(1.5)
+      const bidId = await manager.nextBidId()
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      expect(
+        await managerByUser2.book(postId, {
+          value: bitPrice,
+        })
+      )
+        .to.emit(manager, 'Bid')
+        .withArgs(bidId, postId, user2.address, bitPrice)
+      expect(await manager.bidderInfo(bidId)).to.deep.equal([
+        bidId,
+        postId,
+        user2.address,
+        bitPrice,
+        '',
+        '',
         0,
       ])
       expect(await manager.bidderList(postId)).to.deep.equal([bidId])
