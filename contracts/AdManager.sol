@@ -151,6 +151,7 @@ contract AdManager is IAdManager, NameAccessor {
 
 		bookedBidIds[bidder.postId] = bidId;
 		bidder.status = DraftStatus.CALLED;
+		allPosts[bidder.postId].successfulBidId = bidId;
 		payable(msg.sender).transfer(bidder.price);
 		_right().mint(
 			bidder.sender,
