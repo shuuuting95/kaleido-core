@@ -36,7 +36,6 @@ contract AdManager is IAdManager, NameAccessor {
 		address sender;
 		uint256 price;
 		string metadata;
-		string originalLink;
 		DraftStatus status;
 	}
 
@@ -96,13 +95,9 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function bid(
-		uint256 postId,
-		string memory metadata,
-		string memory originalLink
-	) public payable override {
+	function bid(uint256 postId, string memory metadata) public payable override {
 		require(allPosts[postId].successfulBidId == 0, "AD102");
-		_bid(postId, metadata, originalLink);
+		_bid(postId, metadata);
 	}
 
 	/// @inheritdoc IAdManager
@@ -163,18 +158,13 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function propose(
-		uint256 postId,
-		string memory metadata,
-		string memory originalLink
-	) public override {
+	function propose(uint256 postId, string memory metadata) public override {
 		uint256 bidId = bookedBidIds[postId];
 		require(bidderInfo[bidId].sender == msg.sender, "AD105");
 
 		bidderInfo[bidId].metadata = metadata;
-		bidderInfo[bidId].originalLink = originalLink;
 		bidderInfo[bidId].status = DraftStatus.PROPOSED;
-		emit Propose(bidId, postId, metadata, originalLink);
+		emit Propose(bidId, postId, metadata);
 	}
 
 	/// @inheritdoc IAdManager
@@ -237,25 +227,20 @@ contract AdManager is IAdManager, NameAccessor {
 
 	function _book(uint256 postId) internal {
 		uint256 bidId = nextBidId++;
-		__bid(postId, bidId, "", "", DraftStatus.BOOKED);
+		__bid(postId, bidId, "", DraftStatus.BOOKED);
 		emit Book(bidId, postId, msg.sender, msg.value);
 	}
 
-	function _bid(
-		uint256 postId,
-		string memory metadata,
-		string memory originalLink
-	) internal {
+	function _bid(uint256 postId, string memory metadata) internal {
 		uint256 bidId = nextBidId++;
-		__bid(postId, bidId, metadata, originalLink, DraftStatus.LISTED);
-		emit Bid(bidId, postId, msg.sender, msg.value, metadata, originalLink);
+		__bid(postId, bidId, metadata, DraftStatus.LISTED);
+		emit Bid(bidId, postId, msg.sender, msg.value, metadata);
 	}
 
 	function __bid(
 		uint256 postId,
 		uint256 bidId,
 		string memory metadata,
-		string memory originalLink,
 		DraftStatus status
 	) internal {
 		Bidder memory bidder;
@@ -264,7 +249,6 @@ contract AdManager is IAdManager, NameAccessor {
 		bidder.sender = msg.sender;
 		bidder.price = msg.value;
 		bidder.metadata = metadata;
-		bidder.originalLink = originalLink;
 		bidder.status = status;
 		bidderInfo[bidder.bidId] = bidder;
 		bidders[postId].push(bidder.bidId);

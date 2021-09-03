@@ -71,32 +71,23 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
 
       const bidMetadata = 'xxxdafakjkjfaj;jf'
-      const originalLink = 'https://coinmedia.io/'
       const bitPrice = parseEth(1.5)
       const bidId = await manager.nextBidId()
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       expect(
-        await managerByUser2.bid(postId, bidMetadata, originalLink, {
+        await managerByUser2.bid(postId, bidMetadata, {
           value: bitPrice,
         })
       )
         .to.emit(manager, 'Bid')
-        .withArgs(
-          bidId,
-          postId,
-          user2.address,
-          bitPrice,
-          bidMetadata,
-          originalLink
-        )
+        .withArgs(bidId, postId, user2.address, bitPrice, bidMetadata)
       expect(await manager.bidderInfo(bidId)).to.deep.equal([
         bidId,
         postId,
         user2.address,
         bitPrice,
         bidMetadata,
-        originalLink,
         1,
       ])
       expect(await manager.bidderList(postId)).to.deep.equal([bidId])
@@ -133,7 +124,6 @@ describe('AdManager', async () => {
         user2.address,
         bitPrice,
         '',
-        '',
         0,
       ])
       expect(await manager.bidderList(postId)).to.deep.equal([bidId])
@@ -156,17 +146,15 @@ describe('AdManager', async () => {
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
 
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
-      const originalLink2 = 'https://coinmedia.io/'
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, originalLink2, {
+      await managerByUser2.bid(postId, bidMetadata2, {
         value: bitPrice2,
       })
 
       const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const originalLink3 = 'https://coinmedia.io/'
       const bitPrice3 = parseEth(200)
-      await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
+      await managerByUser3.bid(postId, bidMetadata3, {
         value: bitPrice3,
       })
 
@@ -211,18 +199,16 @@ describe('AdManager', async () => {
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
 
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
-      const originalLink2 = 'https://coinmedia.io/'
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, originalLink2, {
+      await managerByUser2.bid(postId, bidMetadata2, {
         value: bitPrice2,
       })
 
       const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const originalLink3 = 'https://coinmedia.io/'
       const bitPrice3 = parseEth(200)
       const bidId3 = await manager.nextBidId()
-      await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
+      await managerByUser3.bid(postId, bidMetadata3, {
         value: bitPrice3,
       })
       await manager.close(bidId2)
@@ -258,17 +244,15 @@ describe('AdManager', async () => {
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
 
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
-      const originalLink2 = 'https://coinmedia.io/'
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, originalLink2, {
+      await managerByUser2.bid(postId, bidMetadata2, {
         value: bitPrice2,
       })
 
       const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const originalLink3 = 'https://coinmedia.io/'
       const bitPrice3 = parseEth(200)
-      await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
+      await managerByUser3.bid(postId, bidMetadata3, {
         value: bitPrice3,
       })
       await manager.close(bidId2)
@@ -304,17 +288,15 @@ describe('AdManager', async () => {
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       const bidMetadata2 = ''
-      const originalLink2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, originalLink2, {
+      await managerByUser2.bid(postId, bidMetadata2, {
         value: bitPrice2,
       })
 
       const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const originalLink3 = ''
       const bitPrice3 = parseEth(200)
-      await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
+      await managerByUser3.bid(postId, bidMetadata3, {
         value: bitPrice3,
       })
       expect(await manager.call(bidId2))
@@ -342,28 +324,23 @@ describe('AdManager', async () => {
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       const bidMetadata2 = ''
-      const originalLink2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, originalLink2, {
+      await managerByUser2.bid(postId, bidMetadata2, {
         value: bitPrice2,
       })
 
       const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const originalLink3 = ''
       const bitPrice3 = parseEth(200)
-      await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
+      await managerByUser3.bid(postId, bidMetadata3, {
         value: bitPrice3,
       })
       await manager.call(bidId2)
 
       const proposedMetadata = 'kjfkajlfjaji3j'
-      const proposedLink = 'https://www.example.com'
-      expect(
-        await managerByUser2.propose(postId, proposedMetadata, proposedLink)
-      )
+      expect(await managerByUser2.propose(postId, proposedMetadata))
         .to.emit(manager, 'Propose')
-        .withArgs(bidId2, postId, proposedMetadata, proposedLink)
+        .withArgs(bidId2, postId, proposedMetadata)
     })
   })
 
@@ -383,25 +360,22 @@ describe('AdManager', async () => {
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       const bidMetadata2 = ''
-      const originalLink2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, originalLink2, {
+      await managerByUser2.bid(postId, bidMetadata2, {
         value: bitPrice2,
       })
 
       const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const originalLink3 = ''
       const bitPrice3 = parseEth(200)
       const bidId3 = await manager.nextBidId()
-      await managerByUser3.bid(postId, bidMetadata3, originalLink3, {
+      await managerByUser3.bid(postId, bidMetadata3, {
         value: bitPrice3,
       })
       await manager.call(bidId2)
 
       const proposedMetadata = 'kjfkajlfjaji3j'
-      const proposedLink = 'https://www.example.com'
-      await managerByUser2.propose(postId, proposedMetadata, proposedLink)
+      await managerByUser2.propose(postId, proposedMetadata)
 
       expect(await manager.accept(postId))
         .to.emit(manager, 'Accept')

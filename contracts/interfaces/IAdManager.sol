@@ -20,8 +20,7 @@ interface IAdManager {
 		uint256 postId,
 		address sender,
 		uint256 price,
-		string metadata,
-		string originalLink
+		string metadata
 	);
 
 	/// @dev Emitted when a new book is listed.
@@ -43,12 +42,7 @@ interface IAdManager {
 	event Call(uint256 bidId, uint256 postId, address sender, uint256 price);
 
 	/// @dev Emitted when a proposed content is submitted.
-	event Propose(
-		uint256 bidId,
-		uint256 postId,
-		string metadata,
-		string originalLink
-	);
+	event Propose(uint256 bidId, uint256 postId, string metadata);
 
 	/// @dev Emitted when a proposal is denied.
 	event Deny(uint256 bidId, uint256 postId);
@@ -73,11 +67,7 @@ interface IAdManager {
 	/// the price but also the preference inside the metadata.
 	/// @param postId uint256 of the post ID
 	/// @param metadata string of the hashed path to the storage
-	function bid(
-		uint256 postId,
-		string memory metadata,
-		string memory originalLink
-	) external payable;
+	function bid(uint256 postId, string memory metadata) external payable;
 
 	/// @dev Books to the post without any specific metadata.
 	/// @param postId uint256 of the post ID
@@ -98,15 +88,10 @@ interface IAdManager {
 	/// @param bidId uint256 of the bid ID
 	function call(uint256 bidId) external;
 
-	/// @dev Proposes metadata and an original link to the book.
+	/// @dev Proposes metadata to the book.
 	/// @param postId uint256 of the post ID
 	/// @param metadata string of the hashed path to the storage
-	/// @param originalLink string of the url that links to your site
-	function propose(
-		uint256 postId,
-		string memory metadata,
-		string memory originalLink
-	) external;
+	function propose(uint256 postId, string memory metadata) external;
 
 	/// @dev Denies the proposal if you dislike the content.
 	/// @param postId uint256 of the post ID
