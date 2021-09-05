@@ -226,6 +226,82 @@ describe('AdManager', async () => {
       expect(user3BalanceDiff).to.be.lt(Number(parseEth(200)))
       expect(user3BalanceDiff).to.be.gt(Number(parseEth(199.9)))
     })
+
+    it('should refund after the period', async () => {
+      const { manager, right } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+
+      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await managerByUser2.bid(postId, bidMetadata2, {
+        value: bitPrice2,
+      })
+
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const bitPrice3 = parseEth(200)
+      const bidId3 = await manager.nextBidId()
+      await managerByUser3.bid(postId, bidMetadata3, {
+        value: bitPrice3,
+      })
+      await manager.close(bidId2)
+
+      const user3BalanceBeforeClose = await user3.getBalance()
+
+      expect(await managerByUser3.refund(bidId3))
+        .to.emit(manager, 'Refund')
+        .withArgs(bidId3, postId, user3.address, bitPrice3)
+
+      const user3BalanceAfterClose = await user3.getBalance()
+      const user3BalanceDiff = Number(
+        user3BalanceAfterClose.sub(user3BalanceBeforeClose)
+      )
+      expect(user3BalanceDiff).to.be.lt(Number(parseEth(200)))
+      expect(user3BalanceDiff).to.be.gt(Number(parseEth(199.9)))
+    })
+    it('cannot be refunded after the acceptation', async () => {
+      const { manager, right } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+
+      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await managerByUser2.bid(postId, bidMetadata2, {
+        value: bitPrice2,
+      })
+
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const bitPrice3 = parseEth(200)
+      const bidId3 = await manager.nextBidId()
+      await managerByUser3.bid(postId, bidMetadata3, {
+        value: bitPrice3,
+      })
+      await manager.close(bidId2)
+
+      await expect(managerByUser2.refund(bidId2)).to.be.revertedWith('AD107')
+    })
   })
 
   describe('withdraw', async () => {

@@ -127,8 +127,9 @@ contract AdManager is IAdManager, NameAccessor {
 
 	/// @inheritdoc IAdManager
 	function refund(uint256 bidId) public override {
-		require(bidderInfo[bidId].sender == msg.sender, "AD104");
-
+		Bidder memory bidder = bidderInfo[bidId];
+		require(bidder.sender == msg.sender, "AD104");
+		require(allPosts[bidder.postId].successfulBidId != bidId, "AD107");
 		payable(msg.sender).transfer(bidderInfo[bidId].price);
 		bidderInfo[bidId].status = DraftStatus.REFUNDED;
 		emit Refund(
