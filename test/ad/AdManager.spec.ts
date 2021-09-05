@@ -116,7 +116,7 @@ describe('AdManager', async () => {
           value: bitPrice,
         })
       )
-        .to.emit(manager, 'Bid')
+        .to.emit(manager, 'Book')
         .withArgs(bidId, postId, user2.address, bitPrice)
       expect(await manager.bidderInfo(bidId)).to.deep.equal([
         bidId,
