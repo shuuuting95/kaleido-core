@@ -43,3 +43,7 @@ No advertisements exist.
 ### AD111
 
 Only Owners can deny drafts.
+
+### AD112
+
+You cannot put up past inventories.

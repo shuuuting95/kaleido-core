@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import { BigNumber } from 'ethers'
 import { deployments, network, waffle } from 'hardhat'
+import { reset } from 'mockdate'
 import { parseEth } from './../utils/number'
 import {
   getAdManagerContract,
@@ -139,19 +140,20 @@ describe('AdManager', async () => {
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
       const fromTimestamp = now - 1000
-      const toTimestamp = now + -999
+      const toTimestamp = now + 1800
       const postId = await manager.nextPostId()
 
       const bidMetadata = 'xxxdafakjkjfaj;jf'
       const bitPrice = parseEth(1.5)
       const bidId = await manager.nextBidId()
-
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 3600])
       await expect(
         managerByUser2.bid(postId, bidMetadata, {
           value: bitPrice,
         })
       ).to.be.revertedWith('AD108')
+      reset()
     })
     it('should bit to a post', async () => {
       const { manager } = await setupTests()
@@ -226,13 +228,15 @@ describe('AdManager', async () => {
       const now = Date.now()
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
-      const fromTimestamp = now - 1000
-      const toTimestamp = now + -999
+      const fromTimestamp = now - 1800
+      const toTimestamp = now + 1800
       const postId = await manager.nextPostId()
 
       const bookPrice = parseEth(1.5)
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 3600])
+
       await expect(
         managerByUser2.book(postId, {
           value: bookPrice,
@@ -628,10 +632,10 @@ describe('AdManager', async () => {
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
       const fromTimestamp = now - 3200
-      const toTimestamp = now - 1600
-
+      const toTimestamp = now + 1600
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-
+      await network.provider.send('evm_increaseTime', [3600])
+      await network.provider.send('evm_mine')
       await expect(
         managerByUser2.displayByMetadata(user1.address, postMetadata)
       ).to.be.revertedWith('AD110')

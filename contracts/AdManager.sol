@@ -70,6 +70,7 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 toTimestamp
 	) public override {
 		require(fromTimestamp < toTimestamp, "AD101");
+		require(toTimestamp > block.timestamp, "AD112");
 		PostContent memory post;
 		post.postId = nextPostId++;
 		post.owner = msg.sender;
