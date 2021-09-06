@@ -47,3 +47,7 @@ Only Owners can deny drafts.
 ### AD112
 
 You cannot put up past inventories.
+
+### AD113
+
+The post has already been closed.
