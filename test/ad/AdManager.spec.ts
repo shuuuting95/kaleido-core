@@ -105,6 +105,28 @@ describe('AdManager', async () => {
         )
       })
     })
+    it('doesnt have to be separated durations with different metadata', async () => {
+      const { manager } = await setupTests()
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const anotherMetadata = 'xxxdafakjkjfaj;jf'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      const postId = await manager.nextPostId()
+      expect(await manager.newPost(anotherMetadata, fromTimestamp, toTimestamp))
+        .to.emit(manager, 'NewPost')
+        .withArgs(
+          postId,
+          user1.address,
+          anotherMetadata,
+          fromTimestamp,
+          toTimestamp
+        )
+    })
   })
 
   describe('bid', async () => {

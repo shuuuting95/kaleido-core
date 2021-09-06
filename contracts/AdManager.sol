@@ -80,8 +80,9 @@ contract AdManager is IAdManager, NameAccessor {
 
 		for (uint256 i = 0; i < postContents[msg.sender].length; i++) {
 			if (
-				postContents[msg.sender][i].fromTimestamp <= post.toTimestamp &&
-				postContents[msg.sender][i].toTimestamp >= post.fromTimestamp
+				keccak256(abi.encodePacked(postContents[msg.sender][i].metadata)) == keccak256(abi.encodePacked(metadata)) &&
+				(postContents[msg.sender][i].fromTimestamp <= post.toTimestamp ||
+				postContents[msg.sender][i].toTimestamp >= post.fromTimestamp)
 			) {
 				revert("AD101");
 			}
