@@ -204,8 +204,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(bidderInfo[bidId].status == DraftStatus.PROPOSED, "AD102");
 		bidderInfo[bidId].status = DraftStatus.ACCEPTED;
 		allPosts[postId].successfulBidId = bidId;
-
-		/// acceptされたらrightをburnする
+		_right().burn(postId);
 		emit Accept(postId, bidId);
 	}
 

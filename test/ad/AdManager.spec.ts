@@ -508,5 +508,36 @@ describe('AdManager', async () => {
         .to.emit(manager, 'Accept')
         .withArgs(postId, bidId2)
     })
+    it('should burn the distribution right', async () => {
+      const { manager, right } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      const bidMetadata2 = ''
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await managerByUser2.bid(postId, bidMetadata2, {
+        value: bitPrice2,
+      })
+
+      await manager.call(bidId2)
+
+      const proposedMetadata = 'kjfkajlfjaji3j'
+      await managerByUser2.propose(postId, proposedMetadata)
+      expect(await right.ownerOf(postId)).to.be.eq(user2.address)
+
+      await manager.accept(postId)
+      await expect(right.ownerOf(postId)).to.be.revertedWith(
+        'ERC721: owner query for nonexistent token'
+      )
+    })
   })
 })
