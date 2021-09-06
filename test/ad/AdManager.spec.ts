@@ -67,6 +67,44 @@ describe('AdManager', async () => {
         manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       ).to.be.revertedWith('AD101')
     })
+    it('should have separated durations', async () => {
+      const { manager, right } = await setupTests()
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      const cases = [
+        {
+          from: fromTimestamp,
+          to: toTimestamp,
+        },
+        {
+          from: fromTimestamp + 1,
+          to: toTimestamp + 1,
+        },
+        {
+          from: fromTimestamp - 1,
+          to: toTimestamp - 1,
+        },
+        {
+          from: fromTimestamp - 1,
+          to: fromTimestamp,
+        },
+        {
+          from: toTimestamp,
+          to: toTimestamp + 1,
+        },
+      ]
+      cases.forEach((c) => {
+        expect(manager.newPost(postMetadata, c.from, c.to)).to.be.revertedWith(
+          'AD101'
+        )
+      })
+    })
   })
 
   describe('bid', async () => {

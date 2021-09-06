@@ -56,9 +56,6 @@ contract AdManager is IAdManager, NameAccessor {
 	// EOA => metadata[]
 	mapping(address => string[]) public mediaMetadata;
 
-	// EOA => metadata => registered
-	mapping(address => mapping(string => bool)) public registered;
-
 	uint256 public nextPostId = 1;
 
 	uint256 public nextBidId = 1;
@@ -80,11 +77,14 @@ contract AdManager is IAdManager, NameAccessor {
 		post.metadata = metadata;
 		post.fromTimestamp = fromTimestamp;
 		post.toTimestamp = toTimestamp;
-		/// 同じmetadataで期間重複がないこと
-		if (!registered[msg.sender][metadata]) {
-			///registered[msg.sender][metadata] = true;
-			mediaMetadata[msg.sender].push(metadata);
+
+		for (uint256 i = 0; i < postContents[msg.sender].length; i++) {
+			if (postContents[msg.sender][i].fromTimestamp <= post.toTimestamp && postContents[msg.sender][i].toTimestamp >= post.fromTimestamp) {
+				revert("AD101");
+			} 
 		}
+
+		mediaMetadata[msg.sender].push(metadata);
 		allPosts[post.postId] = post;
 		postContents[msg.sender].push(post);
 		emit NewPost(
@@ -231,6 +231,7 @@ contract AdManager is IAdManager, NameAccessor {
 		bidderInfo[bidder.bidId] = bidder;
 		bidders[postId].push(bidder.bidId);
 	}
+
 
 	function bidderList(uint256 postId) public view returns (uint256[] memory) {
 		return bidders[postId];
