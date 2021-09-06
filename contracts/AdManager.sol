@@ -70,7 +70,7 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 toTimestamp
 	) public override {
 		require(fromTimestamp < toTimestamp, "AD101");
-		require(toTimestamp > block.timestamp, "AD112");
+		require(toTimestamp > block.timestamp, "AD114");
 		PostContent memory post;
 		post.postId = nextPostId++;
 		post.owner = msg.sender;
@@ -201,6 +201,7 @@ contract AdManager is IAdManager, NameAccessor {
 	{
 		require(_right().ownerOf(postId) == msg.sender, "AD105");
 		uint256 bidId = bookedBidIds[postId];
+		require(bidderInfo[bidId].status != DraftStatus.PROPOSED, "AD112");
 		bidderInfo[bidId].metadata = metadata;
 		bidderInfo[bidId].status = DraftStatus.PROPOSED;
 		emit Propose(bidId, postId, metadata);
