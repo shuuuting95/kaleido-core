@@ -86,8 +86,12 @@ contract AdManager is IAdManager, NameAccessor {
 				inventories[msg.sender][post.metadata][i]
 			];
 			if (
-				another.fromTimestamp <= post.toTimestamp ||
-				another.toTimestamp >= post.fromTimestamp
+				isOverlapped(
+					fromTimestamp,
+					toTimestamp,
+					another.fromTimestamp,
+					another.toTimestamp
+				)
 			) {
 				revert("AD101");
 			}
@@ -103,6 +107,17 @@ contract AdManager is IAdManager, NameAccessor {
 			post.fromTimestamp,
 			post.toTimestamp
 		);
+	}
+
+	function isOverlapped(
+		uint256 fromTimestamp,
+		uint256 toTimestamp,
+		uint256 anotherFromTimestamp,
+		uint256 anotherToTimestamp
+	) internal pure returns (bool) {
+		return
+			anotherFromTimestamp <= toTimestamp ||
+			anotherToTimestamp >= fromTimestamp;
 	}
 
 	/// @inheritdoc IAdManager
@@ -221,15 +236,28 @@ contract AdManager is IAdManager, NameAccessor {
 		returns (string memory)
 	{
 		for (uint256 i = 0; i < inventories[account][metadata].length; i++) {
-			PostContent memory post = allPosts[inventories[account][metadata][i]];
 			if (
-				post.fromTimestamp < block.timestamp &&
-				post.toTimestamp > block.timestamp
+				withinTheDurationOfOnDisplay(
+					allPosts[inventories[account][metadata][i]]
+				)
 			) {
-				return bidderInfo[post.successfulBidId].metadata;
+				return
+					bidderInfo[
+						allPosts[inventories[account][metadata][i]].successfulBidId
+					].metadata;
 			}
 		}
 		revert("AD110");
+	}
+
+	function withinTheDurationOfOnDisplay(PostContent memory post)
+		internal
+		view
+		returns (bool)
+	{
+		return
+			post.fromTimestamp < block.timestamp &&
+			post.toTimestamp > block.timestamp;
 	}
 
 	function _book(uint256 postId) internal {
