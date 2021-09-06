@@ -40,7 +40,6 @@ describe('AdManager', async () => {
           postId,
           user1.address,
           postMetadata,
-          1,
           fromTimestamp,
           toTimestamp
         )
