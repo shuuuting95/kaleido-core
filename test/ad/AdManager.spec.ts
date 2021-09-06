@@ -165,6 +165,34 @@ describe('AdManager', async () => {
       ])
       expect(await manager.bidderList(postId)).to.deep.equal([bidId])
     })
+    it('can be done unless a successful bid does not exist', async () => {
+      const { manager } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      const bidMetadata = 'xxxdafakjkjfaj;jf'
+      const bitPrice = parseEth(1.5)
+      const bidId = await manager.nextBidId()
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+
+      await managerByUser2.bid(postId, bidMetadata, {
+        value: bitPrice,
+      })
+      await manager.call(bidId)
+      await expect(
+        managerByUser2.bid(postId, bidMetadata, {
+          value: bitPrice,
+        })
+      ).to.be.revertedWith('AD102')
+    })
   })
 
   describe('book', async () => {

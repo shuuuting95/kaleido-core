@@ -101,13 +101,11 @@ contract AdManager is IAdManager, NameAccessor {
 
 	/// @inheritdoc IAdManager
 	function bid(uint256 postId, string memory metadata) public payable override {
-		require(allPosts[postId].successfulBidId == 0, "AD102");
 		_bid(postId, metadata);
 	}
 
 	/// @inheritdoc IAdManager
 	function book(uint256 postId) public payable override {
-		require(allPosts[postId].successfulBidId == 0, "AD102");
 		_book(postId);
 	}
 
@@ -254,8 +252,8 @@ contract AdManager is IAdManager, NameAccessor {
 		string memory metadata,
 		DraftStatus status
 	) internal onlyModifiablePost(postId) {
-		/// 掲載期間過ぎてたらrevert
 		/// successfulBidあったらrevert
+		require(allPosts[postId].successfulBidId==0, "AD102");
 		Bidder memory bidder;
 		bidder.bidId = bidId;
 		bidder.postId = postId;
