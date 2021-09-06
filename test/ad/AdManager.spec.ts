@@ -114,6 +114,36 @@ describe('AdManager', async () => {
         ).to.be.revertedWith('AD101')
       })
     })
+    it('doesnt have to be separated durations with different metadata', async () => {
+      const { manager } = await setupTests()
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const anotherMetadata = 'xxxdafakjkjfaj;jf'
+      const now = Date.now()
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+      const postId = await manager.nextPostId()
+      expect(
+        await postAs(manager, {
+          postMetadata: anotherMetadata,
+          from: fromTimestamp,
+          to: toTimestamp,
+        })
+      )
+        .to.emit(manager, 'NewPost')
+        .withArgs(
+          postId,
+          user1.address,
+          anotherMetadata,
+          fromTimestamp,
+          toTimestamp
+        )
+    })
   })
 
   describe('bid', async () => {
@@ -122,12 +152,13 @@ describe('AdManager', async () => {
       const managerByUser2 = manager.connect(user2)
 
       const now = Date.now()
-      const toTimestamp = now + -999
+      const toTimestamp = now + 1800
       const postId = await manager.nextPostId()
 
       await postAs(manager, {
         to: toTimestamp,
       })
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 3600])
       await expect(
         bidAs(managerByUser2, { postId: postId })
       ).to.be.revertedWith('AD108')
@@ -137,8 +168,6 @@ describe('AdManager', async () => {
       const managerByUser2 = manager.connect(user2)
 
       const now = Date.now()
-      await network.provider.send('evm_setNextBlockTimestamp', [now])
-      await network.provider.send('evm_mine')
       const postId = await manager.nextPostId()
 
       const bidMetadata = 'xxxdafakjkjfaj;jf'
@@ -189,13 +218,19 @@ describe('AdManager', async () => {
 
       const postMetadata = 'abi09nadu2brasfjl'
       const now = Date.now()
-      const fromTimestamp = now - 1000
-      const toTimestamp = now + -999
+      const fromTimestamp = now - 1800
+      const toTimestamp = now + 1800
       const postId = await manager.nextPostId()
 
       const bookPrice = parseEth(1.5)
 
-      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 3600])
+
       await expect(
         managerByUser2.book(postId, {
           value: bookPrice,
@@ -242,7 +277,11 @@ describe('AdManager', async () => {
       const fromTimestamp = now + 3600
       const toTimestamp = now + 7200
       const postId = await manager.nextPostId()
-      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
 
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
       const bitPrice2 = parseEth(100)
@@ -344,8 +383,11 @@ describe('AdManager', async () => {
       const fromTimestamp = now + 3600
       const toTimestamp = now + 7200
       const postId = await manager.nextPostId()
-      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
@@ -394,6 +436,94 @@ describe('AdManager', async () => {
 
       expect(await right.ownerOf(postId)).to.be.eq(user2.address)
       expect(await right.tokenURI(postId)).to.be.eq(`ipfs://${postMetadata}`)
+    })
+    it('cannot be done post already closed', async () => {
+      const { manager, right } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+      const bidMetadata2 = ''
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await bidAs(managerByUser2, {
+        postId: postId,
+        metadata: bidMetadata2,
+        price: bitPrice2,
+      })
+      const bidId3 = await manager.nextBidId()
+
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const bitPrice3 = parseEth(200)
+      await bidAs(managerByUser3, {
+        postId: postId,
+        metadata: bidMetadata3,
+        price: bitPrice3,
+      })
+      await manager.call(bidId2)
+      await expect(manager.call(bidId3)).to.be.revertedWith('AD113')
+    })
+    it('cannot be done except by owners', async () => {
+      const { manager } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+      const bidMetadata2 = ''
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await bidAs(managerByUser2, {
+        postId: postId,
+        metadata: bidMetadata2,
+        price: bitPrice2,
+      })
+
+      await expect(managerByUser3.call(bidId2)).to.be.revertedWith('AD102')
+    })
+    it('cannot be done the bid not exists', async () => {
+      const { manager } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+      const bidMetadata2 = ''
+      const bitPrice2 = parseEth(100)
+      await bidAs(managerByUser2, {
+        postId: postId,
+        metadata: bidMetadata2,
+        price: bitPrice2,
+      })
+      await expect(manager.call(999)).to.be.revertedWith('AD108')
     })
   })
 
@@ -513,8 +643,10 @@ describe('AdManager', async () => {
       const bidMetadata2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, {
-        value: bitPrice2,
+      await bidAs(managerByUser2, {
+        postId: postId,
+        metadata: bidMetadata2,
+        price: bitPrice2,
       })
       await manager.call(bidId2)
       const proposedMetadata = 'kjfkajlfjaji3j'
@@ -530,17 +662,18 @@ describe('AdManager', async () => {
 
       const postMetadata = 'abi09nadu2brasfjl'
       const now = Date.now()
+      const fromTimestamp = now - 3200
+      const toTimestamp = now + 1600
       await network.provider.send('evm_setNextBlockTimestamp', [now])
       await network.provider.send('evm_mine')
-      const fromTimestamp = now - 3200
-      const toTimestamp = now - 1600
-
       await postAs(manager, {
         postMetadata: postMetadata,
         from: fromTimestamp,
         to: toTimestamp,
       })
 
+      await network.provider.send('evm_increaseTime', [3600])
+      await network.provider.send('evm_mine')
       await expect(
         managerByUser2.displayByMetadata(user1.address, postMetadata)
       ).to.be.revertedWith('AD110')

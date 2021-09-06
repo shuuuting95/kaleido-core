@@ -28,7 +28,6 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 toTimestamp;
 		uint256 successfulBidId;
 	}
-
 	struct Bidder {
 		uint256 bidId;
 		uint256 postId;
@@ -42,7 +41,7 @@ contract AdManager is IAdManager, NameAccessor {
 	mapping(uint256 => PostContent) public allPosts;
 
 	// postContents
-	mapping(address => PostContent[]) public postContents;
+	mapping(address => mapping(string => uint256[])) public inventories;
 
 	// postId => bidIds
 	mapping(uint256 => uint256[]) public bidders;
@@ -71,6 +70,7 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 toTimestamp
 	) public override {
 		require(fromTimestamp < toTimestamp, "AD101");
+		require(toTimestamp > block.timestamp, "AD114");
 		PostContent memory post;
 		post.postId = nextPostId++;
 		post.owner = msg.sender;
@@ -78,10 +78,21 @@ contract AdManager is IAdManager, NameAccessor {
 		post.fromTimestamp = fromTimestamp;
 		post.toTimestamp = toTimestamp;
 
-		for (uint256 i = 0; i < postContents[msg.sender].length; i++) {
+		for (
+			uint256 i = 0;
+			i < inventories[msg.sender][post.metadata].length;
+			i++
+		) {
+			PostContent memory another = allPosts[
+				inventories[msg.sender][post.metadata][i]
+			];
 			if (
-				postContents[msg.sender][i].fromTimestamp <= post.toTimestamp &&
-				postContents[msg.sender][i].toTimestamp >= post.fromTimestamp
+				isOverlapped(
+					fromTimestamp,
+					toTimestamp,
+					another.fromTimestamp,
+					another.toTimestamp
+				)
 			) {
 				revert("AD101");
 			}
@@ -89,7 +100,7 @@ contract AdManager is IAdManager, NameAccessor {
 
 		mediaMetadata[msg.sender].push(metadata);
 		allPosts[post.postId] = post;
-		postContents[msg.sender].push(post);
+		inventories[msg.sender][post.metadata].push(post.postId);
 		emit NewPost(
 			post.postId,
 			post.owner,
@@ -97,6 +108,17 @@ contract AdManager is IAdManager, NameAccessor {
 			post.fromTimestamp,
 			post.toTimestamp
 		);
+	}
+
+	function isOverlapped(
+		uint256 fromTimestamp,
+		uint256 toTimestamp,
+		uint256 anotherFromTimestamp,
+		uint256 anotherToTimestamp
+	) internal pure returns (bool) {
+		return
+			anotherFromTimestamp <= toTimestamp ||
+			anotherToTimestamp >= fromTimestamp;
 	}
 
 	/// @inheritdoc IAdManager
@@ -120,7 +142,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
 		require(allPosts[bidder.postId].successfulBidId == 0, "AD102");
 		require(bidder.status == DraftStatus.LISTED, "AD102");
-		_success(msg.sender, bidder.postId, bidId);
+		_success(bidder.postId, bidId);
 		bidder.status = DraftStatus.ACCEPTED;
 		payable(msg.sender).transfer((bidder.price * 9) / 10);
 		payable(_vault()).transfer((bidder.price * 1) / 10);
@@ -157,11 +179,11 @@ contract AdManager is IAdManager, NameAccessor {
 		Bidder memory bidder = bidderInfo[bidId];
 		require(bidder.bidId != 0, "AD103");
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
-		require(allPosts[bidder.postId].successfulBidId == 0, "AD102");
+		require(allPosts[bidder.postId].successfulBidId == 0, "AD113");
 		/// metadataがないこと?(BOOKEDであること)
 		bookedBidIds[bidder.postId] = bidId;
 		bidder.status = DraftStatus.CALLED;
-		_success(msg.sender, bidId, bidder.postId);
+		_success(bidId, bidder.postId);
 		payable(msg.sender).transfer(bidder.price);
 		_right().mint(
 			bidder.sender,
@@ -201,22 +223,12 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 bidId = bookedBidIds[postId];
 		require(bidderInfo[bidId].status == DraftStatus.PROPOSED, "AD102");
 		bidderInfo[bidId].status = DraftStatus.ACCEPTED;
-		_success(msg.sender, postId, bidId);
 		_right().burn(postId);
 		emit Accept(postId, bidId);
 	}
 
-	function _success(
-		address account,
-		uint256 postId,
-		uint256 bidId
-	) internal {
+	function _success(uint256 postId, uint256 bidId) internal {
 		allPosts[postId].successfulBidId = bidId;
-		for (uint256 i = 0; i < postContents[account].length; i++) {
-			if (postContents[account][i].postId == postId) {
-				postContents[account][i].successfulBidId = bidId;
-			}
-		}
 	}
 
 	function displayByMetadata(address account, string memory metadata)
@@ -225,17 +237,29 @@ contract AdManager is IAdManager, NameAccessor {
 		override
 		returns (string memory)
 	{
-		for (uint256 i = 0; i < postContents[account].length; i++) {
+		for (uint256 i = 0; i < inventories[account][metadata].length; i++) {
 			if (
-				keccak256(abi.encodePacked(postContents[account][i].metadata)) ==
-				keccak256(abi.encodePacked(metadata)) &&
-				postContents[account][i].fromTimestamp < block.timestamp &&
-				postContents[account][i].toTimestamp > block.timestamp
+				withinTheDurationOfOnDisplay(
+					allPosts[inventories[account][metadata][i]]
+				)
 			) {
-				return bidderInfo[postContents[account][i].successfulBidId].metadata;
+				return
+					bidderInfo[
+						allPosts[inventories[account][metadata][i]].successfulBidId
+					].metadata;
 			}
 		}
 		revert("AD110");
+	}
+
+	function withinTheDurationOfOnDisplay(PostContent memory post)
+		internal
+		view
+		returns (bool)
+	{
+		return
+			post.fromTimestamp < block.timestamp &&
+			post.toTimestamp > block.timestamp;
 	}
 
 	function _book(uint256 postId) internal {
