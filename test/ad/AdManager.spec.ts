@@ -205,7 +205,7 @@ describe('AdManager', async () => {
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
 
-      await managerByUser2.bid(postId, bidMetadata, {
+      await managerByUser2.book(postId, {
         value: bitPrice,
       })
       await manager.call(bidId)
@@ -452,7 +452,7 @@ describe('AdManager', async () => {
   })
 
   describe('call', async () => {
-    it('should call a bid', async () => {
+    it('should call a book', async () => {
       const { manager, right } = await setupTests()
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
@@ -466,16 +466,14 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-      const bidMetadata2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, {
+      await managerByUser2.book(postId, {
         value: bitPrice2,
       })
 
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
       const bitPrice3 = parseEth(200)
-      await managerByUser3.bid(postId, bidMetadata3, {
+      await managerByUser3.book(postId, {
         value: bitPrice3,
       })
       expect(await manager.call(bidId2))
@@ -499,17 +497,15 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-      const bidMetadata2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, {
+      await managerByUser2.book(postId, {
         value: bitPrice2,
       })
       const bidId3 = await manager.nextBidId()
 
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
       const bitPrice3 = parseEth(200)
-      await managerByUser3.bid(postId, bidMetadata3, {
+      await managerByUser3.book(postId, {
         value: bitPrice3,
       })
       await manager.call(bidId2)
@@ -575,10 +571,9 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-      const bidMetadata2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, {
+      await managerByUser2.book(postId, {
         value: bitPrice2,
       })
 
@@ -611,17 +606,14 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-      const bidMetadata2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, {
+      await managerByUser2.book(postId, {
         value: bitPrice2,
       })
 
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
       const bitPrice3 = parseEth(200)
-      const bidId3 = await manager.nextBidId()
-      await managerByUser3.bid(postId, bidMetadata3, {
+      await managerByUser3.book(postId, {
         value: bitPrice3,
       })
       await manager.call(bidId2)
@@ -646,10 +638,9 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-      const bidMetadata2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, {
+      await managerByUser2.book(postId, {
         value: bitPrice2,
       })
 
@@ -680,10 +671,9 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
-      const bidMetadata2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await managerByUser2.bid(postId, bidMetadata2, {
+      await managerByUser2.book(postId, {
         value: bitPrice2,
       })
       await manager.call(bidId2)

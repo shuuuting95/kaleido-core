@@ -180,7 +180,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(bidder.bidId != 0, "AD103");
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
 		require(allPosts[bidder.postId].successfulBidId == 0, "AD113");
-		/// metadataがないこと?(BOOKEDであること)
+		require(bidder.status == DraftStatus.BOOKED, "AD102");
 		bookedBidIds[bidder.postId] = bidId;
 		bidder.status = DraftStatus.CALLED;
 		_success(bidId, bidder.postId);
