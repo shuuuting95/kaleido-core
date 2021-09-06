@@ -260,14 +260,14 @@ contract AdManager is IAdManager, NameAccessor {
 
 	/// @dev Throws if the post has been expired.
 	modifier onlyModifiablePost(uint256 postId) {
-		require(allPosts[postId].toTimestamp > block.timestamp, "AD108");
+		require(allPosts[postId].toTimestamp >= block.timestamp, "AD108");
 		_;
 	}
 
 	/// @dev Throws if the post has been expired.
 	modifier onlyModifiablePostByBidId(uint256 bidId) {
 		Bidder memory bidder = bidderInfo[bidId];
-		require(allPosts[bidder.postId].toTimestamp > block.timestamp, "AD108");
+		require(allPosts[bidder.postId].toTimestamp >= block.timestamp, "AD108");
 		_;
 	}
 }
