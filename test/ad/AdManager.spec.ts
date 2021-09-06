@@ -48,15 +48,51 @@ describe('AdManager', async () => {
         postId,
         user1.address,
         postMetadata,
-        1,
         BigNumber.from(fromTimestamp),
         BigNumber.from(toTimestamp),
         BigNumber.from(0),
       ])
     })
+    it('should have valid periods', async () => {
+      const { manager } = await setupTests()
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 7200
+      const toTimestamp = now + 3600
+
+      await expect(
+        manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      ).to.be.revertedWith('AD101')
+    })
   })
 
   describe('bid', async () => {
+    it('should be disabled after expiration', async () => {
+      const { manager } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now - 1000
+      const toTimestamp = now + -999
+      const postId = await manager.nextPostId()
+
+      const bidMetadata = 'xxxdafakjkjfaj;jf'
+      const bitPrice = parseEth(1.5)
+      const bidId = await manager.nextBidId()
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      await expect(
+        managerByUser2.bid(postId, bidMetadata, {
+          value: bitPrice,
+        })
+      ).to.be.revertedWith('AD108')
+    })
     it('should bit to a post', async () => {
       const { manager } = await setupTests()
       const managerByUser2 = manager.connect(user2)
@@ -94,6 +130,27 @@ describe('AdManager', async () => {
   })
 
   describe('book', async () => {
+    it('should be disabled after expiration', async () => {
+      const { manager } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now - 1000
+      const toTimestamp = now + -999
+      const postId = await manager.nextPostId()
+
+      const bookPrice = parseEth(1.5)
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      await expect(
+        managerByUser2.book(postId, {
+          value: bookPrice,
+        })
+      ).to.be.revertedWith('AD108')
+    })
     it('should book to a post', async () => {
       const { manager } = await setupTests()
       const managerByUser2 = manager.connect(user2)

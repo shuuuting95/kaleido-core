@@ -103,20 +103,18 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function book(uint256 postId) public payable override {
+	function book(uint256 postId) public  payable override {
 		require(allPosts[postId].successfulBidId == 0, "AD102");
 		_book(postId);
 	}
 
 	/// @inheritdoc IAdManager
-	function close(uint256 bidId) public override {
+	function close(uint256 bidId) public onlyModifiablePostByBidId(bidId) override {
 		Bidder memory bidder = bidderInfo[bidId];
 		require(bidder.bidId != 0, "AD103");
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
-
-		/// 掲載期間過ぎてたらcloseできない(toだけ)
-		/// successful bid がすでにあったらrevert
-		/// statusがLISTEDであること
+		require(allPosts[bidder.postId].successfulBidId == 0, "AD102");
+		require(bidder.status == DraftStatus.LISTED, "AD102");
 		allPosts[bidder.postId].successfulBidId = bidId;
 		bidder.status = DraftStatus.ACCEPTED;
 		payable(msg.sender).transfer((bidder.price * 9) / 10);
@@ -220,7 +218,7 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 bidId,
 		string memory metadata,
 		DraftStatus status
-	) internal {
+	) internal onlyModifiablePost(postId) {
 		/// 掲載期間過ぎてたらrevert
 		/// successfulBidあったらrevert
 		Bidder memory bidder;
@@ -249,4 +247,18 @@ contract AdManager is IAdManager, NameAccessor {
 	function _vault() internal view returns (Vault) {
 		return Vault(payable(vaultAddress()));
 	}
+
+	/// @dev Throws if the post has been expired.
+	modifier onlyModifiablePost(uint256 postId) {
+		require(allPosts[postId].toTimestamp > block.timestamp, "AD108");
+		_;
+	}
+
+	/// @dev Throws if the post has been expired.
+	modifier onlyModifiablePostByBidId(uint256 bidId) {
+		Bidder memory bidder = bidderInfo[bidId];
+		require(allPosts[bidder.postId].toTimestamp > block.timestamp, "AD108");
+		_;
+	}
+
 }
