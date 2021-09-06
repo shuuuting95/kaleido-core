@@ -42,7 +42,7 @@ contract AdManager is IAdManager, NameAccessor {
 	mapping(uint256 => PostContent) public allPosts;
 
 	// postContents
-	mapping(address => PostContent[]) public postContents;
+	mapping(address => uint256[]) public postIds;
 
 	// postId => bidIds
 	mapping(uint256 => uint256[]) public bidders;
@@ -78,11 +78,13 @@ contract AdManager is IAdManager, NameAccessor {
 		post.fromTimestamp = fromTimestamp;
 		post.toTimestamp = toTimestamp;
 
-		for (uint256 i = 0; i < postContents[msg.sender].length; i++) {
+		for (uint256 i = 0; i < postIds[msg.sender].length; i++) {
+			PostContent memory another = allPosts[postIds[msg.sender][i]];
 			if (
-				keccak256(abi.encodePacked(postContents[msg.sender][i].metadata)) == keccak256(abi.encodePacked(metadata)) &&
-				(postContents[msg.sender][i].fromTimestamp <= post.toTimestamp ||
-				postContents[msg.sender][i].toTimestamp >= post.fromTimestamp)
+				keccak256(abi.encodePacked(another.metadata)) ==
+				keccak256(abi.encodePacked(metadata)) &&
+				(another.fromTimestamp <= post.toTimestamp ||
+					another.toTimestamp >= post.fromTimestamp)
 			) {
 				revert("AD101");
 			}
@@ -90,7 +92,7 @@ contract AdManager is IAdManager, NameAccessor {
 
 		mediaMetadata[msg.sender].push(metadata);
 		allPosts[post.postId] = post;
-		postContents[msg.sender].push(post);
+		postIds[msg.sender].push(post.postId);
 		emit NewPost(
 			post.postId,
 			post.owner,
@@ -212,11 +214,6 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 bidId
 	) internal {
 		allPosts[postId].successfulBidId = bidId;
-		for (uint256 i = 0; i < postContents[account].length; i++) {
-			if (postContents[account][i].postId == postId) {
-				postContents[account][i].successfulBidId = bidId;
-			}
-		}
 	}
 
 	function displayByMetadata(address account, string memory metadata)
@@ -225,14 +222,15 @@ contract AdManager is IAdManager, NameAccessor {
 		override
 		returns (string memory)
 	{
-		for (uint256 i = 0; i < postContents[account].length; i++) {
+		for (uint256 i = 0; i < postIds[account].length; i++) {
+			PostContent memory post = allPosts[postIds[account][i]];
 			if (
-				keccak256(abi.encodePacked(postContents[account][i].metadata)) ==
+				keccak256(abi.encodePacked(post.metadata)) ==
 				keccak256(abi.encodePacked(metadata)) &&
-				postContents[account][i].fromTimestamp < block.timestamp &&
-				postContents[account][i].toTimestamp > block.timestamp
+				post.fromTimestamp < block.timestamp &&
+				post.toTimestamp > block.timestamp
 			) {
-				return bidderInfo[postContents[account][i].successfulBidId].metadata;
+				return bidderInfo[post.successfulBidId].metadata;
 			}
 		}
 		revert("AD110");
