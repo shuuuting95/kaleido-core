@@ -35,3 +35,7 @@ The post has been expired.
 ## AD109
 
 Insufficient funds.
+
+## AD110
+
+No valid Advertisements exist.

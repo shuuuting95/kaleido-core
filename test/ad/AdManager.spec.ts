@@ -540,4 +540,51 @@ describe('AdManager', async () => {
       )
     })
   })
+
+  describe('displayMetadata', async () => {
+    it('should display a valid metadata', async () => {
+      const { manager, vault } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now - 3200
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      const bidMetadata2 = ''
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await managerByUser2.bid(postId, bidMetadata2, {
+        value: bitPrice2,
+      })
+      await manager.call(bidId2)
+      const proposedMetadata = 'kjfkajlfjaji3j'
+      await managerByUser2.propose(postId, proposedMetadata)
+      await manager.accept(postId)
+      expect(
+        await managerByUser2.displayByMetadata(user1.address, postMetadata)
+      ).to.be.eq(proposedMetadata)
+    })
+    it('should be reverted if there is no valid Post', async () => {
+      const { manager, vault } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now - 3200
+      const toTimestamp = now - 1600
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+
+      await expect(
+        managerByUser2.displayByMetadata(user1.address, postMetadata)
+      ).to.be.revertedWith('AD110')
+    })
+  })
 })

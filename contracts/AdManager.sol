@@ -122,7 +122,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
 		require(allPosts[bidder.postId].successfulBidId == 0, "AD102");
 		require(bidder.status == DraftStatus.LISTED, "AD102");
-		allPosts[bidder.postId].successfulBidId = bidId;
+		_success(msg.sender, bidder.postId, bidId);
 		bidder.status = DraftStatus.ACCEPTED;
 		payable(msg.sender).transfer((bidder.price * 9) / 10);
 		payable(_vault()).transfer((bidder.price * 1) / 10);
@@ -163,7 +163,7 @@ contract AdManager is IAdManager, NameAccessor {
 		/// metadataがないこと?(BOOKEDであること)
 		bookedBidIds[bidder.postId] = bidId;
 		bidder.status = DraftStatus.CALLED;
-		allPosts[bidder.postId].successfulBidId = bidId;
+		_success(msg.sender, bidId, bidder.postId);
 		payable(msg.sender).transfer(bidder.price);
 		_right().mint(
 			bidder.sender,
@@ -198,17 +198,43 @@ contract AdManager is IAdManager, NameAccessor {
 	/// postcontentのmodifierを作って、更新するときは掲載期間チェックするようにする
 
 	/// @inheritdoc IAdManager
-	function accept(uint256 postId) onlyModifiablePost(postId) public override {
+	function accept(uint256 postId) public override onlyModifiablePost(postId) {
 		require(allPosts[postId].owner == msg.sender, "AD105");
 		uint256 bidId = bookedBidIds[postId];
 		require(bidderInfo[bidId].status == DraftStatus.PROPOSED, "AD102");
 		bidderInfo[bidId].status = DraftStatus.ACCEPTED;
-		allPosts[postId].successfulBidId = bidId;
+		_success(msg.sender, postId, bidId);
 		_right().burn(postId);
 		emit Accept(postId, bidId);
 	}
 
-	///function displayByMetadata(address account, string metadata)public view override returns (string memory) {return "";}
+	function _success(address account, uint256 postId, uint256 bidId ) internal{
+				allPosts[postId].successfulBidId = bidId;
+			for (uint256 i = 0; i  < postContents[account].length; i++) {
+			if (postContents[account][i].postId == postId) {
+				postContents[account][i].successfulBidId = bidId;
+			}
+		}
+	}
+
+	function displayByMetadata(address account, string memory metadata)
+		public
+		view
+		override
+		returns (string memory)
+	{
+		for (uint256 i = 0; i < postContents[account].length; i++) {
+			if (
+				keccak256(abi.encodePacked(postContents[account][i].metadata)) ==
+				keccak256(abi.encodePacked(metadata)) &&
+				postContents[account][i].fromTimestamp < block.timestamp &&
+				postContents[account][i].toTimestamp > block.timestamp
+			) {
+				return bidderInfo[postContents[account][i].successfulBidId].metadata;
+			}
+		}
+		revert("AD110");
+	}
 
 	function _book(uint256 postId) internal {
 		uint256 bidId = nextBidId++;

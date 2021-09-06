@@ -99,4 +99,12 @@ interface IAdManager {
 	/// @dev Accepts the proposal if you like the content.
 	/// @param postId uint256 of the post ID
 	function accept(uint256 postId) external;
+
+	/// @dev Returns metadata hash that the account is supposed to deliver.
+	/// @param account address of the post owner
+	/// @param metadata string of the media metadata
+	function displayByMetadata(address account, string memory metadata)
+		external
+		view
+		returns (string memory);
 }
