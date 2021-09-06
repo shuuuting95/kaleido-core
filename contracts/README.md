@@ -40,10 +40,6 @@ Insufficient funds.
 
 No valid Advertisements exist.
 
-## AD111
-
-You are not authorized to propose Advertisement.
-
-### AD112
+### AD111
 
 Only Owners can modify Posts.

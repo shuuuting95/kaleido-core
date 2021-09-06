@@ -172,20 +172,22 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function propose(uint256 postId, string memory metadata) public onlyModifiablePost(postId) override {
+	function propose(uint256 postId, string memory metadata)
+		public
+		override
+		onlyModifiablePost(postId)
+	{
+		require(_right().ownerOf(postId) == msg.sender, "AD105");
 		uint256 bidId = bookedBidIds[postId];
-		require(_right().ownerOf(postId) == msg.sender, "AD111");
-		require(bidderInfo[bidId].sender == msg.sender, "AD105");
 		bidderInfo[bidId].metadata = metadata;
 		bidderInfo[bidId].status = DraftStatus.PROPOSED;
-		/// rightをキャッチボールする
 		emit Propose(bidId, postId, metadata);
 	}
 
 	/// @inheritdoc IAdManager
 	function deny(uint256 postId) public override {
 		uint256 bidId = bookedBidIds[postId];
-		require(allPosts[postId].owner == msg.sender, "AD112");
+		require(allPosts[postId].owner == msg.sender, "AD111");
 		require(bidderInfo[bidId].status == DraftStatus.PROPOSED, "AD106");
 
 		bidderInfo[bidId].status = DraftStatus.DENIED;
