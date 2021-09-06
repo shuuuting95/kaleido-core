@@ -206,9 +206,13 @@ contract AdManager is IAdManager, NameAccessor {
 		emit Accept(postId, bidId);
 	}
 
-	function _success(address account, uint256 postId, uint256 bidId ) internal{
-				allPosts[postId].successfulBidId = bidId;
-			for (uint256 i = 0; i  < postContents[account].length; i++) {
+	function _success(
+		address account,
+		uint256 postId,
+		uint256 bidId
+	) internal {
+		allPosts[postId].successfulBidId = bidId;
+		for (uint256 i = 0; i < postContents[account].length; i++) {
 			if (postContents[account][i].postId == postId) {
 				postContents[account][i].successfulBidId = bidId;
 			}
@@ -252,8 +256,7 @@ contract AdManager is IAdManager, NameAccessor {
 		string memory metadata,
 		DraftStatus status
 	) internal onlyModifiablePost(postId) {
-		/// successfulBidあったらrevert
-		require(allPosts[postId].successfulBidId==0, "AD102");
+		require(allPosts[postId].successfulBidId == 0, "AD102");
 		Bidder memory bidder;
 		bidder.bidId = bidId;
 		bidder.postId = postId;
