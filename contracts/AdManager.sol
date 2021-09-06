@@ -42,7 +42,7 @@ contract AdManager is IAdManager, NameAccessor {
 	mapping(uint256 => PostContent) public allPosts;
 
 	// postContents
-	mapping(address => PostContent[])public postContents;
+	mapping(address => PostContent[]) public postContents;
 
 	// postId => bidIds
 	mapping(uint256 => uint256[]) public bidders;
@@ -79,9 +79,12 @@ contract AdManager is IAdManager, NameAccessor {
 		post.toTimestamp = toTimestamp;
 
 		for (uint256 i = 0; i < postContents[msg.sender].length; i++) {
-			if (postContents[msg.sender][i].fromTimestamp <= post.toTimestamp && postContents[msg.sender][i].toTimestamp >= post.fromTimestamp) {
+			if (
+				postContents[msg.sender][i].fromTimestamp <= post.toTimestamp &&
+				postContents[msg.sender][i].toTimestamp >= post.fromTimestamp
+			) {
 				revert("AD101");
-			} 
+			}
 		}
 
 		mediaMetadata[msg.sender].push(metadata);
@@ -103,13 +106,17 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function book(uint256 postId) public  payable override {
+	function book(uint256 postId) public payable override {
 		require(allPosts[postId].successfulBidId == 0, "AD102");
 		_book(postId);
 	}
 
 	/// @inheritdoc IAdManager
-	function close(uint256 bidId) public onlyModifiablePostByBidId(bidId) override {
+	function close(uint256 bidId)
+		public
+		override
+		onlyModifiablePostByBidId(bidId)
+	{
 		Bidder memory bidder = bidderInfo[bidId];
 		require(bidder.bidId != 0, "AD103");
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
@@ -144,11 +151,15 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function call(uint256 bidId) public override {
+	function call(uint256 bidId)
+		public
+		override
+		onlyModifiablePostByBidId(bidId)
+	{
 		Bidder memory bidder = bidderInfo[bidId];
 		require(bidder.bidId != 0, "AD103");
 		require(allPosts[bidder.postId].owner == msg.sender, "AD102");
-		/// successfulBidId がすでにあったらrevert
+		require(allPosts[bidder.postId].successfulBidId == 0, "AD102");
 		/// metadataがないこと?(BOOKEDであること)
 		bookedBidIds[bidder.postId] = bidId;
 		bidder.status = DraftStatus.CALLED;
@@ -187,10 +198,10 @@ contract AdManager is IAdManager, NameAccessor {
 	/// postcontentのmodifierを作って、更新するときは掲載期間チェックするようにする
 
 	/// @inheritdoc IAdManager
-	function accept(uint256 postId) public override {
+	function accept(uint256 postId) onlyModifiablePost(postId) public override {
 		require(allPosts[postId].owner == msg.sender, "AD105");
-		/// statusがproposedである
 		uint256 bidId = bookedBidIds[postId];
+		require(bidderInfo[bidId].status == DraftStatus.PROPOSED, "AD102");
 		bidderInfo[bidId].status = DraftStatus.ACCEPTED;
 		allPosts[postId].successfulBidId = bidId;
 
@@ -199,7 +210,6 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	///function displayByMetadata(address account, string metadata)public view override returns (string memory) {return "";}
-
 
 	function _book(uint256 postId) internal {
 		uint256 bidId = nextBidId++;
@@ -232,12 +242,11 @@ contract AdManager is IAdManager, NameAccessor {
 		bidders[postId].push(bidder.bidId);
 	}
 
-
 	function bidderList(uint256 postId) public view returns (uint256[] memory) {
 		return bidders[postId];
 	}
 
-	function metadataList() public view returns(string[] memory) {
+	function metadataList() public view returns (string[] memory) {
 		return mediaMetadata[msg.sender];
 	}
 
@@ -261,5 +270,4 @@ contract AdManager is IAdManager, NameAccessor {
 		require(allPosts[bidder.postId].toTimestamp > block.timestamp, "AD108");
 		_;
 	}
-
 }

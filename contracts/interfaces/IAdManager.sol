@@ -99,5 +99,4 @@ interface IAdManager {
 	/// @dev Accepts the proposal if you like the content.
 	/// @param postId uint256 of the post ID
 	function accept(uint256 postId) external;
-
 }
