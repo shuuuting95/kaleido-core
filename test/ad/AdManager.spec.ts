@@ -256,24 +256,6 @@ describe('AdManager', async () => {
   })
 
   describe('close', async () => {
-    it('should not be done to a book', async () => {
-      const { manager, vault } = await setupTests()
-      const managerByUser2 = manager.connect(user2)
-
-      const postMetadata = 'abi09nadu2brasfjl'
-      const now = Date.now()
-      const fromTimestamp = now + 3600
-      const toTimestamp = now + 7200
-      const postId = await manager.nextPostId()
-      await postAs(manager, {
-        postMetadata: postMetadata,
-        from: fromTimestamp,
-        to: toTimestamp,
-      })
-      const bidId2 = await manager.nextBidId()
-      await bookAs(managerByUser2, postId)
-      await expect(manager.close(bidId2)).to.be.revertedWith('AD102')
-    })
     it('should close after the period', async () => {
       const { manager, vault } = await setupTests()
       const managerByUser2 = manager.connect(user2)
@@ -527,6 +509,24 @@ describe('AdManager', async () => {
         price: bitPrice2,
       })
       await expect(manager.call(999)).to.be.revertedWith('AD108')
+    })
+    it('cannot not be done to a bid', async () => {
+      const { manager, vault } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+      const bidId2 = await manager.nextBidId()
+      await bidAs(managerByUser2, { postId: postId })
+      await expect(manager.call(bidId2)).to.be.revertedWith('AD102')
     })
   })
 
