@@ -167,7 +167,6 @@ describe('AdManager', async () => {
       const { manager } = await setupTests()
       const managerByUser2 = manager.connect(user2)
 
-      const now = Date.now()
       const postId = await manager.nextPostId()
 
       const bidMetadata = 'xxxdafakjkjfaj;jf'
@@ -203,7 +202,7 @@ describe('AdManager', async () => {
       const bidId = await manager.nextBidId()
 
       await postAs(manager)
-      await bidAs(managerByUser2, { postId: postId })
+      await bookAs(managerByUser2, postId)
       await manager.call(bidId)
       await expect(
         bidAs(managerByUser2, { postId: postId })
@@ -222,8 +221,6 @@ describe('AdManager', async () => {
       const toTimestamp = now + 1800
       const postId = await manager.nextPostId()
 
-      const bookPrice = parseEth(1.5)
-
       await postAs(manager, {
         postMetadata: postMetadata,
         from: fromTimestamp,
@@ -231,11 +228,7 @@ describe('AdManager', async () => {
       })
       await network.provider.send('evm_setNextBlockTimestamp', [now + 3600])
 
-      await expect(
-        managerByUser2.book(postId, {
-          value: bookPrice,
-        })
-      ).to.be.revertedWith('AD108')
+      await expect(bookAs(managerByUser2, postId)).to.be.revertedWith('AD108')
     })
     it('should book to a post', async () => {
       const { manager } = await setupTests()
@@ -247,11 +240,7 @@ describe('AdManager', async () => {
       const bidId = await manager.nextBidId()
 
       await postAs(manager)
-      expect(
-        await managerByUser2.book(postId, {
-          value: bitPrice,
-        })
-      )
+      expect(await bookAs(managerByUser2, postId, bitPrice))
         .to.emit(manager, 'Book')
         .withArgs(bidId, postId, user2.address, bitPrice)
       expect(await manager.bidderInfo(bidId)).to.deep.equal([
@@ -416,7 +405,7 @@ describe('AdManager', async () => {
   })
 
   describe('call', async () => {
-    it('should call a bid', async () => {
+    it('should call a book', async () => {
       const { manager, right } = await setupTests()
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
@@ -427,13 +416,13 @@ describe('AdManager', async () => {
       await postAs(manager)
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await bidAs(managerByUser2, { postId: postId })
+      await bookAs(managerByUser2, postId, bitPrice2)
 
-      await bidAs(managerByUser3, { postId: postId })
+      const bitPrice3 = parseEth(200)
+      await bookAs(managerByUser3, postId, bitPrice3)
       expect(await manager.call(bidId2))
         .to.emit(manager, 'Call')
         .withArgs(bidId2, postId, user2.address, bitPrice2)
-
       expect(await right.ownerOf(postId)).to.be.eq(user2.address)
       expect(await right.tokenURI(postId)).to.be.eq(`ipfs://${postMetadata}`)
     })
@@ -454,9 +443,10 @@ describe('AdManager', async () => {
         from: fromTimestamp,
         to: toTimestamp,
       })
-      const bidMetadata2 = ''
       const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
+      await bookAs(managerByUser2, postId, bitPrice2)
+      const bidMetadata2 = ''
       await bidAs(managerByUser2, {
         postId: postId,
         metadata: bidMetadata2,
@@ -464,13 +454,8 @@ describe('AdManager', async () => {
       })
       const bidId3 = await manager.nextBidId()
 
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
       const bitPrice3 = parseEth(200)
-      await bidAs(managerByUser3, {
-        postId: postId,
-        metadata: bidMetadata3,
-        price: bitPrice3,
-      })
+      await bookAs(managerByUser3, postId, bitPrice3)
       await manager.call(bidId2)
       await expect(manager.call(bidId3)).to.be.revertedWith('AD113')
     })
@@ -525,6 +510,24 @@ describe('AdManager', async () => {
       })
       await expect(manager.call(999)).to.be.revertedWith('AD108')
     })
+    it('cannot not be done to a bid', async () => {
+      const { manager, vault } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+      const bidId2 = await manager.nextBidId()
+      await bidAs(managerByUser2, { postId: postId })
+      await expect(manager.call(bidId2)).to.be.revertedWith('AD102')
+    })
   })
 
   describe('propose', async () => {
@@ -536,8 +539,7 @@ describe('AdManager', async () => {
 
       await postAs(manager)
       const bidId2 = await manager.nextBidId()
-      await bidAs(managerByUser2, { postId: postId })
-
+      await bookAs(managerByUser2, postId)
       const bidMetadata3 = 'saedafakjkjfaj;jf'
       const bitPrice3 = parseEth(200)
       await bidAs(managerByUser3, {
@@ -560,8 +562,8 @@ describe('AdManager', async () => {
 
       await postAs(manager)
       const bidId2 = await manager.nextBidId()
-      await bidAs(managerByUser2, { postId: postId })
 
+      await bookAs(managerByUser2, postId)
       await manager.call(bidId2)
 
       const proposedMetadata = 'kjfkajlfjaji3j'
@@ -579,7 +581,7 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
       await postAs(manager)
       const bidId2 = await manager.nextBidId()
-      await bidAs(managerByUser2, { postId: postId })
+      await bookAs(managerByUser2, postId)
       await manager.call(bidId2)
 
       const proposedMetadata = 'kjfkajlfjaji3j'
@@ -604,14 +606,8 @@ describe('AdManager', async () => {
         to: toTimestamp,
         postMetadata: postMetadata,
       })
-      const bidMetadata2 = ''
-      const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await bidAs(managerByUser2, {
-        postId: postId,
-        price: bitPrice2,
-        metadata: bidMetadata2,
-      })
+      await bookAs(managerByUser2, postId)
 
       await manager.call(bidId2)
 
@@ -632,22 +628,15 @@ describe('AdManager', async () => {
       const managerByUser2 = manager.connect(user2)
 
       const postMetadata = 'abi09nadu2brasfjl'
-      const now = Date.now()
-      const fromTimestamp = now - 3200
       const postId = await manager.nextPostId()
-
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
       await postAs(manager, {
         postMetadata: postMetadata,
-        from: fromTimestamp,
       })
-      const bidMetadata2 = ''
-      const bitPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await bidAs(managerByUser2, {
-        postId: postId,
-        metadata: bidMetadata2,
-        price: bitPrice2,
-      })
+      await bookAs(managerByUser2, postId)
       await manager.call(bidId2)
       const proposedMetadata = 'kjfkajlfjaji3j'
       await managerByUser2.propose(postId, proposedMetadata)
@@ -694,6 +683,10 @@ function postAs(manager: any, props?: PostProps) {
     props?.from ? props.from : now - 1600,
     props?.to ? props.to : now + 3600
   )
+}
+
+function bookAs(manager: any, postId: number, price?: BigNumber) {
+  return manager.book(postId, { value: price ? price : parseEth(1) })
 }
 
 interface BidProps {
