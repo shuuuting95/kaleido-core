@@ -10,7 +10,7 @@ import {
 } from './../utils/setup'
 
 describe('AdManager', async () => {
-  const [user1, user2, user3, user4, user5] = waffle.provider.getWallets()
+  const [user1, user2, user3] = waffle.provider.getWallets()
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {
     await deployments.fixture()
@@ -68,7 +68,7 @@ describe('AdManager', async () => {
       ).to.be.revertedWith('AD101')
     })
     it('should have separated durations', async () => {
-      const { manager, right } = await setupTests()
+      const { manager } = await setupTests()
 
       const postMetadata = 'abi09nadu2brasfjl'
       const now = Date.now()
@@ -122,7 +122,6 @@ describe('AdManager', async () => {
 
       const bidMetadata = 'xxxdafakjkjfaj;jf'
       const bitPrice = parseEth(1.5)
-      const bidId = await manager.nextBidId()
 
       await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
       await expect(
@@ -254,7 +253,7 @@ describe('AdManager', async () => {
 
   describe('close', async () => {
     it('should close after the period', async () => {
-      const { manager, right, vault } = await setupTests()
+      const { manager, vault } = await setupTests()
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
 
@@ -306,7 +305,7 @@ describe('AdManager', async () => {
 
   describe('refund', async () => {
     it('should refund after the period', async () => {
-      const { manager, right } = await setupTests()
+      const { manager } = await setupTests()
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
 
@@ -498,9 +497,8 @@ describe('AdManager', async () => {
         .withArgs(bidId2, postId, proposedMetadata)
     })
     it('cannot be done once proposed another one', async () => {
-      const { manager, vault, pool } = await setupTests()
+      const { manager } = await setupTests()
       const managerByUser2 = manager.connect(user2)
-      const managerByUser3 = manager.connect(user3)
 
       const postMetadata = 'abi09nadu2brasfjl'
       const now = Date.now()
@@ -518,11 +516,6 @@ describe('AdManager', async () => {
         value: bitPrice2,
       })
 
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const bitPrice3 = parseEth(200)
-      await managerByUser3.bid(postId, bidMetadata3, {
-        value: bitPrice3,
-      })
       await manager.call(bidId2)
 
       const proposedMetadata = 'kjfkajlfjaji3j'
@@ -535,7 +528,7 @@ describe('AdManager', async () => {
 
   describe('accept', async () => {
     it('should accept the proposal', async () => {
-      const { manager, vault } = await setupTests()
+      const { manager } = await setupTests()
       const managerByUser2 = manager.connect(user2)
       const managerByUser3 = manager.connect(user3)
 
@@ -553,13 +546,6 @@ describe('AdManager', async () => {
       const bidId2 = await manager.nextBidId()
       await managerByUser2.bid(postId, bidMetadata2, {
         value: bitPrice2,
-      })
-
-      const bidMetadata3 = 'saedafakjkjfaj;jf'
-      const bitPrice3 = parseEth(200)
-      const bidId3 = await manager.nextBidId()
-      await managerByUser3.bid(postId, bidMetadata3, {
-        value: bitPrice3,
       })
       await manager.call(bidId2)
 
@@ -605,7 +591,7 @@ describe('AdManager', async () => {
 
   describe('displayMetadata', async () => {
     it('should display a valid metadata', async () => {
-      const { manager, vault } = await setupTests()
+      const { manager } = await setupTests()
       const managerByUser2 = manager.connect(user2)
 
       const postMetadata = 'abi09nadu2brasfjl'
@@ -632,7 +618,7 @@ describe('AdManager', async () => {
       ).to.be.eq(proposedMetadata)
     })
     it('should be reverted if there is no valid Post', async () => {
-      const { manager, vault } = await setupTests()
+      const { manager } = await setupTests()
       const managerByUser2 = manager.connect(user2)
 
       const postMetadata = 'abi09nadu2brasfjl'
