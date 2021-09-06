@@ -172,11 +172,10 @@ contract AdManager is IAdManager, NameAccessor {
 	}
 
 	/// @inheritdoc IAdManager
-	function propose(uint256 postId, string memory metadata) public override {
+	function propose(uint256 postId, string memory metadata) public onlyModifiablePost(postId) override {
 		uint256 bidId = bookedBidIds[postId];
-		/// right ownerであること
+		require(_right().ownerOf(postId) == msg.sender, "AD111");
 		require(bidderInfo[bidId].sender == msg.sender, "AD105");
-		/// 掲載期間過ぎてないこと
 		bidderInfo[bidId].metadata = metadata;
 		bidderInfo[bidId].status = DraftStatus.PROPOSED;
 		/// rightをキャッチボールする
@@ -186,14 +185,12 @@ contract AdManager is IAdManager, NameAccessor {
 	/// @inheritdoc IAdManager
 	function deny(uint256 postId) public override {
 		uint256 bidId = bookedBidIds[postId];
-		/// msg.senderがpostownerであること
+		require(allPosts[postId].owner == msg.sender, "AD112");
 		require(bidderInfo[bidId].status == DraftStatus.PROPOSED, "AD106");
 
 		bidderInfo[bidId].status = DraftStatus.DENIED;
 		emit Deny(bidId, postId);
 	}
-
-	/// postcontentのmodifierを作って、更新するときは掲載期間チェックするようにする
 
 	/// @inheritdoc IAdManager
 	function accept(uint256 postId) public override onlyModifiablePost(postId) {
