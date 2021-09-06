@@ -6,19 +6,19 @@ Invalid duration.
 
 ## AD102
 
-The bid does not have permissions for this operation.
+You don't have permissions for this operation.
 
 ## AD103
 
-The bid does not exist.
+Bid with id you specified does not exist.
 
 ## AD104
 
-The user does not have permissions to modify the bid.
+You don't have permissions to modify the bid.
 
 ## AD105
 
-The user does not have permissions to prose.
+You don't have permissions to propose.
 
 ## AD106
 
@@ -26,7 +26,7 @@ The draft has not been proposed.
 
 ## AD107
 
-The bid has not been called or accepted.
+Successful bids cannot be refunded.
 
 ## AD108
 
@@ -38,8 +38,16 @@ Insufficient funds.
 
 ## AD110
 
-No valid Advertisements exist.
+No advertisements exist.
 
 ### AD111
 
-Only Owners can modify Posts.
+Only Owners can deny drafts.
+
+### AD112
+
+You cannot put up past inventories.
+
+### AD113
+
+The post has already been closed.
