@@ -43,3 +43,7 @@ No valid Advertisements exist.
 ### AD111
 
 Only Owners can modify Posts.
+
+### AD112
+
+You cannot propose another one unless older has been denied.

@@ -497,6 +497,40 @@ describe('AdManager', async () => {
         .to.emit(manager, 'Propose')
         .withArgs(bidId2, postId, proposedMetadata)
     })
+    it('cannot be done once proposed another one', async () => {
+      const { manager, vault, pool } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      await network.provider.send('evm_setNextBlockTimestamp', [now])
+      await network.provider.send('evm_mine')
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+
+      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      const bidMetadata2 = ''
+      const bitPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await managerByUser2.bid(postId, bidMetadata2, {
+        value: bitPrice2,
+      })
+
+      const bidMetadata3 = 'saedafakjkjfaj;jf'
+      const bitPrice3 = parseEth(200)
+      await managerByUser3.bid(postId, bidMetadata3, {
+        value: bitPrice3,
+      })
+      await manager.call(bidId2)
+
+      const proposedMetadata = 'kjfkajlfjaji3j'
+      await managerByUser2.propose(postId, proposedMetadata)
+      await expect(
+        managerByUser2.propose(postId, proposedMetadata)
+      ).to.be.revertedWith('AD112')
+    })
   })
 
   describe('accept', async () => {
