@@ -76,11 +76,13 @@ describe('AdManager', async () => {
     it('should have separated durations', async () => {
       const { manager } = await setupTests()
 
-      const postMetadata = 'abi09nadu2brasfjl'
       const now = Date.now()
       const fromTimestamp = now + 3600
       const toTimestamp = now + 7200
-      await manager.newPost(postMetadata, fromTimestamp, toTimestamp)
+      await postAs(manager, {
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
       const cases = [
         {
           from: fromTimestamp,
