@@ -9,7 +9,6 @@ interface IAdManager {
 		uint256 postId,
 		address owner,
 		string metadata,
-		uint8 metadataIndex,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	);
@@ -102,15 +101,9 @@ interface IAdManager {
 	function accept(uint256 postId) external;
 
 	/// @dev Returns metadata hash that the account is supposed to deliver.
-	/// If the account has several posts, the index 1 would be applied.
 	/// @param account address of the post owner
-	function display(address account) external view returns (string memory);
-
-	/// @dev Returns metadata hash that the account is supposed to deliver.
-	/// You can designate the index number.
-	/// @param account address of the post owner
-	/// @param metadataIndex uint8 of the metadata index
-	function displayByIndex(address account, uint8 metadataIndex)
+	/// @param metadata string of the media metadata
+	function displayByMetadata(address account, string memory metadata)
 		external
 		view
 		returns (string memory);

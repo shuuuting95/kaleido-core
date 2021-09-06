@@ -423,7 +423,7 @@ contract ERC721Base is
 
 		// Clear approvals from the previous owner
 		_approve(address(0), tokenId);
-
+		/// owner, vaultに手数料
 		_balances[from] -= 1;
 		_balances[to] += 1;
 		_owners[tokenId] = to;

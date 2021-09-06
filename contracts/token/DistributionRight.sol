@@ -46,6 +46,8 @@ contract DistributionRight is ERC721Base, NameAccessor {
 		address to,
 		uint256 tokenId
 	) public onlyAllowedContract {
+		/// 手数料発生ない版のtransferに変える
 		_transfer(from, to, tokenId);
 	}
 }
+/// ownerとvaultに3%ずつあげる
