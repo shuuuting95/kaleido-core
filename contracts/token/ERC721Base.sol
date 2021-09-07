@@ -219,7 +219,7 @@ contract ERC721Base is
 		address from,
 		address to,
 		uint256 tokenId
-	) public virtual override {
+	) public payable virtual override {
 		//solhint-disable-next-line max-line-length
 		require(
 			_isApprovedOrOwner(_msgSender(), tokenId),
@@ -423,7 +423,6 @@ contract ERC721Base is
 
 		// Clear approvals from the previous owner
 		_approve(address(0), tokenId);
-		/// owner, vaultに手数料
 		_balances[from] -= 1;
 		_balances[to] += 1;
 		_owners[tokenId] = to;

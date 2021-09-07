@@ -23,3 +23,9 @@ export const getAdPoolContract = async () => {
   const contract = await hre.ethers.getContractFactory('AdPool')
   return contract.attach(Deployment.address)
 }
+
+export const getPostOwnerPoolContract = async () => {
+  const Deployment = await deployments.get('PostOwnerPool')
+  const contract = await hre.ethers.getContractFactory('PostOwnerPool')
+  return contract.attach(Deployment.address)
+}
