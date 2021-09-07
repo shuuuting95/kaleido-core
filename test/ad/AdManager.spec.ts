@@ -5,7 +5,6 @@ import { parseEth } from './../utils/number'
 import {
   getAdManagerContract,
   getDistributionRightContract,
-  getPostOwnerPoolContract,
   getVaultContract,
 } from './../utils/setup'
 
@@ -423,7 +422,9 @@ describe('AdManager', async () => {
         .to.emit(manager, 'Call')
         .withArgs(bidId2, postId, user2.address, bitPrice2)
       expect(await right.ownerOf(postId)).to.be.eq(user2.address)
-      expect(await right.tokenURI(postId)).to.be.eq(`ipfs://${postMetadata}`)
+      expect(await right.tokenURI(postId)).to.be.eq(
+        `https://arweave.net/${postMetadata}`
+      )
     })
     it('cannot be done post already closed', async () => {
       const { manager, right } = await setupTests()
