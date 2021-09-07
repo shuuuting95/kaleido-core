@@ -10,6 +10,9 @@ import "../utils/ERC165.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "../base/PostOwnerPool.sol";
+import "../base/Vault.sol";
+import "../accessors/NameAccessor.sol";
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
@@ -21,7 +24,8 @@ contract ERC721Base is
 	ERC165,
 	IERC721,
 	IERC721Enumerable,
-	IERC721Metadata
+	IERC721Metadata,
+	NameAccessor
 {
 	using Address for address;
 	using Strings for uint256;
@@ -68,8 +72,9 @@ contract ERC721Base is
 	constructor(
 		string memory name_,
 		string memory symbol_,
-		string memory baseURI_
-	) {
+		string memory baseURI_,
+		address nameRegistry
+	) NameAccessor(nameRegistry) {
 		_name = name_;
 		_symbol = symbol_;
 		_baseURI = baseURI_;
@@ -219,7 +224,7 @@ contract ERC721Base is
 		address from,
 		address to,
 		uint256 tokenId
-	) public virtual override {
+	) public payable virtual override {
 		//solhint-disable-next-line max-line-length
 		require(
 			_isApprovedOrOwner(_msgSender(), tokenId),
@@ -420,15 +425,28 @@ contract ERC721Base is
 		require(to != address(0), "ERC721: transfer to the zero address");
 
 		_beforeTokenTransfer(from, to, tokenId);
-
+		if (msg.value != 0) {
+			payable(_postOwnerPool().ownerOf(tokenId)).transfer(
+				(msg.value * 3) / 100
+			);
+			payable(_vault()).transfer((msg.value * 3) / 100);
+			payable(to).transfer((msg.value * 94) / 100);
+		}
 		// Clear approvals from the previous owner
 		_approve(address(0), tokenId);
-		/// owner, vaultに手数料
 		_balances[from] -= 1;
 		_balances[to] += 1;
 		_owners[tokenId] = to;
 
 		emit Transfer(from, to, tokenId);
+	}
+
+	function _vault() internal view returns (Vault) {
+		return Vault(payable(vaultAddress()));
+	}
+
+	function _postOwnerPool() internal view returns (PostOwnerPool) {
+		return PostOwnerPool(postOwnerPoolAddress());
 	}
 
 	/**

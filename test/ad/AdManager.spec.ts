@@ -422,7 +422,9 @@ describe('AdManager', async () => {
         .to.emit(manager, 'Call')
         .withArgs(bidId2, postId, user2.address, bitPrice2)
       expect(await right.ownerOf(postId)).to.be.eq(user2.address)
-      expect(await right.tokenURI(postId)).to.be.eq(`ipfs://${postMetadata}`)
+      expect(await right.tokenURI(postId)).to.be.eq(
+        `https://arweave.net/${postMetadata}`
+      )
     })
     it('cannot be done post already closed', async () => {
       const { manager, right } = await setupTests()
@@ -667,13 +669,13 @@ describe('AdManager', async () => {
     })
   })
 })
-interface PostProps {
+export interface PostProps {
   postMetadata?: string
   from?: number
   to?: number
 }
 
-function postAs(manager: any, props?: PostProps) {
+export function postAs(manager: any, props?: PostProps) {
   const now = Date.now()
 
   return manager.newPost(
@@ -683,17 +685,17 @@ function postAs(manager: any, props?: PostProps) {
   )
 }
 
-function bookAs(manager: any, postId: number, price?: BigNumber) {
+export function bookAs(manager: any, postId: number, price?: BigNumber) {
   return manager.book(postId, { value: price ? price : parseEth(1) })
 }
 
-interface BidProps {
+export interface BidProps {
   postId: number
   price?: BigNumber
   metadata?: string
 }
 
-function bidAs(manager: any, props: BidProps) {
+export function bidAs(manager: any, props: BidProps) {
   return manager.bid(props.postId, props.metadata ? props.metadata : '', {
     value: props.price ? props.price : parseEth(100),
   })

@@ -2,6 +2,7 @@
 pragma solidity 0.8.6;
 
 import "./accessors/NameAccessor.sol";
+import "./base/PostOwnerPool.sol";
 import "./token/DistributionRight.sol";
 import "./interfaces/IAdManager.sol";
 import "./base/Vault.sol";
@@ -101,6 +102,7 @@ contract AdManager is IAdManager, NameAccessor {
 		mediaMetadata[msg.sender].push(metadata);
 		allPosts[post.postId] = post;
 		inventories[msg.sender][post.metadata].push(post.postId);
+		_postOwnerPool().addPost(post.postId, post.owner);
 		emit NewPost(
 			post.postId,
 			post.owner,
@@ -306,6 +308,10 @@ contract AdManager is IAdManager, NameAccessor {
 
 	function _vault() internal view returns (Vault) {
 		return Vault(payable(vaultAddress()));
+	}
+
+	function _postOwnerPool() internal view returns (PostOwnerPool) {
+		return PostOwnerPool(postOwnerPoolAddress());
 	}
 
 	/// @dev Throws if the post has been expired.

@@ -8,14 +8,9 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments
   const NameRegistry = await deployments.get('NameRegistry')
 
-  const DistributionRight = await deploy('DistributionRight', {
+  const PostOwnerPool = await deploy('PostOwnerPool', {
     from: deployer,
-    args: [
-      'DistributionRight',
-      'AD_RIGHT',
-      'https://arweave.net/',
-      NameRegistry.address,
-    ],
+    args: [NameRegistry.address],
     log: true,
     deterministicDeployment: false,
   })
@@ -24,14 +19,14 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     'NameRegistry'
   )
   const name = NameRegistryFactory.attach(NameRegistry.address)
-  const key = utils.solidityKeccak256(['string'], ['DistributionRight'])
+  const key = utils.solidityKeccak256(['string'], ['PostOwnerPool'])
   const value = await name.get(key)
-  if (value !== DistributionRight.address) {
-    const txReceipt = await name.set(key, DistributionRight.address, {
+  if (value !== PostOwnerPool.address) {
+    const txReceipt = await name.set(key, PostOwnerPool.address, {
       gasLimit: 4500000,
     })
     await txReceipt.wait()
-    console.log('DistributionRight: ', await name.get(key))
+    console.log('PostOwnerPool: ', await name.get(key))
   }
 }
 

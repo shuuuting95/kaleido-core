@@ -6,7 +6,7 @@ import "../accessors/NameAccessor.sol";
 
 /// @title DistributionRight - represents advertising distribution rights.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract DistributionRight is ERC721Base, NameAccessor {
+contract DistributionRight is ERC721Base {
 	/// @dev Initializes NFT
 	/// @param name_ string of the token name
 	/// @param symbol_ string of the token symbol
@@ -17,7 +17,7 @@ contract DistributionRight is ERC721Base, NameAccessor {
 		string memory symbol_,
 		string memory baseURI_,
 		address nameRegistry
-	) ERC721Base(name_, symbol_, baseURI_) NameAccessor(nameRegistry) {}
+	) ERC721Base(name_, symbol_, baseURI_, nameRegistry) {}
 
 	/// @dev Mints a new NFT.
 	/// @param account address of the token owner
@@ -46,9 +46,6 @@ contract DistributionRight is ERC721Base, NameAccessor {
 		address to,
 		uint256 tokenId
 	) public onlyAllowedContract {
-		/// 手数料発生ない版のtransferに変える
 		_transfer(from, to, tokenId);
 	}
-
 }
-/// ownerとvaultに3%ずつあげる
