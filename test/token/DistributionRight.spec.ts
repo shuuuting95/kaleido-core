@@ -6,7 +6,6 @@ import { bookAs, postAs } from '../ad/AdManager.spec'
 import { parseEth } from './../utils/number'
 import {
   getAdManagerContract,
-  getAdPoolContract,
   getDistributionRightContract,
   getVaultContract,
 } from './../utils/setup'
@@ -23,7 +22,6 @@ describe('DistributionRight', async () => {
       manager: await getAdManagerContract(),
       right: await getDistributionRightContract(),
       vault: await getVaultContract(),
-      pool: await getAdPoolContract(),
     }
   })
 

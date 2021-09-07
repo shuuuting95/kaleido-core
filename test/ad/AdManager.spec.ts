@@ -4,7 +4,6 @@ import { deployments, network, waffle } from 'hardhat'
 import { parseEth } from './../utils/number'
 import {
   getAdManagerContract,
-  getAdPoolContract,
   getDistributionRightContract,
   getPostOwnerPoolContract,
   getVaultContract,
@@ -22,8 +21,6 @@ describe('AdManager', async () => {
       manager: await getAdManagerContract(),
       right: await getDistributionRightContract(),
       vault: await getVaultContract(),
-      pool: await getAdPoolContract(),
-      postOwnerPool: await getPostOwnerPoolContract(),
     }
   })
 
