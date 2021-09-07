@@ -3,12 +3,10 @@ pragma solidity 0.8.6;
 
 import "./ERC721Base.sol";
 import "../accessors/NameAccessor.sol";
-import "../base/PostOwnerPool.sol";
-import "../base/Vault.sol";
 
 /// @title DistributionRight - represents advertising distribution rights.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract DistributionRight is ERC721Base, NameAccessor {
+contract DistributionRight is ERC721Base {
 	/// @dev Initializes NFT
 	/// @param name_ string of the token name
 	/// @param symbol_ string of the token symbol
@@ -19,7 +17,7 @@ contract DistributionRight is ERC721Base, NameAccessor {
 		string memory symbol_,
 		string memory baseURI_,
 		address nameRegistry
-	) ERC721Base(name_, symbol_, baseURI_) NameAccessor(nameRegistry) {}
+	) ERC721Base(name_, symbol_, baseURI_, nameRegistry) {}
 
 	/// @dev Mints a new NFT.
 	/// @param account address of the token owner
@@ -49,31 +47,5 @@ contract DistributionRight is ERC721Base, NameAccessor {
 		uint256 tokenId
 	) public onlyAllowedContract {
 		_transfer(from, to, tokenId);
-	}
-
-	/**
-	 * @dev See {IERC721-transferFrom}.
-	 */
-	function transferFrom(
-		address from,
-		address to,
-		uint256 tokenId
-	) public payable virtual override {
-		if (msg.value != 0) {
-			payable(_postOwnerPool().ownerOf(tokenId)).transfer(
-				(msg.value * 3) / 100
-			);
-			payable(_vault()).transfer((msg.value * 3) / 100);
-			payable(to).transfer((msg.value * 94) / 100);
-		}
-		ERC721Base.transferFrom(from, to, tokenId);
-	}
-
-	function _vault() internal view returns (Vault) {
-		return Vault(payable(vaultAddress()));
-	}
-
-	function _postOwnerPool() internal view returns (PostOwnerPool) {
-		return PostOwnerPool(postOwnerPoolAddress());
 	}
 }

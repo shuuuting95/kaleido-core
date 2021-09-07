@@ -103,16 +103,30 @@ describe('DistributionRight', async () => {
       expect(newHolderBalanceAfter).to.be.equals(newHolderBalanceBefore)
     })
   })
+
+  describe('transferByAllowedContract', async () => {
+    it('can transfer the token without value', async () => {
+      const { manager, right, vault } = await setupTests()
+      const tokenId = await manager.nextPostId()
+      const bidId2 = await manager.nextBidId()
+      await book(holder, manager)
+      await expect(manager.call(bidId2)).to.emit(right, 'Transfer')
+    })
+  })
 })
 
 async function distributeRightTo(bidder: Wallet, manager: Contract) {
+  const bidId2 = await manager.nextBidId()
+  await book(bidder, manager)
+  await manager.call(bidId2)
+}
+
+async function book(bidder: Wallet, manager: Contract) {
   const postId = await manager.nextPostId()
   await postAs(manager, {
     postMetadata: '',
   })
-  const bidId2 = await manager.nextBidId()
   const managerByBidder = manager.connect(bidder)
 
   await bookAs(managerByBidder, postId)
-  await manager.call(bidId2)
 }
