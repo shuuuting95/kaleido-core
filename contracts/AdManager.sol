@@ -185,7 +185,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(bidder.status == DraftStatus.BOOKED, "AD102");
 		bookedBidIds[bidder.postId] = bidId;
 		bidder.status = DraftStatus.CALLED;
-		_success(bidId, bidder.postId);
+		_success(bidder.postId, bidId);
 		payable(msg.sender).transfer(bidder.price);
 		_right().mint(
 			bidder.sender,
