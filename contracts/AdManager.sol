@@ -119,7 +119,7 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 anotherToTimestamp
 	) internal pure returns (bool) {
 		return
-			anotherFromTimestamp <= toTimestamp ||
+			anotherFromTimestamp <= toTimestamp &&
 			anotherToTimestamp >= fromTimestamp;
 	}
 

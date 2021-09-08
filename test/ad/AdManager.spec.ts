@@ -111,6 +111,10 @@ describe('AdManager', async () => {
           })
         ).to.be.revertedWith('AD101')
       })
+      await postAs(manager, {
+        from: toTimestamp + 100,
+        to: toTimestamp + 101,
+      })
     })
     it('doesnt have to be separated durations with different metadata', async () => {
       const { manager } = await setupTests()
