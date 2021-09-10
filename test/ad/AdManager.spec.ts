@@ -36,8 +36,8 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
       expect(
         await postAs(manager, {
-          postMetadata: postMetadata,
           minPrice: minPrice,
+          postMetadata: postMetadata,
           from: fromTimestamp,
           to: toTimestamp,
         })
@@ -45,8 +45,8 @@ describe('AdManager', async () => {
         .to.emit(manager, 'NewPost')
         .withArgs(
           postId,
-          minPrice,
           user1.address,
+          minPrice,
           postMetadata,
           fromTimestamp,
           toTimestamp
@@ -54,8 +54,8 @@ describe('AdManager', async () => {
 
       expect(await manager.allPosts(postId)).to.deep.equal([
         postId,
-        minPrice,
         user1.address,
+        minPrice,
         postMetadata,
         BigNumber.from(fromTimestamp),
         BigNumber.from(toTimestamp),
@@ -145,8 +145,8 @@ describe('AdManager', async () => {
         .to.emit(manager, 'NewPost')
         .withArgs(
           postId,
-          minPrice,
           user1.address,
+          minPrice,
           anotherMetadata,
           fromTimestamp,
           toTimestamp
@@ -700,8 +700,8 @@ describe('AdManager', async () => {
   })
 })
 export interface PostProps {
-  postMetadata?: string
   minPrice?: BigNumber
+  postMetadata?: string
   from?: number
   to?: number
 }
@@ -710,8 +710,8 @@ export function postAs(manager: any, props?: PostProps) {
   const now = Date.now()
 
   return manager.newPost(
-    props?.postMetadata ? props.postMetadata : 'abi09nadu2brasfjl',
     props?.minPrice ? props.minPrice : parseEth(0.1),
+    props?.postMetadata ? props.postMetadata : 'abi09nadu2brasfjl',
     props?.from ? props.from : now - 1600,
     props?.to ? props.to : now + 3600
   )

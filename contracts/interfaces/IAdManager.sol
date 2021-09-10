@@ -7,8 +7,8 @@ interface IAdManager {
 	/// @dev Emitted when a new post is created.
 	event NewPost(
 		uint256 postId,
-		uint256 minPrice,
 		address owner,
+		uint256 minPrice,
 		string metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
@@ -53,12 +53,13 @@ interface IAdManager {
 	/// @dev Creates a new post where the owner who has the advertising area
 	/// can public the space. The basic infomation of the area is described
 	/// on the storage, which is accessed by the metadata hash.
+	/// minPrice,
 	/// @param metadata string of the hashed path to the storage
 	/// @param fromTimestamp uint256 of the timestamp to display the ad
 	/// @param toTimestamp uint256 of the timestamp to display the ad
 	function newPost(
-		string memory metadata,
 		uint256 minPrice,
+		string memory metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) external;

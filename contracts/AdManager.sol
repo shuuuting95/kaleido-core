@@ -23,8 +23,8 @@ contract AdManager is IAdManager, NameAccessor {
 
 	struct PostContent {
 		uint256 postId;
-		uint256 minPrice;
 		address owner;
+		uint256 minPrice;
 		string metadata;
 		uint256 fromTimestamp;
 		uint256 toTimestamp;
@@ -67,8 +67,8 @@ contract AdManager is IAdManager, NameAccessor {
 
 	/// @inheritdoc IAdManager
 	function newPost(
-		string memory metadata,
 		uint256 minPrice,
+		string memory metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) public override {
@@ -76,8 +76,8 @@ contract AdManager is IAdManager, NameAccessor {
 		require(toTimestamp > block.timestamp, "AD114");
 		PostContent memory post;
 		post.postId = nextPostId++;
-		post.minPrice = minPrice;
 		post.owner = msg.sender;
+		post.minPrice = minPrice;
 		post.metadata = metadata;
 		post.fromTimestamp = fromTimestamp;
 		post.toTimestamp = toTimestamp;
@@ -108,8 +108,8 @@ contract AdManager is IAdManager, NameAccessor {
 		_postOwnerPool().addPost(post.postId, post.owner);
 		emit NewPost(
 			post.postId,
-			post.minPrice,
 			post.owner,
+			post.minPrice,
 			post.metadata,
 			post.fromTimestamp,
 			post.toTimestamp
