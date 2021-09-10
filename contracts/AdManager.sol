@@ -129,12 +129,12 @@ contract AdManager is IAdManager, NameAccessor {
 			anotherToTimestamp >= fromTimestamp;
 	}
 
-	function isHigherThanMinPrice(uint256 postId, uint256 price)
+	function isGteMinPrice(uint256 postId, uint256 price)
 		public
 		view
 		returns (bool)
 	{
-		return allPosts[postId].minPrice < price;
+		return price >= allPosts[postId].minPrice;
 	}
 
 	/// @inheritdoc IAdManager
@@ -297,7 +297,7 @@ contract AdManager is IAdManager, NameAccessor {
 		DraftStatus status
 	) internal onlyModifiablePost(postId) {
 		require(allPosts[postId].successfulBidId == 0, "AD102");
-		require(isHigherThanMinPrice(postId, msg.value), "AD115");
+		require(isGteMinPrice(postId, msg.value), "AD115");
 		Bidder memory bidder;
 		bidder.bidId = bidId;
 		bidder.postId = postId;

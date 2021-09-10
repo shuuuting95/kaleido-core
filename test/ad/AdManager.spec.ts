@@ -216,6 +216,26 @@ describe('AdManager', async () => {
         bidAs(managerByUser2, { postId: postId })
       ).to.be.revertedWith('AD102')
     })
+    it('should revert because the payment amount is under the minimum price', async () => {
+      const { manager } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+
+      const postId = await manager.nextPostId()
+      const minPrice = parseEth(0.5)
+
+      const bidMetadata = 'xxxdafakjkjfaj;jf'
+      const lowPrice = parseEth(0.4)
+      const bidId = await manager.nextBidId()
+
+      await postAs(manager, { minPrice: minPrice })
+      await expect(
+        bidAs(managerByUser2, {
+          postId: postId,
+          price: lowPrice,
+          metadata: bidMetadata,
+        })
+      ).to.be.revertedWith('AD115')
+    })
   })
 
   describe('book', async () => {
