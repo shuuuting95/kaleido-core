@@ -116,7 +116,34 @@ contract AdManager is IAdManager, NameAccessor {
 		);
 	}
 
-	function updatePost() public {}
+	/// @inheritdoc IAdManager
+	function updatePost(
+		uint256 postId,
+		uint256 minPrice,
+		string memory metadata,
+		uint256 fromTimestamp,
+		uint256 toTimestamp
+	) public override {
+		PostContent memory post = allPosts[postId];
+		require(allPosts[postId].owner == msg.sender, "AD111");
+		require(fromTimestamp < toTimestamp, "AD101");
+		require(toTimestamp > block.timestamp, "AD114");
+
+		inventories[msg.sender][metadata] = inventories[msg.sender][post.metadata];
+		delete inventories[msg.sender][post.metadata];
+		post.minPrice = minPrice;
+		post.metadata = metadata;
+		post.fromTimestamp = fromTimestamp;
+		post.toTimestamp = toTimestamp;
+		emit UpdatePost(
+			postId,
+			msg.sender,
+			minPrice,
+			metadata,
+			fromTimestamp,
+			toTimestamp
+		);
+	}
 
 	function _isOverlapped(
 		uint256 fromTimestamp,

@@ -25,7 +25,7 @@ describe('AdManager', async () => {
 
   describe('newPost', async () => {
     it('should new a post', async () => {
-      const { manager, right } = await setupTests()
+      const { manager } = await setupTests()
 
       const postMetadata = 'abi09nadu2brasfjl'
       const now = Date.now()

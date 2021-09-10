@@ -14,6 +14,16 @@ interface IAdManager {
 		uint256 toTimestamp
 	);
 
+	/// @dev Emitted when a post is updated.
+	event UpdatePost(
+		uint256 postId,
+		address owner,
+		uint256 minPrice,
+		string metadata,
+		uint256 fromTimestamp,
+		uint256 toTimestamp
+	);
+
 	/// @dev Emitted when a new bid is listed.
 	event Bid(
 		uint256 bidId,
@@ -53,11 +63,25 @@ interface IAdManager {
 	/// @dev Creates a new post where the owner who has the advertising area
 	/// can public the space. The basic infomation of the area is described
 	/// on the storage, which is accessed by the metadata hash.
-	/// minPrice,
+	/// @param minPrice uint256 of the minimum price to bid or book
 	/// @param metadata string of the hashed path to the storage
 	/// @param fromTimestamp uint256 of the timestamp to display the ad
 	/// @param toTimestamp uint256 of the timestamp to display the ad
 	function newPost(
+		uint256 minPrice,
+		string memory metadata,
+		uint256 fromTimestamp,
+		uint256 toTimestamp
+	) external;
+
+	/// @dev Updates a post.
+	/// @param postId uint256 of the post ID
+	/// @param minPrice uint256 of the minimum price to bid or book
+	/// @param metadata string of the hashed path to the storage
+	/// @param fromTimestamp uint256 of the timestamp to display the ad
+	/// @param toTimestamp uint256 of the timestamp to display the ad
+	function updatePost(
+		uint256 postId,
 		uint256 minPrice,
 		string memory metadata,
 		uint256 fromTimestamp,
