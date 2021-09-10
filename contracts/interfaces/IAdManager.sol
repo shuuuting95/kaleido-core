@@ -7,6 +7,7 @@ interface IAdManager {
 	/// @dev Emitted when a new post is created.
 	event NewPost(
 		uint256 postId,
+		uint256 minPrice,
 		address owner,
 		string metadata,
 		uint256 fromTimestamp,
@@ -57,6 +58,7 @@ interface IAdManager {
 	/// @param toTimestamp uint256 of the timestamp to display the ad
 	function newPost(
 		string memory metadata,
+		uint256 minPrice,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) external;
