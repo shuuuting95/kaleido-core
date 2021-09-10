@@ -55,3 +55,7 @@ The post has already been closed.
 ### AD114
 
 You cannot put up past inventories.
+
+### AD115
+
+The amount of payment surpasses the minimum price.

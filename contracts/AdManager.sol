@@ -91,7 +91,7 @@ contract AdManager is IAdManager, NameAccessor {
 				inventories[msg.sender][post.metadata][i]
 			];
 			if (
-				isOverlapped(
+				_isOverlapped(
 					fromTimestamp,
 					toTimestamp,
 					another.fromTimestamp,
@@ -118,7 +118,7 @@ contract AdManager is IAdManager, NameAccessor {
 
 	function updatePost() public {}
 
-	function isOverlapped(
+	function _isOverlapped(
 		uint256 fromTimestamp,
 		uint256 toTimestamp,
 		uint256 anotherFromTimestamp,
@@ -127,6 +127,14 @@ contract AdManager is IAdManager, NameAccessor {
 		return
 			anotherFromTimestamp <= toTimestamp &&
 			anotherToTimestamp >= fromTimestamp;
+	}
+
+	function isHigherThanMinPrice(uint256 postId, uint256 price)
+		public
+		view
+		returns (bool)
+	{
+		return allPosts[postId].minPrice < price;
 	}
 
 	/// @inheritdoc IAdManager
@@ -289,6 +297,7 @@ contract AdManager is IAdManager, NameAccessor {
 		DraftStatus status
 	) internal onlyModifiablePost(postId) {
 		require(allPosts[postId].successfulBidId == 0, "AD102");
+		require(isHigherThanMinPrice(postId, msg.value), "AD115");
 		Bidder memory bidder;
 		bidder.bidId = bidId;
 		bidder.postId = postId;
