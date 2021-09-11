@@ -24,6 +24,9 @@ interface IAdManager {
 		uint256 toTimestamp
 	);
 
+	/// @dev Emitted when a post is suspended.
+	event SuspendPost(uint256 postId);
+
 	/// @dev Emitted when a new bid is listed.
 	event Bid(
 		uint256 bidId,

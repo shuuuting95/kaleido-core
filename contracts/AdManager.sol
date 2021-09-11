@@ -161,10 +161,10 @@ contract AdManager is IAdManager, NameAccessor {
 		);
 	}
 
-	function suspend(uint256 postId) public {
+	function suspendPost(uint256 postId) public {
 		require(allPosts[postId].owner == msg.sender, "AD111");
 		allPosts[postId].toTimestamp = block.timestamp;
-		// emit
+		emit SuspendPost(postId);
 	}
 
 	/// @inheritdoc IAdManager
