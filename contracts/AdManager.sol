@@ -29,6 +29,7 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 fromTimestamp;
 		uint256 toTimestamp;
 		uint256 successfulBidId;
+		uint256 acceptedTimestamp;
 	}
 	struct Bidder {
 		uint256 bidId;
@@ -62,6 +63,19 @@ contract AdManager is IAdManager, NameAccessor {
 	uint256 public nextBidId = 1;
 
 	string private _baseURI = "https://kaleido.io/";
+
+	/// @dev Throws if the post has been expired.
+	modifier onlyModifiablePost(uint256 postId) {
+		require(allPosts[postId].toTimestamp >= block.timestamp, "AD108");
+		_;
+	}
+
+	/// @dev Throws if the post has been expired.
+	modifier onlyModifiablePostByBidId(uint256 bidId) {
+		Bidder memory bidder = bidderInfo[bidId];
+		require(allPosts[bidder.postId].toTimestamp >= block.timestamp, "AD108");
+		_;
+	}
 
 	constructor(address nameRegistry) NameAccessor(nameRegistry) {}
 
@@ -128,6 +142,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(allPosts[postId].owner == msg.sender, "AD111");
 		require(fromTimestamp < toTimestamp, "AD101");
 		require(toTimestamp > block.timestamp, "AD114");
+		require(bidders[postId].length == 0, "AD116");
 
 		inventories[msg.sender][metadata] = inventories[msg.sender][post.metadata];
 		delete inventories[msg.sender][post.metadata];
@@ -145,23 +160,10 @@ contract AdManager is IAdManager, NameAccessor {
 		);
 	}
 
-	function _isOverlapped(
-		uint256 fromTimestamp,
-		uint256 toTimestamp,
-		uint256 anotherFromTimestamp,
-		uint256 anotherToTimestamp
-	) internal pure returns (bool) {
-		return
-			anotherFromTimestamp <= toTimestamp &&
-			anotherToTimestamp >= fromTimestamp;
-	}
-
-	function isGteMinPrice(uint256 postId, uint256 price)
-		public
-		view
-		returns (bool)
-	{
-		return price >= allPosts[postId].minPrice;
+	function suspend(uint256 postId) public {
+		require(allPosts[postId].owner == msg.sender, "AD111");
+		allPosts[postId].toTimestamp = block.timestamp;
+		// emit
 	}
 
 	/// @inheritdoc IAdManager
@@ -187,8 +189,7 @@ contract AdManager is IAdManager, NameAccessor {
 		require(bidder.status == DraftStatus.LISTED, "AD102");
 		_success(bidder.postId, bidId);
 		bidder.status = DraftStatus.ACCEPTED;
-		payable(msg.sender).transfer((bidder.price * 9) / 10);
-		payable(_vault()).transfer((bidder.price * 1) / 10);
+		allPosts[bidder.postId].acceptedTimestamp = block.timestamp;
 		emit Close(
 			bidder.bidId,
 			bidder.postId,
@@ -198,11 +199,56 @@ contract AdManager is IAdManager, NameAccessor {
 		);
 	}
 
+	function withdraw(uint256 postId) public {
+		require(allPosts[postId].owner == msg.sender, "AD102");
+		require(allPosts[postId].successfulBidId != 0, "AD117");
+		require(allPosts[postId].toTimestamp < block.timestamp, "AD118");
+
+		Bidder memory bidder = bidderInfo[allPosts[postId].successfulBidId];
+		if (allPosts[postId].acceptedTimestamp > allPosts[postId].fromTimestamp) {
+			uint256 percent = achievedPercent(postId);
+			payable(msg.sender).transfer((bidder.price * percent * 9) / 1000);
+			payable(_vault()).transfer((bidder.price * 1) / 10);
+			emit Withdraw(postId, percent, ((bidder.price * percent * 9) / 100) / 10);
+		} else {
+			payable(msg.sender).transfer((bidder.price * 9) / 10);
+			payable(_vault()).transfer((bidder.price * 1) / 10);
+			emit Withdraw(postId, 100, (bidder.price * 9) / 10);
+		}
+	}
+
+	function achievedPercent(uint256 postId) public view returns (uint256) {
+		return
+			uint256(
+				(100 *
+					(allPosts[postId].toTimestamp - allPosts[postId].acceptedTimestamp)) /
+					(allPosts[postId].toTimestamp - allPosts[postId].fromTimestamp)
+			);
+	}
+
+	function claimRedemption(uint256 postId) public {
+		Bidder memory bidder = bidderInfo[allPosts[postId].successfulBidId];
+		require(bidder.sender == msg.sender, "AD104");
+
+		if (allPosts[postId].acceptedTimestamp > allPosts[postId].fromTimestamp) {
+			uint256 achievedRatio = uint256(
+				(allPosts[postId].toTimestamp - allPosts[postId].acceptedTimestamp) /
+					(allPosts[postId].toTimestamp - allPosts[postId].fromTimestamp)
+			) * 100;
+			// TODO
+			payable(msg.sender).transfer(
+				((bidder.price * achievedRatio * 9) / 100) / 10
+			);
+		}
+	}
+
 	/// @inheritdoc IAdManager
 	function refund(uint256 bidId) public override {
 		Bidder memory bidder = bidderInfo[bidId];
 		require(bidder.sender == msg.sender, "AD104");
 		require(allPosts[bidder.postId].successfulBidId != bidId, "AD107");
+		require(bidderInfo[bidId].status != DraftStatus.REFUNDED, "AD119");
+
 		payable(msg.sender).transfer(bidderInfo[bidId].price);
 		bidderInfo[bidId].status = DraftStatus.REFUNDED;
 		emit Refund(
@@ -227,7 +273,7 @@ contract AdManager is IAdManager, NameAccessor {
 		bookedBidIds[bidder.postId] = bidId;
 		bidder.status = DraftStatus.CALLED;
 		_success(bidder.postId, bidId);
-		payable(msg.sender).transfer(bidder.price);
+		// payable(msg.sender).transfer(bidder.price);
 		_right().mint(
 			bidder.sender,
 			bidder.postId,
@@ -266,12 +312,9 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 bidId = bookedBidIds[postId];
 		require(bidderInfo[bidId].status == DraftStatus.PROPOSED, "AD102");
 		bidderInfo[bidId].status = DraftStatus.ACCEPTED;
+		allPosts[postId].acceptedTimestamp = block.timestamp;
 		_right().burn(postId);
 		emit Accept(postId, bidId);
-	}
-
-	function _success(uint256 postId, uint256 bidId) internal {
-		allPosts[postId].successfulBidId = bidId;
 	}
 
 	function displayByMetadata(address account, string memory metadata)
@@ -305,6 +348,37 @@ contract AdManager is IAdManager, NameAccessor {
 			post.toTimestamp > block.timestamp;
 	}
 
+	function isGteMinPrice(uint256 postId, uint256 price)
+		public
+		view
+		returns (bool)
+	{
+		return price >= allPosts[postId].minPrice;
+	}
+
+	function bidderList(uint256 postId) public view returns (uint256[] memory) {
+		return bidders[postId];
+	}
+
+	function metadataList() public view returns (string[] memory) {
+		return mediaMetadata[msg.sender];
+	}
+
+	function _success(uint256 postId, uint256 bidId) internal {
+		allPosts[postId].successfulBidId = bidId;
+	}
+
+	function _isOverlapped(
+		uint256 fromTimestamp,
+		uint256 toTimestamp,
+		uint256 anotherFromTimestamp,
+		uint256 anotherToTimestamp
+	) internal pure returns (bool) {
+		return
+			anotherFromTimestamp <= toTimestamp &&
+			anotherToTimestamp >= fromTimestamp;
+	}
+
 	function _book(uint256 postId) internal {
 		uint256 bidId = nextBidId++;
 		__bid(postId, bidId, "", DraftStatus.BOOKED);
@@ -336,14 +410,6 @@ contract AdManager is IAdManager, NameAccessor {
 		bidders[postId].push(bidder.bidId);
 	}
 
-	function bidderList(uint256 postId) public view returns (uint256[] memory) {
-		return bidders[postId];
-	}
-
-	function metadataList() public view returns (string[] memory) {
-		return mediaMetadata[msg.sender];
-	}
-
 	function _right() internal view returns (DistributionRight) {
 		return DistributionRight(distributionRightAddress());
 	}
@@ -354,18 +420,5 @@ contract AdManager is IAdManager, NameAccessor {
 
 	function _postOwnerPool() internal view returns (PostOwnerPool) {
 		return PostOwnerPool(postOwnerPoolAddress());
-	}
-
-	/// @dev Throws if the post has been expired.
-	modifier onlyModifiablePost(uint256 postId) {
-		require(allPosts[postId].toTimestamp >= block.timestamp, "AD108");
-		_;
-	}
-
-	/// @dev Throws if the post has been expired.
-	modifier onlyModifiablePostByBidId(uint256 bidId) {
-		Bidder memory bidder = bidderInfo[bidId];
-		require(allPosts[bidder.postId].toTimestamp >= block.timestamp, "AD108");
-		_;
 	}
 }

@@ -45,6 +45,9 @@ interface IAdManager {
 		string metadata
 	);
 
+	/// @dev Emitted when a post owner withdraws the deposited amount.
+	event Withdraw(uint256 postId, uint256 achievedPercent, uint256 amount);
+
 	/// @dev Emitted when a bidder refunds.
 	event Refund(uint256 bitId, uint256 postId, address sender, uint256 price);
 

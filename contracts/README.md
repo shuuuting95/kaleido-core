@@ -59,3 +59,19 @@ You cannot put up past inventories.
 ### AD115
 
 The amount of payment surpasses the minimum price.
+
+### AD116
+
+The post has already been bidded by someone.
+
+### AD117
+
+The post has already accepted.
+
+### AD118
+
+The period of the post has exceeded the ending time.
+
+### AD119
+
+The bid has already been refunded.

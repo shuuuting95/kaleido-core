@@ -60,6 +60,7 @@ describe('AdManager', async () => {
         BigNumber.from(fromTimestamp),
         BigNumber.from(toTimestamp),
         BigNumber.from(0),
+        BigNumber.from(0),
       ])
     })
     it('should have valid periods', async () => {
@@ -137,6 +138,7 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
       expect(
         await postAs(manager, {
+          minPrice: minPrice,
           postMetadata: anotherMetadata,
           from: fromTimestamp,
           to: toTimestamp,
@@ -301,11 +303,11 @@ describe('AdManager', async () => {
       })
 
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
       await bidAs(managerByUser2, {
         postId: postId,
-        price: bitPrice2,
+        price: bidPrice2,
         metadata: bidMetadata2,
       })
       const bitPrice3 = parseEth(200)
@@ -314,27 +316,117 @@ describe('AdManager', async () => {
         price: bitPrice3,
       })
 
-      const user1BalanceBeforeClose = await user1.getBalance()
-      const user2BalanceBeforeClose = await user2.getBalance()
+      // const user1BalanceBeforeClose = await user1.getBalance()
+      // const user2BalanceBeforeClose = await user2.getBalance()
 
       expect(await manager.close(bidId2))
         .to.emit(manager, 'Close')
-        .withArgs(bidId2, postId, user2.address, bitPrice2, bidMetadata2)
-        .to.emit(vault, 'Received')
-        .withArgs(manager.address, parseEth(10))
-      const user1BalanceAfterClose = await user1.getBalance()
-      const user2BalanceAfterClose = await user2.getBalance()
+        .withArgs(bidId2, postId, user2.address, bidPrice2, bidMetadata2)
+      // .to.emit(vault, 'Received')
+      // .withArgs(manager.address, parseEth(10))
+      // const user1BalanceAfterClose = await user1.getBalance()
+      // const user2BalanceAfterClose = await user2.getBalance()
 
-      const user1BalanceDiff = Number(
-        user1BalanceAfterClose.sub(user1BalanceBeforeClose)
-      )
-      const user2BalanceDiff = Number(
-        user2BalanceAfterClose.sub(user2BalanceBeforeClose)
-      )
-      expect(user1BalanceDiff).to.be.lt(Number(parseEth(90.0)))
-      expect(user1BalanceDiff).to.be.gt(Number(parseEth(89.9)))
-      expect(user2BalanceDiff).to.be.eq(0)
-      expect(await vault.balance()).to.be.eq(parseEth(10))
+      // const user1BalanceDiff = Number(
+      //   user1BalanceAfterClose.sub(user1BalanceBeforeClose)
+      // )
+      // const user2BalanceDiff = Number(
+      //   user2BalanceAfterClose.sub(user2BalanceBeforeClose)
+      // )
+      // expect(user1BalanceDiff).to.be.lt(Number(parseEth(90.0)))
+      // expect(user1BalanceDiff).to.be.gt(Number(parseEth(89.9)))
+      // expect(user2BalanceDiff).to.be.eq(0)
+      // expect(await vault.balance()).to.be.eq(parseEth(10))
+    })
+  })
+
+  describe('withdraw', async () => {
+    it('should withdraw after the close that is before the from timestamp', async () => {
+      const { manager, vault } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+
+      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+      const bidPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await bidAs(managerByUser2, {
+        postId: postId,
+        price: bidPrice2,
+        metadata: bidMetadata2,
+      })
+      const bitPrice3 = parseEth(200)
+      await bidAs(managerByUser3, {
+        postId: postId,
+        price: bitPrice3,
+      })
+      await manager.close(bidId2)
+
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 7500])
+      await network.provider.send('evm_mine')
+      expect(await manager.withdraw(postId))
+        .to.emit(manager, 'Withdraw')
+        .withArgs(postId, 100, bidPrice2.mul(9).div(10))
+        .to.emit(vault, 'Received')
+        .withArgs(manager.address, bidPrice2.div(10))
+    })
+
+    it('should withdraw after the close that is after the from timestamp', async () => {
+      const { manager, vault } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+
+      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+      const bidPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await bidAs(managerByUser2, {
+        postId: postId,
+        price: bidPrice2,
+        metadata: bidMetadata2,
+      })
+      const bitPrice3 = parseEth(200)
+      await bidAs(managerByUser3, {
+        postId: postId,
+        price: bitPrice3,
+      })
+
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 5000])
+      await network.provider.send('evm_mine')
+      await manager.close(bidId2)
+
+      const achievedPercent = Math.floor((100 * (7200 - 5000)) / (7200 - 3600))
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 10000])
+      await network.provider.send('evm_mine')
+      expect(await manager.withdraw(postId))
+        .to.emit(manager, 'Withdraw')
+        .withArgs(
+          postId,
+          achievedPercent,
+          BigNumber.from(achievedPercent).mul(bidPrice2).mul(9).div(1000)
+        )
+        .to.emit(vault, 'Received')
+        .withArgs(manager.address, bidPrice2.div(10))
     })
   })
 
@@ -389,47 +481,44 @@ describe('AdManager', async () => {
     })
   })
 
-  describe('withdraw', async () => {
-    it('should withdraw after the close', async () => {
-      const { manager, vault } = await setupTests()
-      const managerByUser2 = manager.connect(user2)
-      const managerByUser3 = manager.connect(user3)
-
-      const postMetadata = 'abi09nadu2brasfjl'
-      const now = Date.now()
-      const fromTimestamp = now + 3600
-      const toTimestamp = now + 7200
-      const postId = await manager.nextPostId()
-      await postAs(manager, {
-        postMetadata: postMetadata,
-        from: fromTimestamp,
-        to: toTimestamp,
-      })
-      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
-      const bitPrice2 = parseEth(100)
-      const bidId2 = await manager.nextBidId()
-      await bidAs(managerByUser2, {
-        postId: postId,
-        price: bitPrice2,
-        metadata: bidMetadata2,
-      })
-
-      await bidAs(managerByUser3, { postId: postId })
-      await manager.close(bidId2)
-
-      const user1BalanceBeforeWithdraw = await user1.getBalance()
-      expect(await vault.balance()).to.be.eq(parseEth(10))
-      expect(await vault.withdraw(parseEth(9)))
-        .to.emit(vault, 'Withdraw')
-        .withArgs(user1.address, parseEth(9))
-      expect(await vault.balance()).to.be.eq(parseEth(1))
-      const user1BalanceAfterWithdraw = await user1.getBalance()
-      const user1BalanceDiff = Number(
-        user1BalanceAfterWithdraw.sub(user1BalanceBeforeWithdraw)
-      )
-      expect(user1BalanceDiff).to.be.lt(Number(parseEth(9.0)))
-      expect(user1BalanceDiff).to.be.gt(Number(parseEth(8.9)))
-    })
+  describe('Vault: withdraw', async () => {
+    // it('should withdraw after the close', async () => {
+    //   const { manager, vault } = await setupTests()
+    //   const managerByUser2 = manager.connect(user2)
+    //   const managerByUser3 = manager.connect(user3)
+    //   const postMetadata = 'abi09nadu2brasfjl'
+    //   const now = Date.now()
+    //   const fromTimestamp = now + 3600
+    //   const toTimestamp = now + 7200
+    //   const postId = await manager.nextPostId()
+    //   await postAs(manager, {
+    //     postMetadata: postMetadata,
+    //     from: fromTimestamp,
+    //     to: toTimestamp,
+    //   })
+    //   const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+    //   const bidPrice2 = parseEth(100)
+    //   const bidId2 = await manager.nextBidId()
+    //   await bidAs(managerByUser2, {
+    //     postId: postId,
+    //     price: bidPrice2,
+    //     metadata: bidMetadata2,
+    //   })
+    //   await bidAs(managerByUser3, { postId: postId })
+    //   await manager.close(bidId2)
+    //   const user1BalanceBeforeWithdraw = await user1.getBalance()
+    //   expect(await vault.balance()).to.be.eq(parseEth(10))
+    //   expect(await vault.withdraw(parseEth(9)))
+    //     .to.emit(vault, 'Withdraw')
+    //     .withArgs(user1.address, parseEth(9))
+    //   expect(await vault.balance()).to.be.eq(parseEth(1))
+    //   const user1BalanceAfterWithdraw = await user1.getBalance()
+    //   const user1BalanceDiff = Number(
+    //     user1BalanceAfterWithdraw.sub(user1BalanceBeforeWithdraw)
+    //   )
+    //   expect(user1BalanceDiff).to.be.lt(Number(parseEth(9.0)))
+    //   expect(user1BalanceDiff).to.be.gt(Number(parseEth(8.9)))
+    // })
   })
 
   describe('call', async () => {
@@ -442,15 +531,15 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
 
       await postAs(manager)
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await bookAs(managerByUser2, postId, bitPrice2)
+      await bookAs(managerByUser2, postId, bidPrice2)
 
       const bitPrice3 = parseEth(200)
       await bookAs(managerByUser3, postId, bitPrice3)
       expect(await manager.call(bidId2))
         .to.emit(manager, 'Call')
-        .withArgs(bidId2, postId, user2.address, bitPrice2)
+        .withArgs(bidId2, postId, user2.address, bidPrice2)
       expect(await right.ownerOf(postId)).to.be.eq(user2.address)
       expect(await right.tokenURI(postId)).to.be.eq(
         `https://arweave.net/${postMetadata}`
@@ -473,14 +562,14 @@ describe('AdManager', async () => {
         from: fromTimestamp,
         to: toTimestamp,
       })
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await bookAs(managerByUser2, postId, bitPrice2)
+      await bookAs(managerByUser2, postId, bidPrice2)
       const bidMetadata2 = ''
       await bidAs(managerByUser2, {
         postId: postId,
         metadata: bidMetadata2,
-        price: bitPrice2,
+        price: bidPrice2,
       })
       const bidId3 = await manager.nextBidId()
 
@@ -506,12 +595,12 @@ describe('AdManager', async () => {
         to: toTimestamp,
       })
       const bidMetadata2 = ''
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
       await bidAs(managerByUser2, {
         postId: postId,
         metadata: bidMetadata2,
-        price: bitPrice2,
+        price: bidPrice2,
       })
 
       await expect(managerByUser3.call(bidId2)).to.be.revertedWith('AD102')
@@ -532,11 +621,11 @@ describe('AdManager', async () => {
         to: toTimestamp,
       })
       const bidMetadata2 = ''
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       await bidAs(managerByUser2, {
         postId: postId,
         metadata: bidMetadata2,
-        price: bitPrice2,
+        price: bidPrice2,
       })
       await expect(manager.call(999)).to.be.revertedWith('AD108')
     })
