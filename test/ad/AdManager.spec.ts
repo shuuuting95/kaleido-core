@@ -156,6 +156,52 @@ describe('AdManager', async () => {
     })
   })
 
+  describe('updatePost', async () => {
+    it('should update a post', async () => {
+      const { manager } = await setupTests()
+
+      const now = Date.now()
+      const postId = await manager.nextPostId()
+      const updatedMinPrice = parseEth(2.3)
+      const updatedMetadata = 'yyyxxxdafakjkjfaj'
+      const updatedFrom = now + 10000
+      const updatedTo = now + 20000
+
+      await postAs(manager)
+      expect(
+        await manager.updatePost(
+          postId,
+          updatedMinPrice,
+          updatedMetadata,
+          updatedFrom,
+          updatedTo
+        )
+      )
+        .to.emit(manager, 'UpdatePost')
+        .withArgs(
+          postId,
+          user1.address,
+          updatedMinPrice,
+          updatedMetadata,
+          updatedFrom,
+          updatedTo
+        )
+    })
+  })
+
+  describe('suspendPost', async () => {
+    it('should suspend a post', async () => {
+      const { manager } = await setupTests()
+
+      const postId = await manager.nextPostId()
+
+      await postAs(manager)
+      expect(await manager.suspendPost(postId))
+        .to.emit(manager, 'SuspendPost')
+        .withArgs(postId)
+    })
+  })
+
   describe('bid', async () => {
     it('should be disabled after expiration', async () => {
       const { manager } = await setupTests()

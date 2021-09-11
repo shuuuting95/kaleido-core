@@ -161,7 +161,8 @@ contract AdManager is IAdManager, NameAccessor {
 		);
 	}
 
-	function suspendPost(uint256 postId) public {
+	/// @inheritdoc IAdManager
+	function suspendPost(uint256 postId) public override {
 		require(allPosts[postId].owner == msg.sender, "AD111");
 		allPosts[postId].toTimestamp = block.timestamp;
 		emit SuspendPost(postId);
@@ -200,7 +201,8 @@ contract AdManager is IAdManager, NameAccessor {
 		);
 	}
 
-	function withdraw(uint256 postId) public {
+	/// @inheritdoc IAdManager
+	function withdraw(uint256 postId) public override {
 		require(allPosts[postId].owner == msg.sender, "AD102");
 		require(allPosts[postId].successfulBidId != 0, "AD117");
 		require(allPosts[postId].toTimestamp < block.timestamp, "AD118");
@@ -220,16 +222,8 @@ contract AdManager is IAdManager, NameAccessor {
 		}
 	}
 
-	function achievedPercent(uint256 postId) public view returns (uint256) {
-		return
-			uint256(
-				(100 *
-					(allPosts[postId].toTimestamp - allPosts[postId].acceptedTimestamp)) /
-					(allPosts[postId].toTimestamp - allPosts[postId].fromTimestamp)
-			);
-	}
-
-	function claimRedemption(uint256 postId) public {
+	/// @inheritdoc IAdManager
+	function claimRedemption(uint256 postId) public override {
 		Bidder memory bidder = bidderInfo[allPosts[postId].successfulBidId];
 		require(bidder.sender == msg.sender, "AD104");
 		require(allPosts[postId].toTimestamp < block.timestamp, "AD118");
@@ -242,10 +236,6 @@ contract AdManager is IAdManager, NameAccessor {
 			bidderInfo[bidder.bidId].redeemed = true;
 			emit ClaimRedemption(postId, redemptionPercent, amount);
 		}
-	}
-
-	function behindSchedule(uint256 postId) public view returns (bool) {
-		return allPosts[postId].acceptedTimestamp > allPosts[postId].fromTimestamp;
 	}
 
 	/// @inheritdoc IAdManager
@@ -367,6 +357,19 @@ contract AdManager is IAdManager, NameAccessor {
 
 	function metadataList() public view returns (string[] memory) {
 		return mediaMetadata[msg.sender];
+	}
+
+	function behindSchedule(uint256 postId) public view returns (bool) {
+		return allPosts[postId].acceptedTimestamp > allPosts[postId].fromTimestamp;
+	}
+
+	function achievedPercent(uint256 postId) public view returns (uint256) {
+		return
+			uint256(
+				(100 *
+					(allPosts[postId].toTimestamp - allPosts[postId].acceptedTimestamp)) /
+					(allPosts[postId].toTimestamp - allPosts[postId].fromTimestamp)
+			);
 	}
 
 	function _success(uint256 postId, uint256 bidId) internal {

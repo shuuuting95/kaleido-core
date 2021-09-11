@@ -87,7 +87,9 @@ interface IAdManager {
 		uint256 toTimestamp
 	) external;
 
-	/// @dev Updates a post.
+	/// @dev Updates a post. This function is only called when no one
+	/// bits or books to the post. You can choose suspendPost if it has
+	/// already been bidded.
 	/// @param postId uint256 of the post ID
 	/// @param minPrice uint256 of the minimum price to bid or book
 	/// @param metadata string of the hashed path to the storage
@@ -100,6 +102,10 @@ interface IAdManager {
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) external;
+
+	/// @dev Suspends a post.
+	/// @param postId uint256 of the post ID
+	function suspendPost(uint256 postId) external;
 
 	/// @dev Bids to the post, sharing what kind of Ads would be public.
 	/// The owner of the Ad space can select the one according to not only
@@ -116,6 +122,14 @@ interface IAdManager {
 	/// The amount would be paid to the post owner.
 	/// @param bidId uint256 of the bid ID
 	function close(uint256 bidId) external;
+
+	/// @dev Withdraws the deposited amount by the successful bidder.
+	/// @param postId uint256 of the post ID
+	function withdraw(uint256 postId) external;
+
+	/// @dev Claims a redemption if the accept is behind the shcedule.
+	/// @param postId uint256 of the post ID
+	function claimRedemption(uint256 postId) external;
 
 	/// @dev Can refund the amount if you want to cancel or
 	/// the other is determinted as the successful bidder.
