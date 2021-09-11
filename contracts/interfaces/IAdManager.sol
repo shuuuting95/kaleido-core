@@ -63,6 +63,13 @@ interface IAdManager {
 	/// @dev Emitted when a proposal is accepted.
 	event Accept(uint256 postId, uint256 bidId);
 
+	/// @dev Emitted when a bidder claims the redemption.
+	event ClaimRedemption(
+		uint256 postId,
+		uint256 redemptionPercent,
+		uint256 amount
+	);
+
 	/// @dev Creates a new post where the owner who has the advertising area
 	/// can public the space. The basic infomation of the area is described
 	/// on the storage, which is accessed by the metadata hash.

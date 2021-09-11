@@ -206,15 +206,17 @@ contract AdManager is IAdManager, NameAccessor {
 		require(allPosts[postId].toTimestamp < block.timestamp, "AD118");
 
 		Bidder memory bidder = bidderInfo[allPosts[postId].successfulBidId];
-		if (allPosts[postId].acceptedTimestamp > allPosts[postId].fromTimestamp) {
+		if (behindSchedule(postId)) {
 			uint256 percent = achievedPercent(postId);
-			payable(msg.sender).transfer((bidder.price * percent * 9) / 1000);
+			uint256 withdrawable = (bidder.price * percent * 9) / 1000;
+			payable(msg.sender).transfer(withdrawable);
 			payable(_vault()).transfer((bidder.price * 1) / 10);
-			emit Withdraw(postId, percent, ((bidder.price * percent * 9) / 100) / 10);
+			emit Withdraw(postId, percent, withdrawable);
 		} else {
-			payable(msg.sender).transfer((bidder.price * 9) / 10);
+			uint256 withdrawable = (bidder.price * 9) / 10;
+			payable(msg.sender).transfer(withdrawable);
 			payable(_vault()).transfer((bidder.price * 1) / 10);
-			emit Withdraw(postId, 100, (bidder.price * 9) / 10);
+			emit Withdraw(postId, 100, withdrawable);
 		}
 	}
 
@@ -233,13 +235,17 @@ contract AdManager is IAdManager, NameAccessor {
 		require(allPosts[postId].toTimestamp < block.timestamp, "AD118");
 		require(!bidder.redeemed, "AD120");
 
-		if (allPosts[postId].acceptedTimestamp > allPosts[postId].fromTimestamp) {
+		if (behindSchedule(postId)) {
 			uint256 redemptionPercent = 100 - achievedPercent(postId);
-			payable(msg.sender).transfer(
-				(9 * bidder.price * redemptionPercent) / 1000
-			);
-			bidder.redeemed = true;
+			uint256 amount = (9 * bidder.price * redemptionPercent) / 1000;
+			payable(msg.sender).transfer(amount);
+			bidderInfo[bidder.bidId].redeemed = true;
+			emit ClaimRedemption(postId, redemptionPercent, amount);
 		}
+	}
+
+	function behindSchedule(uint256 postId) public view returns (bool) {
+		return allPosts[postId].acceptedTimestamp > allPosts[postId].fromTimestamp;
 	}
 
 	/// @inheritdoc IAdManager

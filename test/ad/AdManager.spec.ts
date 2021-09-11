@@ -432,6 +432,103 @@ describe('AdManager', async () => {
     })
   })
 
+  describe('claimRedemption', async () => {
+    it('should redeem', async () => {
+      const { manager } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+
+      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+      const bidPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await bidAs(managerByUser2, {
+        postId: postId,
+        price: bidPrice2,
+        metadata: bidMetadata2,
+      })
+      const bitPrice3 = parseEth(200)
+      await bidAs(managerByUser3, {
+        postId: postId,
+        price: bitPrice3,
+      })
+
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 5000])
+      await network.provider.send('evm_mine')
+      await manager.close(bidId2)
+
+      const redemptionPercent =
+        100 - Math.floor((100 * (7200 - 5000)) / (7200 - 3600))
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 10000])
+      await network.provider.send('evm_mine')
+      await manager.withdraw(postId)
+
+      expect(await managerByUser2.claimRedemption(postId))
+        .to.emit(manager, 'ClaimRedemption')
+        .withArgs(
+          postId,
+          redemptionPercent,
+          BigNumber.from(redemptionPercent).mul(bidPrice2).mul(9).div(1000)
+        )
+    })
+
+    it('should revert because the bidder claims the redemption twice', async () => {
+      const { manager } = await setupTests()
+      const managerByUser2 = manager.connect(user2)
+      const managerByUser3 = manager.connect(user3)
+
+      const postMetadata = 'abi09nadu2brasfjl'
+      const now = Date.now()
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const postId = await manager.nextPostId()
+      await postAs(manager, {
+        postMetadata: postMetadata,
+        from: fromTimestamp,
+        to: toTimestamp,
+      })
+
+      const bidMetadata2 = 'xxxdafakjkjfaj;jf'
+      const bidPrice2 = parseEth(100)
+      const bidId2 = await manager.nextBidId()
+      await bidAs(managerByUser2, {
+        postId: postId,
+        price: bidPrice2,
+        metadata: bidMetadata2,
+      })
+      const bitPrice3 = parseEth(200)
+      await bidAs(managerByUser3, {
+        postId: postId,
+        price: bitPrice3,
+      })
+
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 5000])
+      await network.provider.send('evm_mine')
+      await manager.close(bidId2)
+
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 10000])
+      await network.provider.send('evm_mine')
+
+      expect(await manager.behindSchedule(postId)).to.be.true
+      await manager.withdraw(postId)
+      await managerByUser2.claimRedemption(postId)
+
+      await expect(managerByUser2.claimRedemption(postId)).to.be.revertedWith(
+        'AD120'
+      )
+    })
+  })
+
   describe('refund', async () => {
     it('should refund after the period', async () => {
       const { manager } = await setupTests()
