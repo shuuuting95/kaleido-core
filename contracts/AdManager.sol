@@ -38,6 +38,7 @@ contract AdManager is IAdManager, NameAccessor {
 		uint256 price;
 		string metadata;
 		DraftStatus status;
+		bool redeemed;
 	}
 
 	// postId => PostContent
@@ -229,16 +230,15 @@ contract AdManager is IAdManager, NameAccessor {
 	function claimRedemption(uint256 postId) public {
 		Bidder memory bidder = bidderInfo[allPosts[postId].successfulBidId];
 		require(bidder.sender == msg.sender, "AD104");
+		require(allPosts[postId].toTimestamp < block.timestamp, "AD118");
+		require(!bidder.redeemed, "AD120");
 
 		if (allPosts[postId].acceptedTimestamp > allPosts[postId].fromTimestamp) {
-			uint256 achievedRatio = uint256(
-				(allPosts[postId].toTimestamp - allPosts[postId].acceptedTimestamp) /
-					(allPosts[postId].toTimestamp - allPosts[postId].fromTimestamp)
-			) * 100;
-			// TODO
+			uint256 redemptionPercent = 100 - achievedPercent(postId);
 			payable(msg.sender).transfer(
-				((bidder.price * achievedRatio * 9) / 100) / 10
+				(9 * bidder.price * redemptionPercent) / 1000
 			);
+			bidder.redeemed = true;
 		}
 	}
 
@@ -273,7 +273,6 @@ contract AdManager is IAdManager, NameAccessor {
 		bookedBidIds[bidder.postId] = bidId;
 		bidder.status = DraftStatus.CALLED;
 		_success(bidder.postId, bidId);
-		// payable(msg.sender).transfer(bidder.price);
 		_right().mint(
 			bidder.sender,
 			bidder.postId,
@@ -406,6 +405,7 @@ contract AdManager is IAdManager, NameAccessor {
 		bidder.price = msg.value;
 		bidder.metadata = metadata;
 		bidder.status = status;
+		bidder.redeemed = false;
 		bidderInfo[bidder.bidId] = bidder;
 		bidders[postId].push(bidder.bidId);
 	}

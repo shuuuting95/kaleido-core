@@ -200,6 +200,7 @@ describe('AdManager', async () => {
         bitPrice,
         bidMetadata,
         1,
+        false,
       ])
       expect(await manager.bidderList(postId)).to.deep.equal([bidId])
     })
@@ -280,6 +281,7 @@ describe('AdManager', async () => {
         bitPrice,
         '',
         0,
+        false,
       ])
       expect(await manager.bidderList(postId)).to.deep.equal([bidId])
     })

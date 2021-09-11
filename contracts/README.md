@@ -75,3 +75,7 @@ The period of the post has exceeded the ending time.
 ### AD119
 
 The bid has already been refunded.
+
+### AD120
+
+The bid has already been redeemed.
