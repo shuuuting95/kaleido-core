@@ -8,10 +8,14 @@ interface IAdManager {
 	event NewPost(
 		uint256 postId,
 		address owner,
+		uint256 minPrice,
 		string metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	);
+
+	/// @dev Emitted when a post is suspended.
+	event SuspendPost(uint256 postId);
 
 	/// @dev Emitted when a new bid is listed.
 	event Bid(
@@ -52,14 +56,20 @@ interface IAdManager {
 	/// @dev Creates a new post where the owner who has the advertising area
 	/// can public the space. The basic infomation of the area is described
 	/// on the storage, which is accessed by the metadata hash.
+	/// @param minPrice uint256 of the minimum price to bid or book
 	/// @param metadata string of the hashed path to the storage
 	/// @param fromTimestamp uint256 of the timestamp to display the ad
 	/// @param toTimestamp uint256 of the timestamp to display the ad
 	function newPost(
+		uint256 minPrice,
 		string memory metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) external;
+
+	/// @dev Suspends a post.
+	/// @param postId uint256 of the post ID
+	function suspendPost(uint256 postId) external;
 
 	/// @dev Bids to the post, sharing what kind of Ads would be public.
 	/// The owner of the Ad space can select the one according to not only

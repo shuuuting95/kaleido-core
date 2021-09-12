@@ -24,6 +24,7 @@ contract AdManager is IAdManager, NameAccessor {
 	struct PostContent {
 		uint256 postId;
 		address owner;
+		uint256 minPrice;
 		string metadata;
 		uint256 fromTimestamp;
 		uint256 toTimestamp;
@@ -62,10 +63,24 @@ contract AdManager is IAdManager, NameAccessor {
 
 	string private _baseURI = "https://kaleido.io/";
 
+	/// @dev Throws if the post has been expired.
+	modifier onlyModifiablePost(uint256 postId) {
+		require(allPosts[postId].toTimestamp >= block.timestamp, "AD108");
+		_;
+	}
+
+	/// @dev Throws if the post has been expired.
+	modifier onlyModifiablePostByBidId(uint256 bidId) {
+		Bidder memory bidder = bidderInfo[bidId];
+		require(allPosts[bidder.postId].toTimestamp >= block.timestamp, "AD108");
+		_;
+	}
+
 	constructor(address nameRegistry) NameAccessor(nameRegistry) {}
 
 	/// @inheritdoc IAdManager
 	function newPost(
+		uint256 minPrice,
 		string memory metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
@@ -75,6 +90,7 @@ contract AdManager is IAdManager, NameAccessor {
 		PostContent memory post;
 		post.postId = nextPostId++;
 		post.owner = msg.sender;
+		post.minPrice = minPrice;
 		post.metadata = metadata;
 		post.fromTimestamp = fromTimestamp;
 		post.toTimestamp = toTimestamp;
@@ -88,7 +104,7 @@ contract AdManager is IAdManager, NameAccessor {
 				inventories[msg.sender][post.metadata][i]
 			];
 			if (
-				isOverlapped(
+				_isOverlapped(
 					fromTimestamp,
 					toTimestamp,
 					another.fromTimestamp,
@@ -106,13 +122,23 @@ contract AdManager is IAdManager, NameAccessor {
 		emit NewPost(
 			post.postId,
 			post.owner,
+			post.minPrice,
 			post.metadata,
 			post.fromTimestamp,
 			post.toTimestamp
 		);
 	}
 
-	function isOverlapped(
+	/// @inheritdoc IAdManager
+	function suspendPost(uint256 postId) public override {
+		require(allPosts[postId].owner == msg.sender, "AD111");
+		require(allPosts[postId].successfulBidId == 0, "");
+		allPosts[postId].fromTimestamp = 0;
+		allPosts[postId].toTimestamp = 0;
+		emit SuspendPost(postId);
+	}
+
+	function _isOverlapped(
 		uint256 fromTimestamp,
 		uint256 toTimestamp,
 		uint256 anotherFromTimestamp,
@@ -162,6 +188,8 @@ contract AdManager is IAdManager, NameAccessor {
 		Bidder memory bidder = bidderInfo[bidId];
 		require(bidder.sender == msg.sender, "AD104");
 		require(allPosts[bidder.postId].successfulBidId != bidId, "AD107");
+		require(bidderInfo[bidId].status != DraftStatus.REFUNDED, "AD119");
+
 		payable(msg.sender).transfer(bidderInfo[bidId].price);
 		bidderInfo[bidId].status = DraftStatus.REFUNDED;
 		emit Refund(
@@ -233,6 +261,14 @@ contract AdManager is IAdManager, NameAccessor {
 		allPosts[postId].successfulBidId = bidId;
 	}
 
+	function isGteMinPrice(uint256 postId, uint256 price)
+		public
+		view
+		returns (bool)
+	{
+		return price >= allPosts[postId].minPrice;
+	}
+
 	function displayByMetadata(address account, string memory metadata)
 		public
 		view
@@ -264,6 +300,14 @@ contract AdManager is IAdManager, NameAccessor {
 			post.toTimestamp > block.timestamp;
 	}
 
+	function bidderList(uint256 postId) public view returns (uint256[] memory) {
+		return bidders[postId];
+	}
+
+	function metadataList() public view returns (string[] memory) {
+		return mediaMetadata[msg.sender];
+	}
+
 	function _book(uint256 postId) internal {
 		uint256 bidId = nextBidId++;
 		__bid(postId, bidId, "", DraftStatus.BOOKED);
@@ -283,6 +327,7 @@ contract AdManager is IAdManager, NameAccessor {
 		DraftStatus status
 	) internal onlyModifiablePost(postId) {
 		require(allPosts[postId].successfulBidId == 0, "AD102");
+		require(isGteMinPrice(postId, msg.value), "AD115");
 		Bidder memory bidder;
 		bidder.bidId = bidId;
 		bidder.postId = postId;
@@ -292,14 +337,6 @@ contract AdManager is IAdManager, NameAccessor {
 		bidder.status = status;
 		bidderInfo[bidder.bidId] = bidder;
 		bidders[postId].push(bidder.bidId);
-	}
-
-	function bidderList(uint256 postId) public view returns (uint256[] memory) {
-		return bidders[postId];
-	}
-
-	function metadataList() public view returns (string[] memory) {
-		return mediaMetadata[msg.sender];
 	}
 
 	function _right() internal view returns (DistributionRight) {
@@ -312,18 +349,5 @@ contract AdManager is IAdManager, NameAccessor {
 
 	function _postOwnerPool() internal view returns (PostOwnerPool) {
 		return PostOwnerPool(postOwnerPoolAddress());
-	}
-
-	/// @dev Throws if the post has been expired.
-	modifier onlyModifiablePost(uint256 postId) {
-		require(allPosts[postId].toTimestamp >= block.timestamp, "AD108");
-		_;
-	}
-
-	/// @dev Throws if the post has been expired.
-	modifier onlyModifiablePostByBidId(uint256 bidId) {
-		Bidder memory bidder = bidderInfo[bidId];
-		require(allPosts[bidder.postId].toTimestamp >= block.timestamp, "AD108");
-		_;
 	}
 }
