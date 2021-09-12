@@ -29,12 +29,14 @@ describe('AdManager', async () => {
 
       const postMetadata = 'abi09nadu2brasfjl'
       const now = Date.now()
+      const minPrice = parseEth(0.5)
       const fromTimestamp = now + 3600
       const toTimestamp = now + 7200
 
       const postId = await manager.nextPostId()
       expect(
         await postAs(manager, {
+          minPrice: minPrice,
           postMetadata: postMetadata,
           from: fromTimestamp,
           to: toTimestamp,
@@ -44,6 +46,7 @@ describe('AdManager', async () => {
         .withArgs(
           postId,
           user1.address,
+          minPrice,
           postMetadata,
           fromTimestamp,
           toTimestamp
@@ -52,6 +55,7 @@ describe('AdManager', async () => {
       expect(await manager.allPosts(postId)).to.deep.equal([
         postId,
         user1.address,
+        minPrice,
         postMetadata,
         BigNumber.from(fromTimestamp),
         BigNumber.from(toTimestamp),
@@ -141,6 +145,7 @@ describe('AdManager', async () => {
         .withArgs(
           postId,
           user1.address,
+          parseEth(0.1),
           anotherMetadata,
           fromTimestamp,
           toTimestamp
@@ -275,11 +280,11 @@ describe('AdManager', async () => {
       })
 
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
       await bidAs(managerByUser2, {
         postId: postId,
-        price: bitPrice2,
+        price: bidPrice2,
         metadata: bidMetadata2,
       })
       const bitPrice3 = parseEth(200)
@@ -293,7 +298,7 @@ describe('AdManager', async () => {
 
       expect(await manager.close(bidId2))
         .to.emit(manager, 'Close')
-        .withArgs(bidId2, postId, user2.address, bitPrice2, bidMetadata2)
+        .withArgs(bidId2, postId, user2.address, bidPrice2, bidMetadata2)
         .to.emit(vault, 'Received')
         .withArgs(manager.address, parseEth(10))
       const user1BalanceAfterClose = await user1.getBalance()
@@ -380,11 +385,11 @@ describe('AdManager', async () => {
         to: toTimestamp,
       })
       const bidMetadata2 = 'xxxdafakjkjfaj;jf'
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
       await bidAs(managerByUser2, {
         postId: postId,
-        price: bitPrice2,
+        price: bidPrice2,
         metadata: bidMetadata2,
       })
 
@@ -416,15 +421,15 @@ describe('AdManager', async () => {
       const postId = await manager.nextPostId()
 
       await postAs(manager)
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await bookAs(managerByUser2, postId, bitPrice2)
+      await bookAs(managerByUser2, postId, bidPrice2)
 
       const bitPrice3 = parseEth(200)
       await bookAs(managerByUser3, postId, bitPrice3)
       expect(await manager.call(bidId2))
         .to.emit(manager, 'Call')
-        .withArgs(bidId2, postId, user2.address, bitPrice2)
+        .withArgs(bidId2, postId, user2.address, bidPrice2)
       expect(await right.ownerOf(postId)).to.be.eq(user2.address)
       expect(await right.tokenURI(postId)).to.be.eq(
         `https://arweave.net/${postMetadata}`
@@ -447,14 +452,14 @@ describe('AdManager', async () => {
         from: fromTimestamp,
         to: toTimestamp,
       })
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
-      await bookAs(managerByUser2, postId, bitPrice2)
+      await bookAs(managerByUser2, postId, bidPrice2)
       const bidMetadata2 = ''
       await bidAs(managerByUser2, {
         postId: postId,
         metadata: bidMetadata2,
-        price: bitPrice2,
+        price: bidPrice2,
       })
       const bidId3 = await manager.nextBidId()
 
@@ -480,12 +485,12 @@ describe('AdManager', async () => {
         to: toTimestamp,
       })
       const bidMetadata2 = ''
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       const bidId2 = await manager.nextBidId()
       await bidAs(managerByUser2, {
         postId: postId,
         metadata: bidMetadata2,
-        price: bitPrice2,
+        price: bidPrice2,
       })
 
       await expect(managerByUser3.call(bidId2)).to.be.revertedWith('AD102')
@@ -506,11 +511,11 @@ describe('AdManager', async () => {
         to: toTimestamp,
       })
       const bidMetadata2 = ''
-      const bitPrice2 = parseEth(100)
+      const bidPrice2 = parseEth(100)
       await bidAs(managerByUser2, {
         postId: postId,
         metadata: bidMetadata2,
-        price: bitPrice2,
+        price: bidPrice2,
       })
       await expect(manager.call(999)).to.be.revertedWith('AD108')
     })
@@ -674,6 +679,7 @@ describe('AdManager', async () => {
   })
 })
 export interface PostProps {
+  minPrice?: BigNumber
   postMetadata?: string
   from?: number
   to?: number
@@ -683,6 +689,7 @@ export function postAs(manager: any, props?: PostProps) {
   const now = Date.now()
 
   return manager.newPost(
+    props?.minPrice ? props.minPrice : parseEth(0.1),
     props?.postMetadata ? props.postMetadata : 'abi09nadu2brasfjl',
     props?.from ? props.from : now - 1600,
     props?.to ? props.to : now + 3600
