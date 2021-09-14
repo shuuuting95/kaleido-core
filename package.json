@@ -2,6 +2,7 @@
   "scripts": {
     "deploy": "npx hardhat deploy --network hardhat",
     "deploy:rinkeby": "npx hardhat deploy --network rinkeby",
+    "deploy:polygon": "npx hardhat deploy --network polygon",
     "exec:newPost:rinkeby": "NETWORK=rinkeby npx hardhat run scripts/exec/newPost.ts --network rinkeby",
     "test": "npx hardhat test",
     "prettier": "prettier --write 'contracts/**/*.sol'"

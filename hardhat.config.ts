@@ -10,6 +10,7 @@ require('dotenv').config()
 
 const INFURA_KEY = process.env.INFURA_KEY || ''
 const PRIVATE_KEY = process.env.PRIVATE_KEY || ''
+const POLYGON_RPC_URL = process.env.POLYGON_RPC
 const gasPrice = 20000000000 // 2 gwei
 const COINMARKETCAP = process.env.COINMARKETCAP || ''
 
@@ -53,6 +54,12 @@ const config: HardhatUserConfig = {
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
+      accounts: [`0x${PRIVATE_KEY}`],
+      gasPrice,
+    },
+    polygon: {
+      chainId: 137,
+      url: `${POLYGON_RPC_URL}`,
       accounts: [`0x${PRIVATE_KEY}`],
       gasPrice,
     },
