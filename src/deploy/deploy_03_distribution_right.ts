@@ -11,8 +11,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const DistributionRight = await deploy('DistributionRight', {
     from: deployer,
     args: [
-      'DistributionRight',
-      'AD_RIGHT',
+      'Kaleido_DistributionRight',
       'https://arweave.net/',
       NameRegistry.address,
     ],
