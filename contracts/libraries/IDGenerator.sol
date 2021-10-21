@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.6;
+pragma solidity 0.8.9;
 
 library IDGenerator {
 	uint256 private constant ID_CAP = 10000000000000000;

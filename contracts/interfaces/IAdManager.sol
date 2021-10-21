@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.6;
+pragma solidity 0.8.9;
 
 /// @title IAdManager - Interface on top of AdManager base class.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
