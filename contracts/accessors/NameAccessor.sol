@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.6;
+pragma solidity 0.8.9;
 
 import "./NameRegistry.sol";
 
@@ -10,7 +10,7 @@ contract NameAccessor {
 
 	/// @dev Sets the address of NameRegistry.
 	/// @param nameRegistry address of the NameRegistry
-	constructor(address nameRegistry) {
+	function initialize(address nameRegistry) internal {
 		_nameRegistry = NameRegistry(nameRegistry);
 	}
 
@@ -29,6 +29,11 @@ contract NameAccessor {
 	/// @dev Gets the address of NameRegistry
 	function nameRegistryAddress() public view returns (address) {
 		return address(_nameRegistry);
+	}
+
+	/// @dev Gets the address of MediaRegistry.
+	function mediaRegistryAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("MediaRegistry")));
 	}
 
 	/// @dev Gets the address of DistributionRight.
