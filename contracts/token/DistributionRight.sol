@@ -1,23 +1,36 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "./ERC721Base.sol";
+import "../base/ERC721.sol";
 import "../accessors/NameAccessor.sol";
 
 /// @title DistributionRight - represents advertising distribution rights.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract DistributionRight is ERC721Base {
-	/// @dev Initializes NFT
-	/// @param name_ string of the token name
-	/// @param symbol_ string of the token symbol
-	/// @param baseURI_ string of the base URI
+contract DistributionRight is ERC721, NameAccessor {
+	modifier initializer() {
+		require(address(_nameRegistry) == address(0x0), "AR000");
+		_;
+	}
+
+	modifier initialized() {
+		require(address(_nameRegistry) != address(0x0), "AR001");
+		_;
+	}
+
+	/// @dev Initializes the contract
+	/// @param title string of the project name
+	/// @param baseURI string of the base URI
 	/// @param nameRegistry address of NameRegistry
-	constructor(
-		string memory name_,
-		string memory symbol_,
-		string memory baseURI_,
+	function initialize(
+		string memory title,
+		string memory baseURI,
 		address nameRegistry
-	) ERC721Base(name_, symbol_, baseURI_, nameRegistry) {}
+	) external initializer {
+		_name = title;
+		_symbol = string(abi.encodePacked("Aurora_", title));
+		_baseURI = baseURI;
+		initialize(nameRegistry);
+	}
 
 	/// @dev Mints a new NFT.
 	/// @param account address of the token owner
