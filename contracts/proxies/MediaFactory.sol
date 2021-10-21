@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "../proxies/PostProxy.sol";
+import "../proxies/MediaProxy.sol";
 import "../accessors/NameAccessor.sol";
 import "../base/MediaRegistry.sol";
 import "hardhat/console.sol";
 
-/// @title PostFactory - create a proxy contract according to a donation post.
+/// @title MediaFactory - create a proxy contract according to a donation media.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract MediaFactory is NameAccessor {
-	/// @dev Emitted when a new post is created.
-	event CreateProxy(PostProxy proxy, address singleton);
+	/// @dev Emitted when a new media is created.
+	event CreateProxy(MediaProxy proxy, address singleton);
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
 	}
 
-	function newPost(bytes memory initializer, uint256 saltNonce)
+	function newMedia(bytes memory initializer, uint256 saltNonce)
 		external
-		returns (PostProxy proxy)
+		returns (MediaProxy proxy)
 	{
 		proxy = createProxyWithNonce(nameRegistryAddress(), initializer, saltNonce);
 		_registry().addMedia(address(proxy), msg.sender);
@@ -32,7 +32,7 @@ contract MediaFactory is NameAccessor {
 		address accessor,
 		bytes memory initializer,
 		uint256 saltNonce
-	) internal returns (PostProxy proxy) {
+	) internal returns (MediaProxy proxy) {
 		proxy = deployProxyWithNonce(accessor, initializer, saltNonce);
 		if (initializer.length > 0)
 			// solhint-disable-next-line no-inline-assembly
@@ -64,13 +64,13 @@ contract MediaFactory is NameAccessor {
 		address accessor,
 		bytes memory initializer,
 		uint256 saltNonce
-	) internal returns (PostProxy proxy) {
+	) internal returns (MediaProxy proxy) {
 		// If the initializer changes the proxy address should change too. Hashing the initializer data is cheaper than just concatinating it
 		bytes32 salt = keccak256(
 			abi.encodePacked(keccak256(initializer), saltNonce)
 		);
 		bytes memory deploymentData = abi.encodePacked(
-			type(PostProxy).creationCode,
+			type(MediaProxy).creationCode,
 			uint256(uint160(accessor))
 		);
 		// solhint-disable-next-line no-inline-assembly
