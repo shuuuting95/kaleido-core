@@ -11,7 +11,7 @@ require('dotenv').config()
 const INFURA_KEY = process.env.INFURA_KEY || ''
 const PRIVATE_KEY = process.env.PRIVATE_KEY || ''
 const POLYGON_RPC_URL = process.env.POLYGON_RPC
-const gasPrice = 20000000000 // 2 gwei
+const gasPrice = 30000000000 // 30 gwei
 const COINMARKETCAP = process.env.COINMARKETCAP || ''
 
 const config: HardhatUserConfig = {
@@ -25,7 +25,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: '0.8.6',
+        version: '0.8.9',
         settings: {
           optimizer: {
             enabled: true,
