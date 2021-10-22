@@ -18,8 +18,20 @@ export const getVaultContract = async () => {
   return contract.attach(Deployment.address)
 }
 
-export const getPostOwnerPoolContract = async () => {
-  const Deployment = await deployments.get('PostOwnerPool')
-  const contract = await hre.ethers.getContractFactory('PostOwnerPool')
+export const getMediaFactoryContract = async () => {
+  const Deployment = await deployments.get('MediaFactory')
+  const contract = await hre.ethers.getContractFactory('MediaFactory')
+  return contract.attach(Deployment.address)
+}
+
+export const getMediaRegistryContract = async () => {
+  const Deployment = await deployments.get('MediaRegistry')
+  const contract = await hre.ethers.getContractFactory('MediaRegistry')
+  return contract.attach(Deployment.address)
+}
+
+export const getNameRegistryContract = async () => {
+  const Deployment = await deployments.get('NameRegistry')
+  const contract = await hre.ethers.getContractFactory('NameRegistry')
   return contract.attach(Deployment.address)
 }
