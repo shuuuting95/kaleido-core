@@ -1,5 +1,6 @@
+import { parseEther } from '@ethersproject/units'
 import { expect } from 'chai'
-import { ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { deployments, network, waffle } from 'hardhat'
 import { getAdManagerABI } from '../scripts/common/file'
 import { option } from '../scripts/common/wallet'
@@ -42,18 +43,67 @@ describe('AdManager', async () => {
         .withArgs(metadata)
     })
   })
+
+  describe('newPeirod', async () => {
+    it('should new an ad period', async () => {
+      const { now, factory, name } = await setupTests()
+      const { proxy } = await newMediaWith(factory, name)
+      const manager = _manager(proxy)
+      const metadata = 'asfafkjksjfkajf'
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const pricing = 0
+      const minPrice = parseEther('0.2')
+      await newSpaceWith(manager, { metadata: metadata })
+
+      expect(
+        await newPeriodWith(manager, {
+          metadata: metadata,
+          fromTimestamp: fromTimestamp,
+          toTimestamp: toTimestamp,
+          pricing: pricing,
+          minPrice: minPrice,
+        })
+      )
+        .to.emit(manager, 'NewPeriod')
+        .withArgs(metadata, fromTimestamp, toTimestamp, 0, pricing, minPrice)
+    })
+  })
 })
 
-export type DonateProps = {
+export type NewSpaceProps = {
   metadata?: string
 }
 
 export const newSpaceWith = async (
   manager: ethers.Contract,
-  props?: DonateProps
+  props?: NewSpaceProps
 ) => {
   return await manager.newSpace(
     props?.metadata ? props.metadata : 'abi09nadu2brasfjl',
+    option()
+  )
+}
+
+export type NewPeriodProps = {
+  metadata?: string
+  fromTimestamp?: number
+  toTimestamp?: number
+  pricing?: number
+  minPrice?: BigNumber
+}
+
+export const newPeriodWith = async (
+  manager: ethers.Contract,
+  props?: NewPeriodProps
+) => {
+  const now = Date.now()
+  return await manager.newPeriod(
+    props?.metadata ? props.metadata : 'abi09nadu2brasfjl',
+    props?.fromTimestamp ? props.fromTimestamp : now + 3600,
+    props?.toTimestamp ? props.toTimestamp : now + 7200,
+    props?.pricing ? props.pricing : 0,
+    props?.minPrice ? props.minPrice : parseEther('0.1'),
     option()
   )
 }

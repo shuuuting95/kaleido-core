@@ -22,8 +22,24 @@ contract AdManager is NameAccessor {
 	}
 
 	event NewSpace(string metadata);
+	event NewPeriod(
+		string metadata,
+		uint256 fromTimestamp,
+		uint256 toTimestamp,
+		Pricing pricing,
+		uint256 minPrice
+	);
 
+	struct AdPeriod {
+		uint256 fromTimestamp;
+		uint256 toTimestamp;
+		Pricing pricing;
+		uint256 minPrice;
+	}
 	mapping(string => bool) public spaced;
+	mapping(string => bytes32[]) public periodKeys;
+	// metadata * fromTimestamp * toTimestamp
+	mapping(bytes32 => AdPeriod) public allPeriods;
 
 	modifier initializer() {
 		require(address(_nameRegistry) == address(0x0), "AR000");
@@ -39,18 +55,66 @@ contract AdManager is NameAccessor {
 		initialize(nameRegistry);
 	}
 
-	function newSpace(string memory metadata) external {
+	function newSpace(string memory metadata) public {
 		spaced[metadata] = true;
 		emit NewSpace(metadata);
 	}
 
 	function newPeriod(
 		string memory metadata,
-		uint256 minPrice,
 		uint256 fromTimestamp,
 		uint256 toTimestamp,
-		Pricing pricing
-	) external {}
+		Pricing pricing,
+		uint256 minPrice
+	) external {
+		if (!spaced[metadata]) {
+			newSpace(metadata);
+		}
+		_checkOverlapping(metadata, fromTimestamp, toTimestamp);
+		bytes32 key = periodKey(metadata, fromTimestamp, toTimestamp);
+		periodKeys[metadata].push(key);
+		allPeriods[key] = AdPeriod(fromTimestamp, toTimestamp, pricing, minPrice);
+		emit NewPeriod(metadata, fromTimestamp, toTimestamp, pricing, minPrice);
+	}
+
+	function periodKey(
+		string memory metadata,
+		uint256 fromTimestamp,
+		uint256 toTimestamp
+	) public pure returns (bytes32) {
+		return keccak256(abi.encodePacked(metadata, fromTimestamp, toTimestamp));
+	}
+
+	function _checkOverlapping(
+		string memory metadata,
+		uint256 fromTimestamp,
+		uint256 toTimestamp
+	) internal view {
+		for (uint256 i = 0; i < periodKeys[metadata].length; i++) {
+			AdPeriod memory existing = allPeriods[periodKeys[metadata][i]];
+			if (
+				_isOverlapped(
+					fromTimestamp,
+					toTimestamp,
+					existing.fromTimestamp,
+					existing.toTimestamp
+				)
+			) {
+				revert("overlapped");
+			}
+		}
+	}
+
+	function _isOverlapped(
+		uint256 newFromTimestamp,
+		uint256 newToTimestamp,
+		uint256 currentFromTimestamp,
+		uint256 currentToTimestamp
+	) internal pure returns (bool) {
+		return
+			currentFromTimestamp <= newFromTimestamp &&
+			currentToTimestamp >= newToTimestamp;
+	}
 }
 
 // /// @title AdManager - allows anyone to create a post and bit to the post.
