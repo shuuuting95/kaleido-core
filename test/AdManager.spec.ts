@@ -108,6 +108,34 @@ describe('AdManager', async () => {
         })
       ).to.be.revertedWith('KD101')
     })
+
+    it('should revert because of improper time sequence', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const fromTimestamp = now + 7200
+      const toTimestamp = now + 3600
+
+      await expect(
+        newPeriodWith(manager, {
+          fromTimestamp: fromTimestamp,
+          toTimestamp: toTimestamp,
+        })
+      ).to.be.revertedWith('KD103')
+    })
+
+    it('should revert because of the past period', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const fromTimestamp = now - 7200
+      const toTimestamp = now - 3600
+
+      await expect(
+        newPeriodWith(manager, {
+          fromTimestamp: fromTimestamp,
+          toTimestamp: toTimestamp,
+        })
+      ).to.be.revertedWith('KD104')
+    })
   })
 
   describe('buy', async () => {

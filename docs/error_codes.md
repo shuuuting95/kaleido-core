@@ -17,5 +17,5 @@
 - `KD100`: `The ad has not created yet`
 - `KD101`: `Overlapped period`
 - `KD102`: `Existing space`
-- `KD103`: `Improper sequence`
+- `KD103`: `Improper time sequence`
 - `KD104`: `Past period`
