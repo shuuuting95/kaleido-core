@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { BigNumber, ethers } from 'ethers'
+import { ethers } from 'ethers'
 import { deployments, network, waffle } from 'hardhat'
 import { getAdManagerABI } from '../scripts/common/file'
 import {
@@ -30,30 +30,39 @@ describe('MediaFactory', async () => {
     it('should new a account of media', async () => {
       const { now, factory, manager, name, registry } = await setupTests()
 
-      const { proxy, singleton } = await newMediaWith(factory, name)
+      const metadata = 'xxdsfjakjajijraksldfjak'
+      const { proxy, singleton } = await newMediaWith(factory, name, {
+        metadata: metadata,
+      })
       expect(proxy).is.not.null
       expect(singleton).to.be.eq(name.address)
-      expect(await registry.allAccounts(proxy)).to.be.eq(user1.address)
+      expect(await registry.allAccounts(proxy)).to.deep.equal([
+        proxy,
+        user1.address,
+        metadata,
+      ])
     })
   })
 })
 
-export type PostProps = {
+export type NewMediaProps = {
   initializer?: string
   metadata?: string
-  maxCount?: BigNumber
-  maxAmount?: BigNumber
   saltNonce?: number
 }
 
 export const newMediaWith = async (
   factory: ethers.Contract,
   name: ethers.Contract,
-  props?: PostProps
+  props?: NewMediaProps
 ) => {
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
-  const initializer = ifaceAdManager.encodeFunctionData('init', [name.address])
+  const initializer = ifaceAdManager.encodeFunctionData('initialize', [
+    'MEDIA ID',
+    name.address,
+  ])
   const tx = await factory.newMedia(
+    props?.metadata ? props?.metadata : 'abi09nadu2brasfjl',
     props?.initializer ? props.initializer : initializer,
     props?.saltNonce ? props.saltNonce : 1
   )

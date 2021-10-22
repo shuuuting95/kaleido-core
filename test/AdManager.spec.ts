@@ -38,7 +38,7 @@ describe('AdManager', async () => {
       const manager = _manager(proxy)
       const metadata = 'asfafkjksjfkajf'
 
-      expect(await newSpaceWith(manager, { metadata: metadata }))
+      expect(await manager.newSpace(metadata))
         .to.emit(manager, 'NewSpace')
         .withArgs(metadata)
     })
@@ -54,7 +54,8 @@ describe('AdManager', async () => {
       const toTimestamp = now + 7200
       const pricing = 0
       const minPrice = parseEther('0.2')
-      await newSpaceWith(manager, { metadata: metadata })
+      await manager.newSpace(metadata)
+      const key = await manager.periodKey(metadata, fromTimestamp, toTimestamp)
 
       expect(
         await newPeriodWith(manager, {
@@ -66,24 +67,40 @@ describe('AdManager', async () => {
         })
       )
         .to.emit(manager, 'NewPeriod')
-        .withArgs(metadata, fromTimestamp, toTimestamp, 0, pricing, minPrice)
+        .withArgs(key, metadata, fromTimestamp, toTimestamp, pricing, minPrice)
+    })
+  })
+
+  describe('buy', async () => {
+    it('should buy a period', async () => {
+      const { now, factory, name } = await setupTests()
+      const { proxy } = await newMediaWith(factory, name)
+      const manager = _manager(proxy)
+      const metadata = 'asfafkjksjfkajf'
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const key = await manager.periodKey(metadata, fromTimestamp, toTimestamp)
+
+      const pricing = 0
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        metadata: metadata,
+        fromTimestamp: fromTimestamp,
+        toTimestamp: toTimestamp,
+        pricing: pricing,
+        minPrice: price,
+      })
+      expect(
+        await buyWith(manager.connect(user2), {
+          key,
+          value: price,
+        })
+      )
+        .to.emit(manager, 'Buy')
+        .withArgs(key, price, user2.address, now + 3)
     })
   })
 })
-
-export type NewSpaceProps = {
-  metadata?: string
-}
-
-export const newSpaceWith = async (
-  manager: ethers.Contract,
-  props?: NewSpaceProps
-) => {
-  return await manager.newSpace(
-    props?.metadata ? props.metadata : 'abi09nadu2brasfjl',
-    option()
-  )
-}
 
 export type NewPeriodProps = {
   metadata?: string
@@ -105,5 +122,17 @@ export const newPeriodWith = async (
     props?.pricing ? props.pricing : 0,
     props?.minPrice ? props.minPrice : parseEther('0.1'),
     option()
+  )
+}
+
+export type BuyProps = {
+  key: string
+  value?: BigNumber
+}
+
+export const buyWith = async (manager: ethers.Contract, props: BuyProps) => {
+  return await manager.buy(
+    props.key,
+    option({ value: props.value ? props.value : parseEther('0.1') })
   )
 }

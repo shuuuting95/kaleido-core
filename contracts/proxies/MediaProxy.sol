@@ -15,7 +15,7 @@ contract MediaProxy is IProxy {
 	}
 
 	function masterCopy() public view returns (address) {
-		return _nameRegistry.get(keccak256(abi.encodePacked("Post")));
+		return _nameRegistry.get(keccak256(abi.encodePacked("AdManager")));
 	}
 
 	/// @dev Calls when users request to the post.

@@ -1,12 +1,13 @@
 import { utils } from 'ethers'
 import { DeployFunction } from 'hardhat-deploy/types'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { findNameRegistry } from '../common/nameRegistry'
 
 const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre
   const { deployer } = await getNamedAccounts()
   const { deploy } = deployments
-  const NameRegistry = await deployments.get('NameRegistry')
+  const name = await findNameRegistry(hre)
 
   const AdManager = await deploy('AdManager', {
     from: deployer,
@@ -15,20 +16,15 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     deterministicDeployment: false,
   })
 
-  const NameRegistryFactory = await hre.ethers.getContractFactory(
-    'NameRegistry'
-  )
-  const name = NameRegistryFactory.attach(NameRegistry.address)
-  const txReceipt = await name.set(
-    utils.solidityKeccak256(['string'], ['AdManager']),
-    AdManager.address,
-    { gasLimit: 4500000 }
-  )
-  await txReceipt.wait()
-  console.log(
-    'AdManager: ',
-    await name.get(utils.solidityKeccak256(['string'], ['AdManager']))
-  )
+  const key = utils.solidityKeccak256(['string'], ['AdManager'])
+  const value = await name.get(key)
+  if (value !== AdManager.address) {
+    const txReceipt = await name.set(key, AdManager.address, {
+      gasLimit: 4500000,
+    })
+    await txReceipt.wait()
+    console.log('AdManager: ', await name.get(key))
+  }
 }
 
 export default deploy

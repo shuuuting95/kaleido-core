@@ -2,12 +2,13 @@
 pragma solidity 0.8.9;
 
 import "./accessors/NameAccessor.sol";
+import "./base/MediaRegistry.sol";
+import "hardhat/console.sol";
 
 // import "./base/PostOwnerPool.sol";
 // import "./token/DistributionRight.sol";
 // import "./interfaces/IAdManager.sol";
 // import "./base/Vault.sol";
-// import "hardhat/console.sol";
 
 /// @title AdManager - allows anyone to create a post and bit to the post.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
@@ -23,23 +24,27 @@ contract AdManager is NameAccessor {
 
 	event NewSpace(string metadata);
 	event NewPeriod(
+		bytes32 key,
 		string metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp,
 		Pricing pricing,
 		uint256 minPrice
 	);
+	event Buy(bytes32 key, uint256 price, address buyer, uint256 timestamp);
 
 	struct AdPeriod {
 		uint256 fromTimestamp;
 		uint256 toTimestamp;
 		Pricing pricing;
 		uint256 minPrice;
+		bool sold;
 	}
 	mapping(string => bool) public spaced;
 	mapping(string => bytes32[]) public periodKeys;
 	// metadata * fromTimestamp * toTimestamp
 	mapping(bytes32 => AdPeriod) public allPeriods;
+	string public mediaId;
 
 	modifier initializer() {
 		require(address(_nameRegistry) == address(0x0), "AR000");
@@ -51,7 +56,8 @@ contract AdManager is NameAccessor {
 		_;
 	}
 
-	function init(address nameRegistry) external initializer {
+	function initialize(string memory _mediaId, address nameRegistry) external {
+		mediaId = _mediaId;
 		initialize(nameRegistry);
 	}
 
@@ -73,8 +79,41 @@ contract AdManager is NameAccessor {
 		_checkOverlapping(metadata, fromTimestamp, toTimestamp);
 		bytes32 key = periodKey(metadata, fromTimestamp, toTimestamp);
 		periodKeys[metadata].push(key);
-		allPeriods[key] = AdPeriod(fromTimestamp, toTimestamp, pricing, minPrice);
-		emit NewPeriod(metadata, fromTimestamp, toTimestamp, pricing, minPrice);
+		allPeriods[key] = AdPeriod(
+			fromTimestamp,
+			toTimestamp,
+			pricing,
+			minPrice,
+			false
+		);
+		emit NewPeriod(
+			key,
+			metadata,
+			fromTimestamp,
+			toTimestamp,
+			pricing,
+			minPrice
+		);
+	}
+
+	function buy(bytes32 key) external payable {
+		require(allPeriods[key].pricing == Pricing.RRP, "not RRP");
+		require(!allPeriods[key].sold, "has already sold");
+		require(
+			_mediaRegistry().ownerOf(address(this)) != msg.sender,
+			"is the owner"
+		);
+		require(allPeriods[key].minPrice == msg.value, "inappropriate amount");
+		allPeriods[key].sold = true;
+		emit Buy(key, msg.value, msg.sender, block.timestamp);
+	}
+
+	function withdraw() external {
+		require(
+			_mediaRegistry().ownerOf(address(this)) == msg.sender,
+			"is not the owner"
+		);
+		payable(msg.sender).transfer(address(this).balance);
 	}
 
 	function periodKey(
@@ -83,6 +122,14 @@ contract AdManager is NameAccessor {
 		uint256 toTimestamp
 	) public pure returns (bytes32) {
 		return keccak256(abi.encodePacked(metadata, fromTimestamp, toTimestamp));
+	}
+
+	function testtesttest(
+		string memory metadata,
+		uint256 fromTimestamp,
+		uint256 toTimestamp
+	) public view returns (uint256) {
+		return toTimestamp;
 	}
 
 	function _checkOverlapping(
@@ -114,6 +161,10 @@ contract AdManager is NameAccessor {
 		return
 			currentFromTimestamp <= newFromTimestamp &&
 			currentToTimestamp >= newToTimestamp;
+	}
+
+	function _mediaRegistry() internal view returns (MediaRegistry) {
+		return MediaRegistry(mediaRegistryAddress());
 	}
 }
 

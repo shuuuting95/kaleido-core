@@ -16,12 +16,13 @@ contract MediaFactory is NameAccessor {
 		initialize(_nameRegistry);
 	}
 
-	function newMedia(bytes memory initializer, uint256 saltNonce)
-		external
-		returns (MediaProxy proxy)
-	{
+	function newMedia(
+		string memory metadata,
+		bytes memory initializer,
+		uint256 saltNonce
+	) external returns (MediaProxy proxy) {
 		proxy = createProxyWithNonce(nameRegistryAddress(), initializer, saltNonce);
-		_registry().addMedia(address(proxy), msg.sender);
+		_registry().addMedia(address(proxy), metadata, msg.sender);
 	}
 
 	/// @dev Allows to create new proxy contact and execute a message call to the new proxy within one transaction.
