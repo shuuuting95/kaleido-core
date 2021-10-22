@@ -21,6 +21,10 @@ contract AdManager is NameAccessor {
 		BID
 	}
 
+	event NewSpace(string metadata);
+
+	mapping(string => bool) public spaced;
+
 	modifier initializer() {
 		require(address(_nameRegistry) == address(0x0), "AR000");
 		_;
@@ -35,7 +39,10 @@ contract AdManager is NameAccessor {
 		initialize(nameRegistry);
 	}
 
-	function newSpace(string memory metadata) external {}
+	function newSpace(string memory metadata) external {
+		spaced[metadata] = true;
+		emit NewSpace(metadata);
+	}
 
 	function newPeriod(
 		string memory metadata,
