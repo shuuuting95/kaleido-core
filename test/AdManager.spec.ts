@@ -137,6 +137,40 @@ describe('AdManager', async () => {
         .withArgs(tokenId, price, user2.address, now + 3)
     })
   })
+
+  describe('propose', async () => {
+    it('should propose to the right you bought', async () => {
+      const { now, factory, name } = await setupTests()
+      const { proxy } = await newMediaWith(factory, name)
+      const manager = _manager(proxy)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        fromTimestamp,
+        toTimestamp
+      )
+      const pricing = 0
+      const price = parseEther('0.2')
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      await newPeriodWith(manager, {
+        metadata: spaceMetadata,
+        fromTimestamp: fromTimestamp,
+        toTimestamp: toTimestamp,
+        pricing: pricing,
+        minPrice: price,
+      })
+      await buyWith(manager.connect(user2), {
+        tokenId,
+        value: price,
+      })
+
+      expect(await manager.connect(user2).propose(tokenId, proposalMetadata))
+        .to.emit(manager, 'Propose')
+        .withArgs(tokenId, proposalMetadata)
+    })
+  })
 })
 
 export type NewPeriodProps = {

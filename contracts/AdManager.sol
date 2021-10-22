@@ -33,6 +33,8 @@ contract AdManager is DistributionRight {
 		uint256 minPrice
 	);
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
+	event Propose(uint256 tokenId, string metadata);
+	event Accept(uint256 tokenId);
 
 	struct AdPeriod {
 		uint256 fromTimestamp;
@@ -124,6 +126,16 @@ contract AdManager is DistributionRight {
 			"is not the owner"
 		);
 		payable(msg.sender).transfer(address(this).balance);
+	}
+
+	function propose(uint256 tokenId, string memory metadata) external {
+		_proposeToRight(tokenId, metadata);
+		emit Propose(tokenId, metadata);
+	}
+
+	function accept(uint256 tokenId) external {
+		_burnRight(tokenId);
+		emit Accept(tokenId);
 	}
 
 	function adId(

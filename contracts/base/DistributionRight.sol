@@ -9,6 +9,8 @@ import "hardhat/console.sol";
 /// @title AdManager - allows anyone to create a post and bit to the post.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract DistributionRight is ERC721, NameAccessor {
+	mapping(uint256 => string) public proposed;
+
 	function _mintRight(uint256 tokenId, string memory metadata) internal {
 		_mint(address(this), tokenId);
 		_tokenURIs[tokenId] = metadata;
@@ -21,5 +23,9 @@ contract DistributionRight is ERC721, NameAccessor {
 
 	function _soldRight(uint256 tokenId) internal {
 		_transfer(address(this), msg.sender, tokenId);
+	}
+
+	function _proposeToRight(uint256 tokenId, string memory metadata) internal {
+		proposed[tokenId] = metadata;
 	}
 }
