@@ -35,6 +35,7 @@ contract AdManager is DistributionRight {
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Propose(uint256 tokenId, string metadata);
 	event Accept(uint256 tokenId);
+	event Deny(uint256 tokenId, string reason);
 	event Withdraw(uint256 amount);
 
 	struct AdPeriod {
@@ -72,6 +73,7 @@ contract AdManager is DistributionRight {
 	}
 
 	function newSpace(string memory metadata) public {
+		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
 		spaced[metadata] = true;
 		emit NewSpace(metadata);
 	}
@@ -83,6 +85,7 @@ contract AdManager is DistributionRight {
 		Pricing pricing,
 		uint256 minPrice
 	) external {
+		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
 		if (!spaced[metadata]) {
 			newSpace(metadata);
 		}
@@ -139,6 +142,11 @@ contract AdManager is DistributionRight {
 	function accept(uint256 tokenId) external {
 		_burnRight(tokenId);
 		emit Accept(tokenId);
+	}
+
+	function deny(uint256 tokenId, string memory reason) external {
+		deniedReason[tokenId] = reason;
+		emit Deny(tokenId, reason);
 	}
 
 	function adId(

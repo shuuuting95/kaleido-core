@@ -81,6 +81,15 @@ describe('AdManager', async () => {
           minPrice
         )
     })
+
+    it('should revert because the media is not yours', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+
+      await expect(newPeriodWith(manager.connect(user2))).to.be.revertedWith(
+        'KD012'
+      )
+    })
   })
 
   describe('buy', async () => {

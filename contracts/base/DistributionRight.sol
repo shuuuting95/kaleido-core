@@ -10,6 +10,7 @@ import "hardhat/console.sol";
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract DistributionRight is ERC721, NameAccessor {
 	mapping(uint256 => string) public proposed;
+	mapping(uint256 => string) public deniedReason;
 
 	function _mintRight(uint256 tokenId, string memory metadata) internal {
 		_mint(address(this), tokenId);
