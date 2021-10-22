@@ -6,11 +6,6 @@ import "./base/MediaRegistry.sol";
 import "./base/DistributionRight.sol";
 import "hardhat/console.sol";
 
-// import "./base/PostOwnerPool.sol";
-// import "./token/DistributionRight.sol";
-// import "./interfaces/IAdManager.sol";
-// import "./base/Vault.sol";
-
 /// @title AdManager - allows anyone to create a post and bit to the post.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is DistributionRight {
@@ -74,6 +69,7 @@ contract AdManager is DistributionRight {
 
 	function newSpace(string memory metadata) public {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
+		require(!spaced[metadata], "KD102");
 		spaced[metadata] = true;
 		emit NewSpace(metadata);
 	}
@@ -86,6 +82,8 @@ contract AdManager is DistributionRight {
 		uint256 minPrice
 	) external {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
+		require(fromTimestamp < toTimestamp, "KD103");
+		require(toTimestamp > block.timestamp, "KD104");
 		if (!spaced[metadata]) {
 			newSpace(metadata);
 		}

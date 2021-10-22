@@ -109,8 +109,7 @@ describe('AdManager', async () => {
       ).to.be.revertedWith('KD101')
     })
   })
-  // !(newFromTimestamp > currentToTimestamp ||
-  //   newToTimestamp < currentFromTimestamp);
+
   describe('buy', async () => {
     it('should buy a period', async () => {
       const { now, factory, name } = await setupTests()
