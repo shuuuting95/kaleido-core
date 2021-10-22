@@ -184,24 +184,20 @@ describe('AdManager', async () => {
         fromTimestamp,
         toTimestamp
       )
-      const pricing = 0
-      const price = parseEther('0.2')
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       await newPeriodWith(manager, {
         metadata: spaceMetadata,
         fromTimestamp: fromTimestamp,
         toTimestamp: toTimestamp,
-        pricing: pricing,
-        minPrice: price,
       })
       await buyWith(manager.connect(user2), {
         tokenId,
-        value: price,
       })
+      await manager.connect(user2).propose(tokenId, proposalMetadata)
 
-      expect(await manager.connect(user2).propose(tokenId, proposalMetadata))
-        .to.emit(manager, 'Propose')
-        .withArgs(tokenId, proposalMetadata)
+      expect(await manager.accept(tokenId))
+        .to.emit(manager, 'Accept')
+        .withArgs(tokenId)
     })
   })
 })
