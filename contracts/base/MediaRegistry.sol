@@ -10,6 +10,12 @@ import "hardhat/console.sol";
 contract MediaRegistry is BlockTimestamp, NameAccessor {
 	mapping(address => address) public allAccounts;
 
+	/// Constructor
+	/// @dev _nameRegistry address of the NameRegistry
+	constructor(address _nameRegistry) {
+		initialize(_nameRegistry);
+	}
+
 	function addMedia(
 		address proxy,
 		address owner /**onlyMediaFactory*/

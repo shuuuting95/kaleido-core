@@ -31,9 +31,9 @@ contract AdManager is NameAccessor {
 		_;
 	}
 
-	// function initialize(address nameRegistry) external initializer {
-	// 	initialize(nameRegistry);
-	// }
+	function init(address nameRegistry) external initializer {
+		initialize(nameRegistry);
+	}
 
 	function newSpace(string memory metadata) external {}
 
