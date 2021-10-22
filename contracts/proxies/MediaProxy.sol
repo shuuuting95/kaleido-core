@@ -50,6 +50,8 @@ contract MediaProxy is IProxy {
 	}
 
 	receive() external payable {
-		_fallback();
+		require(msg.value != 0, "msg.value is zero");
+		address vault = _nameRegistry.get(keccak256(abi.encodePacked("Vault")));
+		payable(vault).transfer(msg.value / 2);
 	}
 }

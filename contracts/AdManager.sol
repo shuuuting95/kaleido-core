@@ -124,12 +124,8 @@ contract AdManager is NameAccessor {
 		return keccak256(abi.encodePacked(metadata, fromTimestamp, toTimestamp));
 	}
 
-	function testtesttest(
-		string memory metadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp
-	) public view returns (uint256) {
-		return toTimestamp;
+	function balance() public view returns (uint256) {
+		return address(this).balance;
 	}
 
 	function _checkOverlapping(
