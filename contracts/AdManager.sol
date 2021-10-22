@@ -3,6 +3,7 @@ pragma solidity 0.8.9;
 
 import "./accessors/NameAccessor.sol";
 import "./base/MediaRegistry.sol";
+import "./base/DistributionRight.sol";
 import "hardhat/console.sol";
 
 // import "./base/PostOwnerPool.sol";
@@ -12,7 +13,7 @@ import "hardhat/console.sol";
 
 /// @title AdManager - allows anyone to create a post and bit to the post.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is NameAccessor {
+contract AdManager is DistributionRight {
 	// RBP : Recommended Retail Price
 	// DPBT: Dynamic Pricing Based on Time
 	// BID : Auction, Bidding Price
@@ -24,14 +25,14 @@ contract AdManager is NameAccessor {
 
 	event NewSpace(string metadata);
 	event NewPeriod(
-		bytes32 key,
+		uint256 tokenId,
 		string metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp,
 		Pricing pricing,
 		uint256 minPrice
 	);
-	event Buy(bytes32 key, uint256 price, address buyer, uint256 timestamp);
+	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 
 	struct AdPeriod {
 		uint256 fromTimestamp;
@@ -41,9 +42,9 @@ contract AdManager is NameAccessor {
 		bool sold;
 	}
 	mapping(string => bool) public spaced;
-	mapping(string => bytes32[]) public periodKeys;
+	mapping(string => uint256[]) public periodKeys;
 	// metadata * fromTimestamp * toTimestamp
-	mapping(bytes32 => AdPeriod) public allPeriods;
+	mapping(uint256 => AdPeriod) public allPeriods;
 	string public mediaId;
 
 	modifier initializer() {
@@ -56,8 +57,14 @@ contract AdManager is NameAccessor {
 		_;
 	}
 
-	function initialize(string memory _mediaId, address nameRegistry) external {
-		mediaId = _mediaId;
+	function initialize(
+		string memory title,
+		string memory baseURI,
+		address nameRegistry
+	) external {
+		_name = title;
+		_symbol = string(abi.encodePacked("Kaleido_", title));
+		_baseURI = baseURI;
 		initialize(nameRegistry);
 	}
 
@@ -77,17 +84,18 @@ contract AdManager is NameAccessor {
 			newSpace(metadata);
 		}
 		_checkOverlapping(metadata, fromTimestamp, toTimestamp);
-		bytes32 key = periodKey(metadata, fromTimestamp, toTimestamp);
-		periodKeys[metadata].push(key);
-		allPeriods[key] = AdPeriod(
+		uint256 tokenId = adId(metadata, fromTimestamp, toTimestamp);
+		periodKeys[metadata].push(tokenId);
+		allPeriods[tokenId] = AdPeriod(
 			fromTimestamp,
 			toTimestamp,
 			pricing,
 			minPrice,
 			false
 		);
+		_mintRight(tokenId, metadata);
 		emit NewPeriod(
-			key,
+			tokenId,
 			metadata,
 			fromTimestamp,
 			toTimestamp,
@@ -96,16 +104,17 @@ contract AdManager is NameAccessor {
 		);
 	}
 
-	function buy(bytes32 key) external payable {
-		require(allPeriods[key].pricing == Pricing.RRP, "not RRP");
-		require(!allPeriods[key].sold, "has already sold");
+	function buy(uint256 tokenId) external payable {
+		require(allPeriods[tokenId].pricing == Pricing.RRP, "not RRP");
+		require(!allPeriods[tokenId].sold, "has already sold");
 		require(
 			_mediaRegistry().ownerOf(address(this)) != msg.sender,
 			"is the owner"
 		);
-		require(allPeriods[key].minPrice == msg.value, "inappropriate amount");
-		allPeriods[key].sold = true;
-		emit Buy(key, msg.value, msg.sender, block.timestamp);
+		require(allPeriods[tokenId].minPrice == msg.value, "inappropriate amount");
+		allPeriods[tokenId].sold = true;
+		payable(vaultAddress()).transfer(msg.value);
+		emit Buy(tokenId, msg.value, msg.sender, block.timestamp);
 	}
 
 	function withdraw() external {
@@ -116,12 +125,15 @@ contract AdManager is NameAccessor {
 		payable(msg.sender).transfer(address(this).balance);
 	}
 
-	function periodKey(
+	function adId(
 		string memory metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp
-	) public pure returns (bytes32) {
-		return keccak256(abi.encodePacked(metadata, fromTimestamp, toTimestamp));
+	) public pure returns (uint256) {
+		return
+			uint256(
+				keccak256(abi.encodePacked(metadata, fromTimestamp, toTimestamp))
+			) % 1000000000000000;
 	}
 
 	function balance() public view returns (uint256) {

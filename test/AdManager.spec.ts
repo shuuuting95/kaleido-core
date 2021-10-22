@@ -55,7 +55,7 @@ describe('AdManager', async () => {
       const pricing = 0
       const minPrice = parseEther('0.2')
       await manager.newSpace(metadata)
-      const key = await manager.periodKey(metadata, fromTimestamp, toTimestamp)
+      const tokenId = await manager.adId(metadata, fromTimestamp, toTimestamp)
 
       expect(
         await newPeriodWith(manager, {
@@ -67,7 +67,14 @@ describe('AdManager', async () => {
         })
       )
         .to.emit(manager, 'NewPeriod')
-        .withArgs(key, metadata, fromTimestamp, toTimestamp, pricing, minPrice)
+        .withArgs(
+          tokenId,
+          metadata,
+          fromTimestamp,
+          toTimestamp,
+          pricing,
+          minPrice
+        )
     })
   })
 
@@ -79,7 +86,7 @@ describe('AdManager', async () => {
       const metadata = 'asfafkjksjfkajf'
       const fromTimestamp = now + 3600
       const toTimestamp = now + 7200
-      const key = await manager.periodKey(metadata, fromTimestamp, toTimestamp)
+      const tokenId = await manager.adId(metadata, fromTimestamp, toTimestamp)
 
       const pricing = 0
       const price = parseEther('0.2')
@@ -92,12 +99,42 @@ describe('AdManager', async () => {
       })
       expect(
         await buyWith(manager.connect(user2), {
-          key,
+          tokenId,
           value: price,
         })
       )
         .to.emit(manager, 'Buy')
-        .withArgs(key, price, user2.address, now + 3)
+        .withArgs(tokenId, price, user2.address, now + 3)
+    })
+  })
+
+  describe('withdraw', async () => {
+    it('should buy a period', async () => {
+      const { now, factory, name } = await setupTests()
+      const { proxy } = await newMediaWith(factory, name)
+      const manager = _manager(proxy)
+      const metadata = 'asfafkjksjfkajf'
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const tokenId = await manager.adId(metadata, fromTimestamp, toTimestamp)
+
+      const pricing = 0
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        metadata: metadata,
+        fromTimestamp: fromTimestamp,
+        toTimestamp: toTimestamp,
+        pricing: pricing,
+        minPrice: price,
+      })
+      expect(
+        await buyWith(manager.connect(user2), {
+          tokenId,
+          value: price,
+        })
+      )
+        .to.emit(manager, 'Buy')
+        .withArgs(tokenId, price, user2.address, now + 3)
     })
   })
 })
@@ -126,13 +163,13 @@ export const newPeriodWith = async (
 }
 
 export type BuyProps = {
-  key: string
+  tokenId: string
   value?: BigNumber
 }
 
 export const buyWith = async (manager: ethers.Contract, props: BuyProps) => {
   return await manager.buy(
-    props.key,
+    props.tokenId,
     option({ value: props.value ? props.value : parseEther('0.1') })
   )
 }

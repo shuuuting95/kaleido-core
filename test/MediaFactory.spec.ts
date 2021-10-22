@@ -58,7 +58,8 @@ export const newMediaWith = async (
 ) => {
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
   const initializer = ifaceAdManager.encodeFunctionData('initialize', [
-    'MEDIA ID',
+    'NameA',
+    'https://base',
     name.address,
   ])
   const tx = await factory.newMedia(
