@@ -15,7 +15,4 @@
 ## Ad related
 
 - `KD100`: `The ad has not created yet`
-- `KD101`: `The ad owner cannot donate to yourself`
-- `KD102`: `Closed post`
-- `KD103`: `The ad is not yours`
-- `KD104`: `Not enough donations`
+- `KD101`: `Overlapped period`

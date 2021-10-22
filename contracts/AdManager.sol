@@ -179,7 +179,7 @@ contract AdManager is DistributionRight {
 					existing.toTimestamp
 				)
 			) {
-				revert("overlapped");
+				revert("KD101");
 			}
 		}
 	}
@@ -191,8 +191,8 @@ contract AdManager is DistributionRight {
 		uint256 currentToTimestamp
 	) internal pure returns (bool) {
 		return
-			currentFromTimestamp <= newFromTimestamp &&
-			currentToTimestamp >= newToTimestamp;
+			!(newFromTimestamp > currentToTimestamp ||
+				newToTimestamp < currentFromTimestamp);
 	}
 
 	function _mediaRegistry() internal view returns (MediaRegistry) {

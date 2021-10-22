@@ -83,15 +83,34 @@ describe('AdManager', async () => {
     })
 
     it('should revert because the media is not yours', async () => {
-      const { now, factory, name } = await setupTests()
+      const { factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
 
       await expect(newPeriodWith(manager.connect(user2))).to.be.revertedWith(
         'KD012'
       )
     })
-  })
 
+    it('should revert because of overlapped period', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+
+      await newPeriodWith(manager, {
+        fromTimestamp: fromTimestamp,
+        toTimestamp: toTimestamp,
+      })
+      await expect(
+        newPeriodWith(manager, {
+          fromTimestamp: now + 7100,
+          toTimestamp: now + 9000,
+        })
+      ).to.be.revertedWith('KD101')
+    })
+  })
+  // !(newFromTimestamp > currentToTimestamp ||
+  //   newToTimestamp < currentFromTimestamp);
   describe('buy', async () => {
     it('should buy a period', async () => {
       const { now, factory, name } = await setupTests()
