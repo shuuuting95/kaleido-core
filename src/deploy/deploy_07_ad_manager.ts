@@ -10,7 +10,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const AdManager = await deploy('AdManager', {
     from: deployer,
-    args: [NameRegistry.address],
+    args: [],
     log: true,
     deterministicDeployment: false,
   })
