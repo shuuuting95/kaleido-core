@@ -10,12 +10,16 @@ import "hardhat/console.sol";
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract DistributionRight is ERC721, NameAccessor {
 	function _mintRight(uint256 tokenId, string memory metadata) internal {
-		_mint(msg.sender, tokenId);
+		_mint(address(this), tokenId);
 		_tokenURIs[tokenId] = metadata;
 	}
 
 	function _burnRight(uint256 tokenId) internal {
 		_burn(tokenId);
 		_tokenURIs[tokenId] = "";
+	}
+
+	function _soldRight(uint256 tokenId) internal {
+		_transfer(address(this), msg.sender, tokenId);
 	}
 }

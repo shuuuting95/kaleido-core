@@ -113,6 +113,7 @@ contract AdManager is DistributionRight {
 		);
 		require(allPeriods[tokenId].minPrice == msg.value, "inappropriate amount");
 		allPeriods[tokenId].sold = true;
+		_soldRight(tokenId);
 		payable(vaultAddress()).transfer(msg.value);
 		emit Buy(tokenId, msg.value, msg.sender, block.timestamp);
 	}
