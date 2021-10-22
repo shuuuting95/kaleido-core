@@ -35,6 +35,7 @@ contract AdManager is DistributionRight {
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Propose(uint256 tokenId, string metadata);
 	event Accept(uint256 tokenId);
+	event Withdraw(uint256 amount);
 
 	struct AdPeriod {
 		uint256 fromTimestamp;
@@ -116,7 +117,7 @@ contract AdManager is DistributionRight {
 		require(allPeriods[tokenId].minPrice == msg.value, "inappropriate amount");
 		allPeriods[tokenId].sold = true;
 		_soldRight(tokenId);
-		payable(vaultAddress()).transfer(msg.value);
+		payable(vaultAddress()).transfer(msg.value / 10);
 		emit Buy(tokenId, msg.value, msg.sender, block.timestamp);
 	}
 
@@ -125,7 +126,9 @@ contract AdManager is DistributionRight {
 			_mediaRegistry().ownerOf(address(this)) == msg.sender,
 			"is not the owner"
 		);
-		payable(msg.sender).transfer(address(this).balance);
+		uint256 remained = address(this).balance;
+		payable(msg.sender).transfer(remained);
+		emit Withdraw(remained);
 	}
 
 	function propose(uint256 tokenId, string memory metadata) external {
