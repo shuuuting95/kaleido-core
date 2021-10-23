@@ -112,11 +112,11 @@ contract AdManager is DistributionRight, BlockTimestamp {
 		returns (uint256)
 	{
 		if (period.pricing == Ad.Pricing.RRP) {
-			period.startPrice = period.minPrice;
+			return period.minPrice;
 		} else if (period.pricing == Ad.Pricing.DPBT) {
-			period.startPrice = period.minPrice * 10;
+			return period.minPrice * 10;
 		} else if (period.pricing == Ad.Pricing.BIDDING) {
-			period.startPrice = period.minPrice;
+			return period.minPrice;
 		} else {
 			return 0;
 		}
@@ -143,10 +143,11 @@ contract AdManager is DistributionRight, BlockTimestamp {
 			_mediaRegistry().ownerOf(address(this)) != msg.sender,
 			"is the owner"
 		);
-		require(allPeriods[tokenId].minPrice == msg.value, "inappropriate amount");
-
+		require(currentPrice(tokenId) <= msg.value, "low price");
 		allPeriods[tokenId].sold = true;
 		_soldRight(tokenId);
+		payable(vaultAddress()).transfer(msg.value / 10);
+		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
 	function currentPrice(uint256 tokenId) public view returns (uint256) {

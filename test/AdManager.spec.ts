@@ -178,6 +178,48 @@ describe('AdManager', async () => {
     })
   })
 
+  describe('buyBasedOnTime', async () => {
+    it('should buy a period', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        fromTimestamp,
+        toTimestamp
+      )
+      const pricing = 1
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        spaceMetadata: spaceMetadata,
+        fromTimestamp: fromTimestamp,
+        toTimestamp: toTimestamp,
+        pricing: pricing,
+        minPrice: price,
+      })
+
+      // 2400/3600 -> 66% passed
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 2400])
+      await network.provider.send('evm_mine')
+
+      const currentPrice = await manager.currentPrice(tokenId)
+
+      // slightly passed for its operation
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 2460])
+      await network.provider.send('evm_mine')
+
+      expect(
+        await manager
+          .connect(user2)
+          .buyBasedOnTime(tokenId, option({ value: currentPrice }))
+      )
+        .to.emit(manager, 'Buy')
+        .withArgs(tokenId, price, user2.address, now + 3)
+    })
+  })
+
   describe('withdraw', async () => {
     it('should buy a period', async () => {
       const { now, factory, name } = await setupTests()
