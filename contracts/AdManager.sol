@@ -76,15 +76,16 @@ contract AdManager is DistributionRight {
 		_checkOverlapping(metadata, fromTimestamp, toTimestamp);
 		uint256 tokenId = Ad.id(metadata, fromTimestamp, toTimestamp);
 		periodKeys[metadata].push(tokenId);
-		allPeriods[tokenId] = Ad.Period(
+		Ad.Period memory period = Ad.Period(
 			fromTimestamp,
 			toTimestamp,
 			pricing,
 			minPrice,
 			false
 		);
+		allPeriods[tokenId] = period;
 		_mintRight(tokenId, metadata);
-		_adPool().addPeriod();
+		_adPool().addPeriod(tokenId, period);
 		emit NewPeriod(
 			tokenId,
 			metadata,

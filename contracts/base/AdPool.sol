@@ -2,17 +2,22 @@
 pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
+import "../libraries/Ad.sol";
 import "./MediaRegistry.sol";
 import "./BlockTimestamp.sol";
 
 /// @title AdPool - stores all ads accorss every space.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdPool is BlockTimestamp, NameAccessor {
+	mapping(uint256 => Ad.Period) public allPeriods;
+
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
 	}
 
-	function addPeriod() external {}
+	function addPeriod(uint256 tokenId, Ad.Period memory period) external {
+		allPeriods[tokenId] = period;
+	}
 
 	/**
 	 * Accessors
