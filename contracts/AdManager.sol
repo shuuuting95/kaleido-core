@@ -5,12 +5,13 @@ import "./accessors/NameAccessor.sol";
 import "./base/MediaRegistry.sol";
 import "./base/AdPool.sol";
 import "./base/DistributionRight.sol";
+import "./base/BlockTimestamp.sol";
 import "./libraries/Ad.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - allows anyone to create a post and bit to the post.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is DistributionRight {
+contract AdManager is DistributionRight, BlockTimestamp {
 	event NewSpace(string metadata);
 	event NewPeriod(
 		uint256 tokenId,
@@ -71,7 +72,7 @@ contract AdManager is DistributionRight {
 	) external {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
 		require(fromTimestamp < toTimestamp, "KD103");
-		require(toTimestamp > block.timestamp, "KD104");
+		require(toTimestamp > _blockTimestamp(), "KD104");
 		if (!spaced[spaceMetadata]) {
 			newSpace(spaceMetadata);
 		}
@@ -82,12 +83,15 @@ contract AdManager is DistributionRight {
 			address(this),
 			spaceMetadata,
 			tokenMetadata,
+			_blockTimestamp(),
 			fromTimestamp,
 			toTimestamp,
 			pricing,
 			minPrice,
+			0,
 			false
 		);
+		period.startPrice = _startPrice(period);
 		allPeriods[tokenId] = period;
 		_mintRight(tokenId, tokenMetadata);
 		_adPool().addPeriod(tokenId, period);
@@ -102,6 +106,22 @@ contract AdManager is DistributionRight {
 		);
 	}
 
+	function _startPrice(Ad.Period memory period)
+		internal
+		pure
+		returns (uint256)
+	{
+		if (period.pricing == Ad.Pricing.RRP) {
+			period.startPrice = period.minPrice;
+		} else if (period.pricing == Ad.Pricing.DPBT) {
+			period.startPrice = period.minPrice * 10;
+		} else if (period.pricing == Ad.Pricing.BIDDING) {
+			period.startPrice = period.minPrice;
+		} else {
+			return 0;
+		}
+	}
+
 	function buy(uint256 tokenId) external payable {
 		require(allPeriods[tokenId].pricing == Ad.Pricing.RRP, "not RRP");
 		require(!allPeriods[tokenId].sold, "has already sold");
@@ -113,7 +133,38 @@ contract AdManager is DistributionRight {
 		allPeriods[tokenId].sold = true;
 		_soldRight(tokenId);
 		payable(vaultAddress()).transfer(msg.value / 10);
-		emit Buy(tokenId, msg.value, msg.sender, block.timestamp);
+		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
+	}
+
+	function buyBasedOnTime(uint256 tokenId) external payable {
+		require(allPeriods[tokenId].pricing == Ad.Pricing.DPBT, "not DPBT");
+		require(!allPeriods[tokenId].sold, "has already sold");
+		require(
+			_mediaRegistry().ownerOf(address(this)) != msg.sender,
+			"is the owner"
+		);
+		require(allPeriods[tokenId].minPrice == msg.value, "inappropriate amount");
+
+		allPeriods[tokenId].sold = true;
+		_soldRight(tokenId);
+	}
+
+	function currentPrice(uint256 tokenId) public view returns (uint256) {
+		Ad.Period memory period = allPeriods[tokenId];
+		if (period.pricing == Ad.Pricing.RRP) {
+			return period.minPrice;
+		}
+		if (period.pricing == Ad.Pricing.DPBT) {
+			return
+				period.startPrice -
+				((period.startPrice - period.minPrice) *
+					(_blockTimestamp() - period.salesStartTimestamp)) /
+				(period.fromTimestamp - period.salesStartTimestamp);
+		}
+		if (period.pricing == Ad.Pricing.BIDDING) {
+			return 0;
+		}
+		revert("not exist");
 	}
 
 	function withdraw() external {
@@ -253,14 +304,14 @@ contract AdManager is DistributionRight {
 
 // 	/// @dev Throws if the post has been expired.
 // 	modifier onlyModifiablePost(uint256 postId) {
-// 		require(allPosts[postId].toTimestamp >= block.timestamp, "AD108");
+// 		require(allPosts[postId].toTimestamp >= _blockTimestamp(), "AD108");
 // 		_;
 // 	}
 
 // 	/// @dev Throws if the post has been expired.
 // 	modifier onlyModifiablePostByBidId(uint256 bidId) {
 // 		Bidder memory bidder = bidderInfo[bidId];
-// 		require(allPosts[bidder.postId].toTimestamp >= block.timestamp, "AD108");
+// 		require(allPosts[bidder.postId].toTimestamp >= _blockTimestamp(), "AD108");
 // 		_;
 // 	}
 
@@ -274,7 +325,7 @@ contract AdManager is DistributionRight {
 // 		uint256 toTimestamp
 // 	) public override {
 // 		require(fromTimestamp < toTimestamp, "AD101");
-// 		require(toTimestamp > block.timestamp, "AD114");
+// 		require(toTimestamp > _blockTimestamp(), "AD114");
 // 		PostContent memory post;
 // 		post.postId = nextPostId++;
 // 		post.owner = msg.sender;
@@ -484,8 +535,8 @@ contract AdManager is DistributionRight {
 // 		returns (bool)
 // 	{
 // 		return
-// 			post.fromTimestamp < block.timestamp &&
-// 			post.toTimestamp > block.timestamp;
+// 			post.fromTimestamp < _blockTimestamp() &&
+// 			post.toTimestamp > _blockTimestamp();
 // 	}
 
 // 	function bidderList(uint256 postId) public view returns (uint256[] memory) {

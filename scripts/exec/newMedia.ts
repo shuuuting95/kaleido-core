@@ -14,7 +14,7 @@ const adminWallet = getWallet(0)
 const main = async () => {
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
   const initializer = ifaceAdManager.encodeFunctionData('initialize', [
-    'NameAAA',
+    'Kaleido',
     'https://base',
     getNameRegistryAddress(network),
   ])
