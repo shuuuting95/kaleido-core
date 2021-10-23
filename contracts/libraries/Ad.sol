@@ -2,7 +2,7 @@
 pragma solidity 0.8.9;
 
 library Ad {
-	uint256 private constant _ID_LENGTH = 10000000000000000000000000000000;
+	uint256 private constant _ID_LENGTH = 100000000000000000000000000000000;
 	// RBP : Recommended Retail Price
 	// DPBT: Dynamic Pricing Based on Time
 	// BIDDING : Auction, Bidding Price

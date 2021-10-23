@@ -19,6 +19,10 @@ contract AdPool is BlockTimestamp, NameAccessor {
 		allPeriods[tokenId] = period;
 	}
 
+	function mediaProxyOf(uint256 tokenId) public view returns (address) {
+		return allPeriods[tokenId].mediaProxy;
+	}
+
 	/**
 	 * Accessors
 	 */

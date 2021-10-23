@@ -12,7 +12,7 @@ import {
   getVaultContract,
 } from './utils/setup'
 
-describe('AdManager', async () => {
+describe('MediaProxy', async () => {
   const [user1, user2, user3] = waffle.provider.getWallets()
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {

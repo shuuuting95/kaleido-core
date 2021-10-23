@@ -403,7 +403,7 @@ export const newPeriodWith = async (
 }
 
 export type BuyProps = {
-  tokenId: string
+  tokenId: number
   value?: BigNumber
 }
 

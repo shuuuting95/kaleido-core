@@ -10,9 +10,14 @@ export const getAdManagerContract = async () => {
   return contract.attach(Deployment.address)
 }
 
-export const getDistributionRightContract = async () => {
-  const Deployment = await deployments.get('DistributionRight')
-  const contract = await hre.ethers.getContractFactory('DistributionRight')
+export const getBundlerContract = async () => {
+  const Deployment = await deployments.get('Bundler')
+  const contract = await hre.ethers.getContractFactory('Bundler', {
+    libraries: {
+      Integers: (await deployments.get('Integers')).address,
+      Substrings: (await deployments.get('Substrings')).address,
+    },
+  })
   return contract.attach(Deployment.address)
 }
 

@@ -31,14 +31,14 @@ contract NameAccessor {
 		return address(_nameRegistry);
 	}
 
-	/// @dev Gets the address of MediaRegistry.
-	function mediaRegistryAddress() public view returns (address) {
-		return _nameRegistry.get(keccak256(abi.encodePacked("MediaRegistry")));
-	}
-
 	/// @dev Gets the address of AdPool.
 	function adPoolAddress() public view returns (address) {
 		return _nameRegistry.get(keccak256(abi.encodePacked("AdPool")));
+	}
+
+	/// @dev Gets the address of MediaRegistry.
+	function mediaRegistryAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("MediaRegistry")));
 	}
 
 	/// @dev Gets the address of Vault.

@@ -6,7 +6,7 @@ import "../accessors/NameAccessor.sol";
 
 import "hardhat/console.sol";
 
-/// @title AdManager - allows anyone to create a post and bit to the post.
+/// @title DistributionRight - represents NFTs based on ad spaces and periods.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract DistributionRight is ERC721, NameAccessor {
 	mapping(uint256 => string) public proposed;
@@ -28,5 +28,14 @@ contract DistributionRight is ERC721, NameAccessor {
 
 	function _proposeToRight(uint256 tokenId, string memory metadata) internal {
 		proposed[tokenId] = metadata;
+	}
+
+	function transferToBundle(
+		address from,
+		address to,
+		uint256 tokenId
+	) external {
+		// TODO: only from bundler
+		_transfer(from, to, tokenId);
 	}
 }
