@@ -5,6 +5,7 @@
     "deploy:polygon": "npx hardhat deploy --network polygon",
     "exec:newMedia:rinkeby": "NETWORK=rinkeby npx hardhat run scripts/exec/newMedia.ts --network rinkeby",
     "exec:newPeriod:rinkeby": "NETWORK=rinkeby npx hardhat run scripts/exec/newPeriod.ts --network rinkeby",
+    "exec:buy:rinkeby": "NETWORK=rinkeby npx hardhat run scripts/exec/buy.ts --network rinkeby",
     "test": "npx hardhat test",
     "prettier": "prettier --write 'contracts/**/*.sol'"
   },
