@@ -1,12 +1,12 @@
 import fs from 'fs'
 import path from 'path'
 
-// export const getPostFactoryABI = () => {
-//   const compiled = JSON.parse(
-//     fs.readFileSync(getCompiledPostFactoryPath()).toString()
-//   )
-//   return compiled.abi
-// }
+export const getMediaFactoryABI = () => {
+  const compiled = JSON.parse(
+    fs.readFileSync(getCompiledMediaFactoryPath()).toString()
+  )
+  return compiled.abi
+}
 
 export const getAdManagerABI = () => {
   const compiled = JSON.parse(
@@ -29,12 +29,12 @@ export const getAdManagerABI = () => {
 //   return compiled.abi
 // }
 
-// export const getPostFactoryAddress = (network: string) => {
-//   const json = JSON.parse(
-//     fs.readFileSync(getDeployedPostFactoryPath(network)).toString()
-//   )
-//   return json.address
-// }
+export const getMediaFactoryAddress = (network: string) => {
+  const json = JSON.parse(
+    fs.readFileSync(getDeployedMediaFactoryPath(network)).toString()
+  )
+  return json.address
+}
 
 // export const getVoucherAddress = (network: string) => {
 //   const json = JSON.parse(
@@ -43,25 +43,25 @@ export const getAdManagerABI = () => {
 //   return json.address
 // }
 
-// export const getNameRegistryAddress = (network: string) => {
-//   const json = JSON.parse(
-//     fs.readFileSync(getNameRegistryPath(network)).toString()
-//   )
-//   return json.address
-// }
+export const getNameRegistryAddress = (network: string) => {
+  const json = JSON.parse(
+    fs.readFileSync(getNameRegistryPath(network)).toString()
+  )
+  return json.address
+}
 
-// export const getCompiledPostFactoryPath = () =>
-//   path.join(
-//     __dirname,
-//     '..',
-//     '..',
-//     'build',
-//     'artifacts',
-//     'contracts',
-//     'proxies',
-//     'PostFactory.sol',
-//     'PostFactory.json'
-//   )
+export const getCompiledMediaFactoryPath = () =>
+  path.join(
+    __dirname,
+    '..',
+    '..',
+    'build',
+    'artifacts',
+    'contracts',
+    'proxies',
+    'MediaFactory.sol',
+    'MediaFactory.json'
+  )
 
 export const getCompiledAdManagerPath = () =>
   path.join(
@@ -101,11 +101,11 @@ export const getCompiledAdManagerPath = () =>
 //     'NameRegistry.json'
 //   )
 
-// export const getDeployedPostFactoryPath = (network: string) =>
-//   path.join(__dirname, '..', '..', 'deployments', network, 'PostFactory.json')
+export const getDeployedMediaFactoryPath = (network: string) =>
+  path.join(__dirname, '..', '..', 'deployments', network, 'MediaFactory.json')
 
 // export const getDeployedVoucherPath = (network: string) =>
 //   path.join(__dirname, '..', '..', 'deployments', network, 'Voucher.json')
 
-// export const getNameRegistryPath = (network: string) =>
-//   path.join(__dirname, '..', '..', 'deployments', network, 'NameRegistry.json')
+export const getNameRegistryPath = (network: string) =>
+  path.join(__dirname, '..', '..', 'deployments', network, 'NameRegistry.json')
