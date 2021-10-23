@@ -12,6 +12,9 @@ library Ad {
 		BID
 	}
 	struct Period {
+		address mediaProxy;
+		string spaceMetadata;
+		string tokenMetadata;
 		uint256 fromTimestamp;
 		uint256 toTimestamp;
 		Pricing pricing;

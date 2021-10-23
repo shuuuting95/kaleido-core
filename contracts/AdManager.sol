@@ -14,7 +14,8 @@ contract AdManager is DistributionRight {
 	event NewSpace(string metadata);
 	event NewPeriod(
 		uint256 tokenId,
-		string metadata,
+		string spaceMetadata,
+		string tokenMetadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp,
 		Ad.Pricing pricing,
@@ -61,7 +62,8 @@ contract AdManager is DistributionRight {
 	}
 
 	function newPeriod(
-		string memory metadata,
+		string memory spaceMetadata,
+		string memory tokenMetadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp,
 		Ad.Pricing pricing,
@@ -70,13 +72,16 @@ contract AdManager is DistributionRight {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
 		require(fromTimestamp < toTimestamp, "KD103");
 		require(toTimestamp > block.timestamp, "KD104");
-		if (!spaced[metadata]) {
-			newSpace(metadata);
+		if (!spaced[spaceMetadata]) {
+			newSpace(spaceMetadata);
 		}
-		_checkOverlapping(metadata, fromTimestamp, toTimestamp);
-		uint256 tokenId = Ad.id(metadata, fromTimestamp, toTimestamp);
-		periodKeys[metadata].push(tokenId);
+		_checkOverlapping(spaceMetadata, fromTimestamp, toTimestamp);
+		uint256 tokenId = Ad.id(spaceMetadata, fromTimestamp, toTimestamp);
+		periodKeys[spaceMetadata].push(tokenId);
 		Ad.Period memory period = Ad.Period(
+			address(this),
+			spaceMetadata,
+			tokenMetadata,
 			fromTimestamp,
 			toTimestamp,
 			pricing,
@@ -84,11 +89,12 @@ contract AdManager is DistributionRight {
 			false
 		);
 		allPeriods[tokenId] = period;
-		_mintRight(tokenId, metadata);
+		_mintRight(tokenId, tokenMetadata);
 		_adPool().addPeriod(tokenId, period);
 		emit NewPeriod(
 			tokenId,
-			metadata,
+			spaceMetadata,
+			tokenMetadata,
 			fromTimestamp,
 			toTimestamp,
 			pricing,
@@ -178,6 +184,9 @@ contract AdManager is DistributionRight {
 				newToTimestamp < currentFromTimestamp);
 	}
 
+	/**
+	 * Accessors
+	 */
 	function _mediaRegistry() internal view returns (MediaRegistry) {
 		return MediaRegistry(mediaRegistryAddress());
 	}

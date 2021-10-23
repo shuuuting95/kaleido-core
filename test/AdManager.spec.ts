@@ -43,11 +43,11 @@ describe('AdManager', async () => {
     it('should new an ad space', async () => {
       const { factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
-      const metadata = 'asfafkjksjfkajf'
+      const spaceMetadata = 'asfafkjksjfkajf'
 
-      expect(await manager.newSpace(metadata))
+      expect(await manager.newSpace(spaceMetadata))
         .to.emit(manager, 'NewSpace')
-        .withArgs(metadata)
+        .withArgs(spaceMetadata)
     })
   })
 
@@ -55,16 +55,22 @@ describe('AdManager', async () => {
     it('should new an ad period', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
-      const metadata = 'asfafkjksjfkajf'
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const tokenMetadata = 'poiknfknajnjaer'
       const fromTimestamp = now + 3600
       const toTimestamp = now + 7200
       const pricing = 0
       const minPrice = parseEther('0.2')
-      const tokenId = await manager.adId(metadata, fromTimestamp, toTimestamp)
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        fromTimestamp,
+        toTimestamp
+      )
 
       expect(
         await newPeriodWith(manager, {
-          metadata: metadata,
+          spaceMetadata: spaceMetadata,
+          tokenMetadata: tokenMetadata,
           fromTimestamp: fromTimestamp,
           toTimestamp: toTimestamp,
           pricing: pricing,
@@ -74,7 +80,8 @@ describe('AdManager', async () => {
         .to.emit(manager, 'NewPeriod')
         .withArgs(
           tokenId,
-          metadata,
+          spaceMetadata,
+          tokenMetadata,
           fromTimestamp,
           toTimestamp,
           pricing,
@@ -142,14 +149,18 @@ describe('AdManager', async () => {
     it('should buy a period', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
-      const metadata = 'asfafkjksjfkajf'
+      const spaceMetadata = 'asfafkjksjfkajf'
       const fromTimestamp = now + 3600
       const toTimestamp = now + 7200
-      const tokenId = await manager.adId(metadata, fromTimestamp, toTimestamp)
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        fromTimestamp,
+        toTimestamp
+      )
       const pricing = 0
       const price = parseEther('0.2')
       await newPeriodWith(manager, {
-        metadata: metadata,
+        spaceMetadata: spaceMetadata,
         fromTimestamp: fromTimestamp,
         toTimestamp: toTimestamp,
         pricing: pricing,
@@ -171,14 +182,18 @@ describe('AdManager', async () => {
     it('should buy a period', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
-      const metadata = 'asfafkjksjfkajf'
+      const spaceMetadata = 'asfafkjksjfkajf'
       const fromTimestamp = now + 3600
       const toTimestamp = now + 7200
-      const tokenId = await manager.adId(metadata, fromTimestamp, toTimestamp)
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        fromTimestamp,
+        toTimestamp
+      )
       const pricing = 0
       const price = parseEther('0.2')
       await newPeriodWith(manager, {
-        metadata: metadata,
+        spaceMetadata: spaceMetadata,
         fromTimestamp: fromTimestamp,
         toTimestamp: toTimestamp,
         pricing: pricing,
@@ -210,7 +225,7 @@ describe('AdManager', async () => {
       const price = parseEther('0.2')
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       await newPeriodWith(manager, {
-        metadata: spaceMetadata,
+        spaceMetadata: spaceMetadata,
         fromTimestamp: fromTimestamp,
         toTimestamp: toTimestamp,
         pricing: pricing,
@@ -241,7 +256,7 @@ describe('AdManager', async () => {
       )
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       await newPeriodWith(manager, {
-        metadata: spaceMetadata,
+        spaceMetadata: spaceMetadata,
         fromTimestamp: fromTimestamp,
         toTimestamp: toTimestamp,
       })
@@ -258,7 +273,8 @@ describe('AdManager', async () => {
 })
 
 export type NewPeriodProps = {
-  metadata?: string
+  spaceMetadata?: string
+  tokenMetadata?: string
   fromTimestamp?: number
   toTimestamp?: number
   pricing?: number
@@ -271,7 +287,8 @@ export const newPeriodWith = async (
 ) => {
   const now = Date.now()
   return await manager.newPeriod(
-    props?.metadata ? props.metadata : 'abi09nadu2brasfjl',
+    props?.spaceMetadata ? props.spaceMetadata : 'abi09nadu2brasfjl',
+    props?.tokenMetadata ? props.tokenMetadata : 'poiknfknajnjaer',
     props?.fromTimestamp ? props.fromTimestamp : now + 3600,
     props?.toTimestamp ? props.toTimestamp : now + 7200,
     props?.pricing ? props.pricing : 0,
