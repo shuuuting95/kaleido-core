@@ -6,23 +6,30 @@ import "../accessors/NameAccessor.sol";
 import "../base/MediaRegistry.sol";
 import "hardhat/console.sol";
 
-/// @title MediaFactory - create a proxy contract according to a donation media.
+/// @title MediaFactory - creates proxy contracts for media accounts.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract MediaFactory is NameAccessor {
 	/// @dev Emitted when a new media is created.
 	event CreateProxy(MediaProxy proxy, address singleton);
 
+	/// @dev Initializer
+	/// @param _nameRegistry address of NameRegistry
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
 	}
 
+	/// @dev Create a new account for media. Each proxy has its own storage and saves
+	///      data related to NFTs.
+	/// @param accountMetadata string of metadata for the defailts of the account
+	/// @param initializer bytes of the initalize calldata
+	/// @param saltNonce uint256 of the salt number to create a proxy address
 	function newMedia(
-		string memory metadata,
+		string memory accountMetadata,
 		bytes memory initializer,
 		uint256 saltNonce
 	) external returns (MediaProxy proxy) {
 		proxy = createProxyWithNonce(nameRegistryAddress(), initializer, saltNonce);
-		_registry().addMedia(address(proxy), metadata, msg.sender);
+		_registry().addMedia(address(proxy), accountMetadata, msg.sender);
 	}
 
 	/// @dev Allows to create new proxy contact and execute a message call to the new proxy within one transaction.
@@ -86,6 +93,9 @@ contract MediaFactory is NameAccessor {
 		require(address(proxy) != address(0), "Create2 call failed");
 	}
 
+	/**
+	 * Accessors
+	 */
 	function _registry() internal view returns (MediaRegistry) {
 		return MediaRegistry(mediaRegistryAddress());
 	}
