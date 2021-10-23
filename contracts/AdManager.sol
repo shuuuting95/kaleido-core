@@ -23,16 +23,25 @@ contract AdManager is DistributionRight, BlockTimestamp {
 		uint256 minPrice
 	);
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
+	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Propose(uint256 tokenId, string metadata);
 	event Accept(uint256 tokenId);
 	event Deny(uint256 tokenId, string reason);
 	event Withdraw(uint256 amount);
+
+	struct Bidding {
+		uint256 tokenId;
+		address bidder;
+		uint256 price;
+	}
 
 	mapping(string => bool) public spaced;
 	mapping(string => uint256[]) public periodKeys;
 
 	/// @dev tokenId = metadata * fromTimestamp * toTimestamp
 	mapping(uint256 => Ad.Period) public allPeriods;
+
+	mapping(uint256 => Bidding) public bidding;
 
 	modifier initializer() {
 		require(address(_nameRegistry) == address(0x0), "AR000");
@@ -150,6 +159,29 @@ contract AdManager is DistributionRight, BlockTimestamp {
 		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
+	function bid(uint256 tokenId) external payable {
+		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
+		require(!allPeriods[tokenId].sold, "has already sold");
+		require(
+			_mediaRegistry().ownerOf(address(this)) != msg.sender,
+			"is the owner"
+		);
+		require(currentPrice(tokenId) <= msg.value, "low price");
+		// TODO: avoid reentrancy
+		payable(bidding[tokenId].bidder).transfer(bidding[tokenId].price);
+		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
+		// TODO: save history on AdPool
+		emit Bid(tokenId, msg.value, msg.sender, _blockTimestamp());
+	}
+
+	function closeAuction(uint256 tokenId) external payable {
+		// TODO: requires
+		allPeriods[tokenId].sold = true;
+		_soldRight(tokenId);
+		payable(vaultAddress()).transfer(msg.value / 10);
+		// emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
+	}
+
 	function currentPrice(uint256 tokenId) public view returns (uint256) {
 		Ad.Period memory period = allPeriods[tokenId];
 		if (period.pricing == Ad.Pricing.RRP) {
@@ -163,7 +195,7 @@ contract AdManager is DistributionRight, BlockTimestamp {
 				(period.fromTimestamp - period.salesStartTimestamp);
 		}
 		if (period.pricing == Ad.Pricing.BIDDING) {
-			return 0;
+			return bidding[tokenId].price;
 		}
 		revert("not exist");
 	}
