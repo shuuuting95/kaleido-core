@@ -9,7 +9,7 @@ import "./base/BlockTimestamp.sol";
 import "./libraries/Ad.sol";
 import "hardhat/console.sol";
 
-/// @title AdManager - allows anyone to create a post and bit to the post.
+/// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is DistributionRight, BlockTimestamp {
 	event NewSpace(string metadata);
@@ -41,12 +41,16 @@ contract AdManager is DistributionRight, BlockTimestamp {
 		uint256 price;
 	}
 
+	/// @dev Returns true if the space metadata has already registered.
 	mapping(string => bool) public spaced;
+
+	/// @dev Maps the space metadata with tokenIds of ad periods.
 	mapping(string => uint256[]) public periodKeys;
 
-	/// @dev tokenId = metadata * fromTimestamp * toTimestamp
+	/// @dev tokenId <- metadata * fromTimestamp * toTimestamp
 	mapping(uint256 => Ad.Period) public allPeriods;
 
+	/// @dev Maps tokenId with bidding info
 	mapping(uint256 => Bidding) public bidding;
 
 	modifier initializer() {
@@ -59,6 +63,10 @@ contract AdManager is DistributionRight, BlockTimestamp {
 		_;
 	}
 
+	/// @dev Initialize the instance.
+	/// @param title string of the title of the instance
+	/// @param baseURI string of the base URI
+	/// @param nameRegistry address of NameRegistry
 	function initialize(
 		string memory title,
 		string memory baseURI,
@@ -70,13 +78,23 @@ contract AdManager is DistributionRight, BlockTimestamp {
 		initialize(nameRegistry);
 	}
 
-	function newSpace(string memory metadata) public {
+	/// @dev Creates a new space for the media account.
+	/// @param spaceMetadata string of the space metadata
+	function newSpace(string memory spaceMetadata) public {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
-		require(!spaced[metadata], "KD102");
-		spaced[metadata] = true;
-		emit NewSpace(metadata);
+		require(!spaced[spaceMetadata], "KD102");
+		spaced[spaceMetadata] = true;
+		emit NewSpace(spaceMetadata);
 	}
 
+	/// @dev Create a new period for a space. This function requires some params
+	///      to decide which kinds of pricing way and how much price to get started.
+	/// @param spaceMetadata string of the space metadata
+	/// @param tokenMetadata string of the token metadata
+	/// @param fromTimestamp uint256 of the start timestamp for the display
+	/// @param toTimestamp uint256 of the end timestamp for the display
+	/// @param pricing uint256 of the pricing way
+	/// @param minPrice uint256 of the minimum price to sell it out
 	function newPeriod(
 		string memory spaceMetadata,
 		string memory tokenMetadata,
