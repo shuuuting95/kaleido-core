@@ -24,6 +24,12 @@ contract AdManager is DistributionRight, BlockTimestamp {
 	);
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
+	event ReceiveToken(
+		uint256 tokenId,
+		uint256 price,
+		address buyer,
+		uint256 timestamp
+	);
 	event Propose(uint256 tokenId, string metadata);
 	event Accept(uint256 tokenId);
 	event Deny(uint256 tokenId, string reason);
@@ -174,12 +180,28 @@ contract AdManager is DistributionRight, BlockTimestamp {
 		emit Bid(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
-	function closeAuction(uint256 tokenId) external payable {
-		// TODO: requires
+	modifier onlySuccessfulBidder(uint256 tokenId) {
+		require(bidding[tokenId].bidder == msg.sender, "is not successful bidder");
+		_;
+	}
+
+	function receiveToken(uint256 tokenId)
+		external
+		payable
+		onlySuccessfulBidder(tokenId)
+	{
+		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
+		require(!allPeriods[tokenId].sold, "has already sold");
+
 		allPeriods[tokenId].sold = true;
 		_soldRight(tokenId);
-		payable(vaultAddress()).transfer(msg.value / 10);
-		// emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
+		payable(vaultAddress()).transfer(bidding[tokenId].price / 10);
+		emit ReceiveToken(
+			tokenId,
+			bidding[tokenId].price,
+			msg.sender,
+			_blockTimestamp()
+		);
 	}
 
 	function currentPrice(uint256 tokenId) public view returns (uint256) {

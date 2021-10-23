@@ -252,6 +252,37 @@ describe('AdManager', async () => {
     })
   })
 
+  describe('receiveToken', async () => {
+    it('should receive token by the successful bidder', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const fromTimestamp = now + 3600
+      const toTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        fromTimestamp,
+        toTimestamp
+      )
+      const pricing = 2
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        spaceMetadata: spaceMetadata,
+        fromTimestamp: fromTimestamp,
+        toTimestamp: toTimestamp,
+        pricing: pricing,
+        minPrice: price,
+      })
+      await manager
+        .connect(user2)
+        .bid(tokenId, option({ value: parseEther('0.3') }))
+
+      expect(await manager.connect(user2).receiveToken(tokenId, option()))
+        .to.emit(manager, 'ReceiveToken')
+        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
+    })
+  })
+
   describe('withdraw', async () => {
     it('should buy a period', async () => {
       const { now, factory, name } = await setupTests()
