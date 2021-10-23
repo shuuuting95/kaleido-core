@@ -9,18 +9,25 @@ import "../accessors/NameRegistry.sol";
 contract MediaProxy is IProxy {
 	NameRegistry internal _nameRegistry;
 
+	/// @dev Initializer
+	/// @param nameRegistry address of NameRegistry
 	constructor(address nameRegistry) {
 		require(nameRegistry != address(0), "AR001");
 		_nameRegistry = NameRegistry(nameRegistry);
 	}
 
+	/// @dev Returns the address of the destination contract
 	function masterCopy() public view returns (address) {
 		return _nameRegistry.get(keccak256(abi.encodePacked("AdManager")));
 	}
 
-	/// @dev Calls when users request to the post.
+	/// @dev Calls logic on the destination contract.
 	///      The desitination is decided by NameRegistry, which can be switched by the administrator
-	///      if the contract has any problem.
+	///      if the contract has any changes.
+	fallback() external payable {
+		_fallback();
+	}
+
 	function _fallback() internal {
 		address _singleton = masterCopy();
 		// solhint-disable-next-line no-inline-assembly
@@ -45,10 +52,7 @@ contract MediaProxy is IProxy {
 		}
 	}
 
-	fallback() external payable {
-		_fallback();
-	}
-
+	/// @dev Transfers fees to Vault when receiving Ether payments.
 	receive() external payable {
 		require(msg.value != 0, "msg.value is zero");
 		address vault = _nameRegistry.get(keccak256(abi.encodePacked("Vault")));
