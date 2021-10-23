@@ -36,23 +36,14 @@ contract NameAccessor {
 		return _nameRegistry.get(keccak256(abi.encodePacked("MediaRegistry")));
 	}
 
-	/// @dev Gets the address of DistributionRight.
-	function distributionRightAddress() public view returns (address) {
-		return _nameRegistry.get(keccak256(abi.encodePacked("DistributionRight")));
-	}
-
-	/// @dev Gets the address of ReservedRight.
-	function reservedRightAddress() public view returns (address) {
-		return _nameRegistry.get(keccak256(abi.encodePacked("ReservedRight")));
+	/// @dev Gets the address of AdPool.
+	function adPoolAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("AdPool")));
 	}
 
 	/// @dev Gets the address of Vault.
 	function vaultAddress() public view returns (address) {
 		return _nameRegistry.get(keccak256(abi.encodePacked("Vault")));
-	}
-
-	function postOwnerPoolAddress() public view returns (address) {
-		return _nameRegistry.get(keccak256(abi.encodePacked("PostOwnerPool")));
 	}
 
 	/// @dev Gets the owner address.

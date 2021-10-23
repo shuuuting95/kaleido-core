@@ -8,26 +8,20 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts()
   const { deploy } = deployments
   const name = await findNameRegistry(hre)
-  const Ad = await deployments.get('Ad')
 
-  const AdManager = await deploy('AdManager', {
+  const Ad = await deploy('Ad', {
     from: deployer,
     args: [],
     log: true,
     deterministicDeployment: false,
-    libraries: {
-      Ad: Ad.address,
-    },
   })
 
-  const key = utils.solidityKeccak256(['string'], ['AdManager'])
+  const key = utils.solidityKeccak256(['string'], ['Ad'])
   const value = await name.get(key)
-  if (value !== AdManager.address) {
-    const txReceipt = await name.set(key, AdManager.address, {
-      gasLimit: 4500000,
-    })
+  if (value !== Ad.address) {
+    const txReceipt = await name.set(key, Ad.address, { gasLimit: 4500000 })
     await txReceipt.wait()
-    console.log('AdManager: ', await name.get(key))
+    console.log('Ad: ', await name.get(key))
   }
 }
 

@@ -2,7 +2,11 @@ import hre, { deployments } from 'hardhat'
 
 export const getAdManagerContract = async () => {
   const Deployment = await deployments.get('AdManager')
-  const contract = await hre.ethers.getContractFactory('AdManager')
+  const contract = await hre.ethers.getContractFactory('AdManager', {
+    libraries: {
+      Ad: (await deployments.get('Ad')).address,
+    },
+  })
   return contract.attach(Deployment.address)
 }
 

@@ -3,28 +3,21 @@ pragma solidity 0.8.9;
 
 import "./accessors/NameAccessor.sol";
 import "./base/MediaRegistry.sol";
+import "./base/AdPool.sol";
 import "./base/DistributionRight.sol";
+import "./libraries/Ad.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - allows anyone to create a post and bit to the post.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is DistributionRight {
-	// RBP : Recommended Retail Price
-	// DPBT: Dynamic Pricing Based on Time
-	// BID : Auction, Bidding Price
-	enum Pricing {
-		RRP,
-		DPBT,
-		BID
-	}
-
 	event NewSpace(string metadata);
 	event NewPeriod(
 		uint256 tokenId,
 		string metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp,
-		Pricing pricing,
+		Ad.Pricing pricing,
 		uint256 minPrice
 	);
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
@@ -33,18 +26,11 @@ contract AdManager is DistributionRight {
 	event Deny(uint256 tokenId, string reason);
 	event Withdraw(uint256 amount);
 
-	struct AdPeriod {
-		uint256 fromTimestamp;
-		uint256 toTimestamp;
-		Pricing pricing;
-		uint256 minPrice;
-		bool sold;
-	}
 	mapping(string => bool) public spaced;
 	mapping(string => uint256[]) public periodKeys;
-	// metadata * fromTimestamp * toTimestamp
-	mapping(uint256 => AdPeriod) public allPeriods;
-	string public mediaId;
+
+	/// @dev tokenId = metadata * fromTimestamp * toTimestamp
+	mapping(uint256 => Ad.Period) public allPeriods;
 
 	modifier initializer() {
 		require(address(_nameRegistry) == address(0x0), "AR000");
@@ -78,7 +64,7 @@ contract AdManager is DistributionRight {
 		string memory metadata,
 		uint256 fromTimestamp,
 		uint256 toTimestamp,
-		Pricing pricing,
+		Ad.Pricing pricing,
 		uint256 minPrice
 	) external {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
@@ -88,9 +74,9 @@ contract AdManager is DistributionRight {
 			newSpace(metadata);
 		}
 		_checkOverlapping(metadata, fromTimestamp, toTimestamp);
-		uint256 tokenId = adId(metadata, fromTimestamp, toTimestamp);
+		uint256 tokenId = Ad.id(metadata, fromTimestamp, toTimestamp);
 		periodKeys[metadata].push(tokenId);
-		allPeriods[tokenId] = AdPeriod(
+		allPeriods[tokenId] = Ad.Period(
 			fromTimestamp,
 			toTimestamp,
 			pricing,
@@ -98,6 +84,7 @@ contract AdManager is DistributionRight {
 			false
 		);
 		_mintRight(tokenId, metadata);
+		_adPool().addPeriod();
 		emit NewPeriod(
 			tokenId,
 			metadata,
@@ -109,7 +96,7 @@ contract AdManager is DistributionRight {
 	}
 
 	function buy(uint256 tokenId) external payable {
-		require(allPeriods[tokenId].pricing == Pricing.RRP, "not RRP");
+		require(allPeriods[tokenId].pricing == Ad.Pricing.RRP, "not RRP");
 		require(!allPeriods[tokenId].sold, "has already sold");
 		require(
 			_mediaRegistry().ownerOf(address(this)) != msg.sender,
@@ -152,10 +139,7 @@ contract AdManager is DistributionRight {
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) public pure returns (uint256) {
-		return
-			uint256(
-				keccak256(abi.encodePacked(metadata, fromTimestamp, toTimestamp))
-			) % 1000000000000000;
+		return Ad.id(metadata, fromTimestamp, toTimestamp);
 	}
 
 	function balance() public view returns (uint256) {
@@ -168,7 +152,7 @@ contract AdManager is DistributionRight {
 		uint256 toTimestamp
 	) internal view {
 		for (uint256 i = 0; i < periodKeys[metadata].length; i++) {
-			AdPeriod memory existing = allPeriods[periodKeys[metadata][i]];
+			Ad.Period memory existing = allPeriods[periodKeys[metadata][i]];
 			if (
 				_isOverlapped(
 					fromTimestamp,
@@ -195,6 +179,10 @@ contract AdManager is DistributionRight {
 
 	function _mediaRegistry() internal view returns (MediaRegistry) {
 		return MediaRegistry(mediaRegistryAddress());
+	}
+
+	function _adPool() internal view returns (AdPool) {
+		return AdPool(adPoolAddress());
 	}
 }
 
