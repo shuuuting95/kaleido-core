@@ -34,31 +34,6 @@ contract AdManager is DistributionRight, PeriodManager, BlockTimestamp {
 	/// @dev Maps tokenId with bidding info
 	mapping(uint256 => Bidding) public bidding;
 
-	modifier initializer() {
-		require(address(_nameRegistry) == address(0x0), "AR000");
-		_;
-	}
-
-	modifier initialized() {
-		require(address(_nameRegistry) != address(0x0), "AR001");
-		_;
-	}
-
-	/// @dev Initialize the instance.
-	/// @param title string of the title of the instance
-	/// @param baseURI string of the base URI
-	/// @param nameRegistry address of NameRegistry
-	function initialize(
-		string memory title,
-		string memory baseURI,
-		address nameRegistry
-	) external {
-		_name = title;
-		_symbol = string(abi.encodePacked("Kaleido_", title));
-		_baseURI = baseURI;
-		initialize(nameRegistry);
-	}
-
 	modifier onlyMedia() {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
 		_;

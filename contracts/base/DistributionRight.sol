@@ -12,6 +12,31 @@ contract DistributionRight is ERC721, NameAccessor {
 	mapping(uint256 => string) public proposed;
 	mapping(uint256 => string) public deniedReason;
 
+	modifier initializer() {
+		require(address(_nameRegistry) == address(0x0), "AR000");
+		_;
+	}
+
+	modifier initialized() {
+		require(address(_nameRegistry) != address(0x0), "AR001");
+		_;
+	}
+
+	/// @dev Initialize the instance.
+	/// @param title string of the title of the instance
+	/// @param baseURI string of the base URI
+	/// @param nameRegistry address of NameRegistry
+	function initialize(
+		string memory title,
+		string memory baseURI,
+		address nameRegistry
+	) external {
+		_name = title;
+		_symbol = string(abi.encodePacked("Kaleido_", title));
+		_baseURI = baseURI;
+		initialize(nameRegistry);
+	}
+
 	function _mintRight(uint256 tokenId, string memory metadata) internal {
 		_mint(address(this), tokenId);
 		_tokenURIs[tokenId] = metadata;
