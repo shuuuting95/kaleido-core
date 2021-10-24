@@ -15,7 +15,7 @@ abstract contract SpaceManager is NameAccessor {
 	mapping(string => bytes32) public spaceId;
 
 	function _newSpace(string memory spaceMetadata) internal {
-		require(spaceId[spaceMetadata] == 0, "KD102");
+		require(spaceId[spaceMetadata] == 0, "KD100");
 		spaceId[spaceMetadata] = computeSpaceId(spaceNonce++);
 		_eventEmitter().emitNewSpace(spaceMetadata);
 	}

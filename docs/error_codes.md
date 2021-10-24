@@ -12,7 +12,9 @@
 - `KD012`: `Only owner`
 - `KD013`: `Only allowed contracts`
 
-## Ad related
+## Ad Space related
+
+- `KD100`: `The space has already created`
 
 - `KD100`: `The ad has not created yet`
 - `KD101`: `Overlapped period`

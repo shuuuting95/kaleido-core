@@ -55,6 +55,36 @@ describe('AdManager', async () => {
         await manager.computeSpaceId(nextSpaceNonce)
       )
     })
+
+    it('should revert because the space has already created', async () => {
+      const { factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      await manager.newSpace(spaceMetadata)
+
+      await expect(manager.newSpace(spaceMetadata)).to.be.revertedWith('KD100')
+    })
+  })
+
+  describe('updateSpace', async () => {
+    it('should update a space', async () => {
+      const { factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const nextSpaceNonce = await manager.spaceNonce()
+      await manager.newSpace(spaceMetadata)
+
+      const newSpaceMetadata = 'afje3hqurhqhrquhequhwf'
+      expect(await manager.updateSpace(spaceMetadata, newSpaceMetadata))
+        .to.emit(event, 'DeleteSpace')
+        .withArgs(spaceMetadata)
+      expect(await manager.spaceId(spaceMetadata)).to.be.eq(
+        '0x0000000000000000000000000000000000000000000000000000000000000000'
+      )
+      expect(await manager.spaceId(newSpaceMetadata)).to.be.eq(
+        await manager.computeSpaceId(nextSpaceNonce)
+      )
+    })
   })
 
   describe('newPeirod', async () => {
