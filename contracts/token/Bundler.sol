@@ -3,11 +3,11 @@ pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
 import "../base/ERC721.sol";
-import "../base/AdPool.sol";
-import "../base/Vault.sol";
-import "../AdManager.sol";
+import "../peripheries/AdPool.sol";
+import "../peripheries/Vault.sol";
 import "../libraries/Integers.sol";
 import "../libraries/Substrings.sol";
+import "../AdManager.sol";
 import "hardhat/console.sol";
 
 /// @title Bundler - makes some NFTs be one to easily .

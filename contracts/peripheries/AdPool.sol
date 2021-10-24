@@ -2,9 +2,9 @@
 pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
+import "../base/BlockTimestamp.sol";
 import "../libraries/Ad.sol";
 import "./MediaRegistry.sol";
-import "./BlockTimestamp.sol";
 
 /// @title AdPool - stores all ads accorss every space.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>

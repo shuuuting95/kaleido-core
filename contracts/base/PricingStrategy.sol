@@ -19,24 +19,6 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 	/// @dev Maps tokenId with bidding info
 	mapping(uint256 => Bidding) public bidding;
 
-	function _checkBeforeBuy(uint256 tokenId) internal {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.RRP, "not RRP");
-		require(!allPeriods[tokenId].sold, "has already sold");
-		require(allPeriods[tokenId].minPrice == msg.value, "inappropriate amount");
-	}
-
-	function _checkBeforeBuyBasedOnTime(uint256 tokenId) internal {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.DPBT, "not DPBT");
-		require(!allPeriods[tokenId].sold, "has already sold");
-		require(currentPrice(tokenId) <= msg.value, "low price");
-	}
-
-	function _checkBeforeBid(uint256 tokenId) internal {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
-		require(!allPeriods[tokenId].sold, "has already sold");
-		require(currentPrice(tokenId) <= msg.value, "low price");
-	}
-
 	/// @dev Returns the current price.
 	/// @param tokenId uint256 of the token ID
 	function currentPrice(uint256 tokenId) public view returns (uint256) {
@@ -55,6 +37,24 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 			return bidding[tokenId].price;
 		}
 		revert("not exist");
+	}
+
+	function _checkBeforeBuy(uint256 tokenId) internal {
+		require(allPeriods[tokenId].pricing == Ad.Pricing.RRP, "not RRP");
+		require(!allPeriods[tokenId].sold, "has already sold");
+		require(allPeriods[tokenId].minPrice == msg.value, "inappropriate amount");
+	}
+
+	function _checkBeforeBuyBasedOnTime(uint256 tokenId) internal {
+		require(allPeriods[tokenId].pricing == Ad.Pricing.DPBT, "not DPBT");
+		require(!allPeriods[tokenId].sold, "has already sold");
+		require(currentPrice(tokenId) <= msg.value, "low price");
+	}
+
+	function _checkBeforeBid(uint256 tokenId) internal {
+		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
+		require(!allPeriods[tokenId].sold, "has already sold");
+		require(currentPrice(tokenId) <= msg.value, "low price");
 	}
 
 	function _startPrice(Ad.Period memory period)

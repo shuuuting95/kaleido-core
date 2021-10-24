@@ -3,7 +3,7 @@ pragma solidity 0.8.9;
 
 import "../proxies/MediaProxy.sol";
 import "../accessors/NameAccessor.sol";
-import "../base/MediaRegistry.sol";
+import "../peripheries/MediaRegistry.sol";
 import "hardhat/console.sol";
 
 /// @title MediaFactory - creates proxy contracts for media accounts.

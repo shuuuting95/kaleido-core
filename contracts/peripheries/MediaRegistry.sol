@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "./BlockTimestamp.sol";
+import "../base/BlockTimestamp.sol";
 import "../accessors/NameAccessor.sol";
 import "hardhat/console.sol";
 

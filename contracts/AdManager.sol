@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./accessors/NameAccessor.sol";
-import "./base/MediaRegistry.sol";
-import "./base/AdPool.sol";
 import "./base/PricingStrategy.sol";
 import "./base/DistributionRight.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./peripheries/MediaRegistry.sol";
+import "./peripheries/AdPool.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
