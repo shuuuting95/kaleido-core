@@ -11,7 +11,6 @@ import "../libraries/Ad.sol";
 contract EventEmitter is NameAccessor, BlockTimestamp {
 	event NewSpace(string metadata);
 	event DeleteSpace(string metadata);
-
 	event NewPeriod(
 		uint256 tokenId,
 		string spaceMetadata,
@@ -24,6 +23,12 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	event DeletePeriod(uint256 tokenId);
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
+	event ReceiveToken(
+		uint256 tokenId,
+		uint256 price,
+		address buyer,
+		uint256 timestamp
+	);
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
@@ -80,6 +85,14 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		address msgSender
 	) external onlyProxies {
 		emit Bid(tokenId, msgValue, msgSender, _blockTimestamp());
+	}
+
+	function emitReceiveToken(
+		uint256 tokenId,
+		uint256 price,
+		address buyer
+	) external onlyProxies {
+		emit ReceiveToken(tokenId, price, buyer, _blockTimestamp());
 	}
 
 	/**

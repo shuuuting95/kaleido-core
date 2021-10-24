@@ -9,12 +9,6 @@ import "hardhat/console.sol";
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
-	event ReceiveToken(
-		uint256 tokenId,
-		uint256 price,
-		address buyer,
-		uint256 timestamp
-	);
 	event Propose(uint256 tokenId, string metadata);
 	event Accept(uint256 tokenId);
 	event Deny(uint256 tokenId, string reason);
@@ -149,6 +143,9 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_eventEmitter().emitDeletePeriod(tokenId);
 	}
 
+	/// @dev Buys the token that is defined as the specific period on an ad space.
+	///      The price of the token is fixed.
+	/// @param tokenId uint256 of the token ID
 	function buy(uint256 tokenId) external payable notYourself {
 		_checkBeforeBuy(tokenId);
 		allPeriods[tokenId].sold = true;
@@ -157,6 +154,9 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
 	}
 
+	/// @dev Buys the token that is defined as the specific period on an ad space.
+	///      The price is decreasing as time goes by.
+	/// @param tokenId uint256 of the token ID
 	function buyBasedOnTime(uint256 tokenId) external payable notYourself {
 		_checkBeforeBuyBasedOnTime(tokenId);
 		allPeriods[tokenId].sold = true;
@@ -178,17 +178,14 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		payable
 		onlySuccessfulBidder(tokenId)
 	{
-		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
-		require(!allPeriods[tokenId].sold, "has already sold");
-
+		_checkBeforeReceiveToken(tokenId);
 		allPeriods[tokenId].sold = true;
 		_dropToken(tokenId);
-		payable(vaultAddress()).transfer(bidding[tokenId].price / 10);
-		emit ReceiveToken(
+		_collectFees();
+		_eventEmitter().emitReceiveToken(
 			tokenId,
 			bidding[tokenId].price,
-			msg.sender,
-			_blockTimestamp()
+			msg.sender
 		);
 	}
 
@@ -223,6 +220,11 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 
 	function balance() public view returns (uint256) {
 		return address(this).balance;
+	}
+
+	function _checkBeforeReceiveToken(uint256 tokenId) internal view {
+		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
+		require(!allPeriods[tokenId].sold, "has already sold");
 	}
 
 	function _collectFees() internal {
