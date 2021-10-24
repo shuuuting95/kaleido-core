@@ -43,13 +43,17 @@ describe('AdManager', async () => {
 
   describe('newSpace', async () => {
     it('should new an ad space', async () => {
-      const { factory, name } = await setupTests()
+      const { factory, name, event } = await setupTests()
       const manager = await managerInstance(factory, name)
       const spaceMetadata = 'asfafkjksjfkajf'
+      const nextSpaceNonce = await manager.spaceNonce()
 
       expect(await manager.newSpace(spaceMetadata))
-        .to.emit(manager, 'NewSpace')
+        .to.emit(event, 'NewSpace')
         .withArgs(spaceMetadata)
+      expect(await manager.spaceId(spaceMetadata)).to.be.eq(
+        await manager.computeSpaceId(nextSpaceNonce)
+      )
     })
   })
 

@@ -16,7 +16,7 @@ abstract contract SpaceManager is NameAccessor {
 
 	function _newSpace(string memory spaceMetadata) internal {
 		require(spaceId[spaceMetadata] == 0, "KD102");
-		spaceId[spaceMetadata] = _computeSpaceId(spaceNonce++);
+		spaceId[spaceMetadata] = computeSpaceId(spaceNonce++);
 		_eventEmitter().emitNewSpace(spaceMetadata);
 	}
 
@@ -34,7 +34,7 @@ abstract contract SpaceManager is NameAccessor {
 		_eventEmitter().emitDeleteSpace(spaceMetadata);
 	}
 
-	function _computeSpaceId(uint256 nonce) private view returns (bytes32) {
+	function computeSpaceId(uint256 nonce) public view returns (bytes32) {
 		return keccak256(abi.encodePacked(nonce, address(this)));
 	}
 
