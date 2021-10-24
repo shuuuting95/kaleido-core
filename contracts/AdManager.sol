@@ -4,24 +4,14 @@ pragma solidity 0.8.9;
 import "./accessors/NameAccessor.sol";
 import "./base/MediaRegistry.sol";
 import "./base/AdPool.sol";
-import "./base/SpaceManager.sol";
+import "./base/PeriodManager.sol";
 import "./base/DistributionRight.sol";
 import "./base/BlockTimestamp.sol";
-import "./libraries/Ad.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
-	event NewPeriod(
-		uint256 tokenId,
-		string spaceMetadata,
-		string tokenMetadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp,
-		Ad.Pricing pricing,
-		uint256 minPrice
-	);
+contract AdManager is DistributionRight, PeriodManager, BlockTimestamp {
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event ReceiveToken(
@@ -40,12 +30,6 @@ contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
 		address bidder;
 		uint256 price;
 	}
-
-	/// @dev Maps the spaceId with tokenIds of ad periods.
-	mapping(bytes32 => uint256[]) public periodKeys;
-
-	/// @dev tokenId <- metadata * fromTimestamp * toTimestamp
-	mapping(uint256 => Ad.Period) public allPeriods;
 
 	/// @dev Maps tokenId with bidding info
 	mapping(uint256 => Bidding) public bidding;
@@ -100,7 +84,16 @@ contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
 	/// @dev Deletes a space.
 	/// @param spaceMetadata string of the space metadata
 	function deleteSpace(string memory spaceMetadata) external onlyMedia {
+		_checkNowOnSale(spaceMetadata);
 		_deleteSpace(spaceMetadata);
+	}
+
+	function _checkNowOnSale(string memory spaceMetadata) internal view {
+		for (uint256 i = 0; i < periodKeys[spaceId[spaceMetadata]].length; i++) {
+			if (!allPeriods[periodKeys[spaceId[spaceMetadata]][i]].sold) {
+				revert("now on sale");
+			}
+		}
 	}
 
 	/// @dev Create a new period for a space. This function requires some params
@@ -152,22 +145,6 @@ contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
 			pricing,
 			minPrice
 		);
-	}
-
-	function _startPrice(Ad.Period memory period)
-		internal
-		pure
-		returns (uint256)
-	{
-		if (period.pricing == Ad.Pricing.RRP) {
-			return period.minPrice;
-		} else if (period.pricing == Ad.Pricing.DPBT) {
-			return period.minPrice * 10;
-		} else if (period.pricing == Ad.Pricing.BIDDING) {
-			return period.minPrice;
-		} else {
-			return 0;
-		}
 	}
 
 	function buy(uint256 tokenId) external payable {
@@ -286,37 +263,6 @@ contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
 
 	function balance() public view returns (uint256) {
 		return address(this).balance;
-	}
-
-	function _checkOverlapping(
-		string memory metadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp
-	) internal view {
-		for (uint256 i = 0; i < periodKeys[spaceId[metadata]].length; i++) {
-			Ad.Period memory existing = allPeriods[periodKeys[spaceId[metadata]][i]];
-			if (
-				_isOverlapped(
-					fromTimestamp,
-					toTimestamp,
-					existing.fromTimestamp,
-					existing.toTimestamp
-				)
-			) {
-				revert("KD101");
-			}
-		}
-	}
-
-	function _isOverlapped(
-		uint256 newFromTimestamp,
-		uint256 newToTimestamp,
-		uint256 currentFromTimestamp,
-		uint256 currentToTimestamp
-	) internal pure returns (bool) {
-		return
-			!(newFromTimestamp > currentToTimestamp ||
-				newToTimestamp < currentFromTimestamp);
 	}
 
 	/**

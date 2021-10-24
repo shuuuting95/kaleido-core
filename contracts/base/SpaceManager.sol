@@ -3,14 +3,13 @@ pragma solidity 0.8.9;
 
 /// @title SpaceManager - manages ad spaces.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract SpaceManager {
+abstract contract SpaceManager {
 	event NewSpace(string metadata);
 	event DeleteSpace(string metadata);
 
 	uint256 public spaceNonce = 10000001;
 
-	/// @dev Returns true if the space metadata has already registered.
-	// mapping(string => bool) public spaced;
+	/// @dev Returns spaceId that is tied with space metadata.
 	mapping(string => bytes32) public spaceId;
 
 	function _newSpace(string memory spaceMetadata) internal {
