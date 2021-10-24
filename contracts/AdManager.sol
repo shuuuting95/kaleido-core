@@ -28,6 +28,19 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_;
 	}
 
+	modifier notYourself() {
+		require(
+			_mediaRegistry().ownerOf(address(this)) != msg.sender,
+			"is the owner"
+		);
+		_;
+	}
+
+	modifier onlySuccessfulBidder(uint256 tokenId) {
+		require(bidding[tokenId].bidder == msg.sender, "is not successful bidder");
+		_;
+	}
+
 	/// @dev Creates a new space for the media account.
 	/// @param spaceMetadata string of the space metadata
 	function newSpace(string memory spaceMetadata) external onlyMedia {
@@ -103,14 +116,6 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		);
 	}
 
-	modifier notYourself() {
-		require(
-			_mediaRegistry().ownerOf(address(this)) != msg.sender,
-			"is the owner"
-		);
-		_;
-	}
-
 	function _collectFees() internal {
 		payable(vaultAddress()).transfer(msg.value / 10);
 	}
@@ -132,18 +137,11 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	}
 
 	function bid(uint256 tokenId) external payable notYourself nonReentrant {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
-		require(!allPeriods[tokenId].sold, "has already sold");
-		require(currentPrice(tokenId) <= msg.value, "low price");
+		_checkBeforeBid(tokenId);
 		payable(bidding[tokenId].bidder).transfer(bidding[tokenId].price);
 		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
 		// TODO: save history on AdPool
 		emit Bid(tokenId, msg.value, msg.sender, _blockTimestamp());
-	}
-
-	modifier onlySuccessfulBidder(uint256 tokenId) {
-		require(bidding[tokenId].bidder == msg.sender, "is not successful bidder");
-		_;
 	}
 
 	function receiveToken(uint256 tokenId)
