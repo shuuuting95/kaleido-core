@@ -4,6 +4,7 @@ pragma solidity 0.8.9;
 import "./accessors/NameAccessor.sol";
 import "./base/MediaRegistry.sol";
 import "./base/AdPool.sol";
+import "./base/SpaceManager.sol";
 import "./base/DistributionRight.sol";
 import "./base/BlockTimestamp.sol";
 import "./libraries/Ad.sol";
@@ -11,8 +12,7 @@ import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is DistributionRight, BlockTimestamp {
-	event NewSpace(string metadata);
+contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
 	event NewPeriod(
 		uint256 tokenId,
 		string spaceMetadata,
@@ -78,13 +78,32 @@ contract AdManager is DistributionRight, BlockTimestamp {
 		initialize(nameRegistry);
 	}
 
+	modifier onlyMedia() {
+		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
+		_;
+	}
+
 	/// @dev Creates a new space for the media account.
 	/// @param spaceMetadata string of the space metadata
-	function newSpace(string memory spaceMetadata) public {
-		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
-		require(!spaced[spaceMetadata], "KD102");
-		spaced[spaceMetadata] = true;
-		emit NewSpace(spaceMetadata);
+	function newSpace(string memory spaceMetadata) external onlyMedia {
+		_newSpace(spaceMetadata);
+	}
+
+	/// @dev Updates metadata.
+	/// @param oldMetadata string of the old space metadata
+	/// @param newMetadata string of the new space metadata
+	function updateSpace(string memory oldMetadata, string memory newMetadata)
+		external
+		onlyMedia
+	{
+		bytes32 spaceId = _deleteSpace(oldMetadata);
+		_link(newMetadata, spaceId);
+	}
+
+	/// @dev Deletes a space.
+	/// @param spaceMetadata string of the space metadata
+	function deleteSpace(string memory spaceMetadata) external onlyMedia {
+		_deleteSpace(spaceMetadata);
 	}
 
 	/// @dev Create a new period for a space. This function requires some params
@@ -102,12 +121,12 @@ contract AdManager is DistributionRight, BlockTimestamp {
 		uint256 toTimestamp,
 		Ad.Pricing pricing,
 		uint256 minPrice
-	) external {
+	) external onlyMedia {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
 		require(fromTimestamp < toTimestamp, "KD103");
 		require(toTimestamp > _blockTimestamp(), "KD104");
-		if (!spaced[spaceMetadata]) {
-			newSpace(spaceMetadata);
+		if (spaceId[spaceMetadata] == 0) {
+			_newSpace(spaceMetadata);
 		}
 		_checkOverlapping(spaceMetadata, fromTimestamp, toTimestamp);
 		uint256 tokenId = Ad.id(spaceMetadata, fromTimestamp, toTimestamp);
