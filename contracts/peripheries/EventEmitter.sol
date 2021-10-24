@@ -15,8 +15,10 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		uint256 tokenId,
 		string spaceMetadata,
 		string tokenMetadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp,
+		uint256 saleStartTimestamp,
+		uint256 saleEndTimestamp,
+		uint256 displayStartTimestamp,
+		uint256 displayEndTimestamp,
 		Ad.Pricing pricing,
 		uint256 minPrice
 	);
@@ -51,8 +53,10 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		uint256 tokenId,
 		string memory spaceMetadata,
 		string memory tokenMetadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp,
+		uint256 saleStartTimestamp,
+		uint256 saleEndTimestamp,
+		uint256 displayStartTimestamp,
+		uint256 displayEndTimestamp,
 		Ad.Pricing pricing,
 		uint256 minPrice
 	) external onlyProxies {
@@ -60,8 +64,10 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 			tokenId,
 			spaceMetadata,
 			tokenMetadata,
-			fromTimestamp,
-			toTimestamp,
+			saleStartTimestamp,
+			saleEndTimestamp,
+			displayStartTimestamp,
+			displayEndTimestamp,
 			pricing,
 			minPrice
 		);

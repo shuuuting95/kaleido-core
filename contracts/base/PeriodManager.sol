@@ -19,22 +19,22 @@ abstract contract PeriodManager is SpaceManager {
 	/// @dev Maps the spaceId with tokenIds of ad periods.
 	mapping(bytes32 => uint256[]) public periodKeys;
 
-	/// @dev tokenId <- metadata * fromTimestamp * toTimestamp
+	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
 	mapping(uint256 => Ad.Period) public allPeriods;
 
 	function _checkOverlapping(
 		string memory metadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp
+		uint256 displayStartTimestamp,
+		uint256 displayEndTimestamp
 	) internal view {
 		for (uint256 i = 0; i < periodKeys[spaceId[metadata]].length; i++) {
 			Ad.Period memory existing = allPeriods[periodKeys[spaceId[metadata]][i]];
 			if (
 				_isOverlapped(
-					fromTimestamp,
-					toTimestamp,
-					existing.fromTimestamp,
-					existing.toTimestamp
+					displayStartTimestamp,
+					displayEndTimestamp,
+					existing.displayStartTimestamp,
+					existing.displayEndTimestamp
 				)
 			) {
 				revert("KD101");

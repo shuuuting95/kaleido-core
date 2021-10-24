@@ -49,7 +49,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		string memory title,
 		string memory baseURI,
 		address nameRegistry
-	) external initializer {
+	) external {
 		_name = title;
 		_symbol = string(abi.encodePacked("Kaleido_", title));
 		_baseURI = baseURI;
@@ -84,33 +84,46 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	///      to decide which kinds of pricing way and how much price to get started.
 	/// @param spaceMetadata string of the space metadata
 	/// @param tokenMetadata string of the token metadata
-	/// @param fromTimestamp uint256 of the start timestamp for the display
-	/// @param toTimestamp uint256 of the end timestamp for the display
+	/// @param saleEndTimestamp uint256 of the end timestamp for the sale
+	/// @param displayStartTimestamp uint256 of the start timestamp for the display
+	/// @param displayEndTimestamp uint256 of the end timestamp for the display
 	/// @param pricing uint256 of the pricing way
 	/// @param minPrice uint256 of the minimum price to sell it out
 	function newPeriod(
 		string memory spaceMetadata,
 		string memory tokenMetadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp,
+		uint256 saleEndTimestamp,
+		uint256 displayStartTimestamp,
+		uint256 displayEndTimestamp,
 		Ad.Pricing pricing,
 		uint256 minPrice
 	) external onlyMedia {
-		require(fromTimestamp < toTimestamp, "KD103");
-		require(toTimestamp > _blockTimestamp(), "KD104");
+		// require(saleEndTimestamp > block.timestamp, "KD");
+		// require(saleEndTimestamp < displayStartTimestamp, "KD");
+		require(displayStartTimestamp < displayEndTimestamp, "KD103");
+		require(displayEndTimestamp > _blockTimestamp(), "KD104");
 		if (spaceId[spaceMetadata] == 0) {
 			_newSpace(spaceMetadata);
 		}
-		_checkOverlapping(spaceMetadata, fromTimestamp, toTimestamp);
-		uint256 tokenId = Ad.id(spaceMetadata, fromTimestamp, toTimestamp);
+		_checkOverlapping(
+			spaceMetadata,
+			displayStartTimestamp,
+			displayEndTimestamp
+		);
+		uint256 tokenId = Ad.id(
+			spaceMetadata,
+			displayStartTimestamp,
+			displayEndTimestamp
+		);
 		periodKeys[spaceId[spaceMetadata]].push(tokenId);
 		Ad.Period memory period = Ad.Period(
 			address(this),
 			spaceMetadata,
 			tokenMetadata,
 			_blockTimestamp(),
-			fromTimestamp,
-			toTimestamp,
+			saleEndTimestamp,
+			displayStartTimestamp,
+			displayEndTimestamp,
 			pricing,
 			minPrice,
 			0,
@@ -124,8 +137,10 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 			tokenId,
 			spaceMetadata,
 			tokenMetadata,
-			fromTimestamp,
-			toTimestamp,
+			_blockTimestamp(),
+			saleEndTimestamp,
+			displayStartTimestamp,
+			displayEndTimestamp,
 			pricing,
 			minPrice
 		);

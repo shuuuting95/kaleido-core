@@ -15,9 +15,10 @@ library Ad {
 		address mediaProxy;
 		string spaceMetadata;
 		string tokenMetadata;
-		uint256 salesStartTimestamp;
-		uint256 fromTimestamp;
-		uint256 toTimestamp;
+		uint256 saleStartTimestamp;
+		uint256 saleEndTimestamp;
+		uint256 displayStartTimestamp;
+		uint256 displayEndTimestamp;
 		Pricing pricing;
 		uint256 minPrice;
 		uint256 startPrice;
@@ -26,12 +27,14 @@ library Ad {
 
 	function id(
 		string memory metadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp
+		uint256 displayStartTimestamp,
+		uint256 displayEndTimestamp
 	) public pure returns (uint256) {
 		return
 			uint256(
-				keccak256(abi.encodePacked(metadata, fromTimestamp, toTimestamp))
+				keccak256(
+					abi.encodePacked(metadata, displayStartTimestamp, displayEndTimestamp)
+				)
 			) % _ID_LENGTH;
 	}
 }

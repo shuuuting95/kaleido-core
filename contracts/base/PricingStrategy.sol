@@ -27,8 +27,8 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 			return
 				period.startPrice -
 				((period.startPrice - period.minPrice) *
-					(_blockTimestamp() - period.salesStartTimestamp)) /
-				(period.fromTimestamp - period.salesStartTimestamp);
+					(_blockTimestamp() - period.saleStartTimestamp)) /
+				(period.saleEndTimestamp - period.saleStartTimestamp);
 		}
 		if (period.pricing == Ad.Pricing.BIDDING) {
 			return bidding[tokenId].price;

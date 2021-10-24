@@ -41,17 +41,17 @@ describe('Bundler', async () => {
       const manager = _manager(proxy)
 
       const spaceMetadata = 'asfafkjksjfkajf'
-      const fromTimestamp = now + 3600
-      const toTimestamp = now + 7200
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
       const tokenId1 = await manager.adId(
         spaceMetadata,
-        fromTimestamp,
-        toTimestamp
+        displayStartTimestamp,
+        displayEndTimestamp
       )
       await newPeriodWith(manager, {
         spaceMetadata: spaceMetadata,
-        fromTimestamp: fromTimestamp,
-        toTimestamp: toTimestamp,
+        displayStartTimestamp: displayStartTimestamp,
+        displayEndTimestamp: displayEndTimestamp,
       })
       await buyWith(manager.connect(user2), {
         tokenId: tokenId1,
@@ -59,13 +59,13 @@ describe('Bundler', async () => {
 
       const tokenId2 = await manager.adId(
         spaceMetadata,
-        fromTimestamp + 5000,
-        toTimestamp + 5000
+        displayStartTimestamp + 5000,
+        displayEndTimestamp + 5000
       )
       await newPeriodWith(manager, {
         spaceMetadata: spaceMetadata,
-        fromTimestamp: fromTimestamp + 5000,
-        toTimestamp: toTimestamp + 5000,
+        displayStartTimestamp: displayStartTimestamp + 5000,
+        displayEndTimestamp: displayEndTimestamp + 5000,
       })
       await buyWith(manager.connect(user2), {
         tokenId: tokenId2,
@@ -73,13 +73,13 @@ describe('Bundler', async () => {
 
       const tokenId3 = await manager.adId(
         spaceMetadata,
-        fromTimestamp + 10000,
-        toTimestamp + 10000
+        displayStartTimestamp + 10000,
+        displayEndTimestamp + 10000
       )
       await newPeriodWith(manager, {
         spaceMetadata: spaceMetadata,
-        fromTimestamp: fromTimestamp + 10000,
-        toTimestamp: toTimestamp + 10000,
+        displayStartTimestamp: displayStartTimestamp + 10000,
+        displayEndTimestamp: displayEndTimestamp + 10000,
       })
       await buyWith(manager.connect(user2), {
         tokenId: tokenId3,
