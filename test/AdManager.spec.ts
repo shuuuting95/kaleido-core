@@ -7,6 +7,7 @@ import { option } from '../scripts/common/wallet'
 import { newMediaWith } from './MediaFactory.spec'
 import {
   getAdManagerContract,
+  getEventEmitterContract,
   getMediaFactoryContract,
   getMediaRegistryContract,
   getNameRegistryContract,
@@ -26,6 +27,7 @@ describe('AdManager', async () => {
       manager: await getAdManagerContract(),
       name: await getNameRegistryContract(),
       registry: await getMediaRegistryContract(),
+      event: await getEventEmitterContract(),
     }
   })
   const _manager = (proxy: string) =>
@@ -53,10 +55,11 @@ describe('AdManager', async () => {
 
   describe('newPeirod', async () => {
     it('should new an ad period', async () => {
-      const { now, factory, name } = await setupTests()
+      const { now, factory, name, event } = await setupTests()
       const manager = await managerInstance(factory, name)
       const spaceMetadata = 'asfafkjksjfkajf'
       const tokenMetadata = 'poiknfknajnjaer'
+      const saleEndTimestamp = now + 2400
       const displayStartTimestamp = now + 3600
       const displayEndTimestamp = now + 7200
       const pricing = 0
@@ -71,17 +74,20 @@ describe('AdManager', async () => {
         await newPeriodWith(manager, {
           spaceMetadata: spaceMetadata,
           tokenMetadata: tokenMetadata,
+          saleEndTimestamp: saleEndTimestamp,
           displayStartTimestamp: displayStartTimestamp,
           displayEndTimestamp: displayEndTimestamp,
           pricing: pricing,
           minPrice: minPrice,
         })
       )
-        .to.emit(manager, 'NewPeriod')
+        .to.emit(event, 'NewPeriod')
         .withArgs(
           tokenId,
           spaceMetadata,
           tokenMetadata,
+          now + 3,
+          saleEndTimestamp,
           displayStartTimestamp,
           displayEndTimestamp,
           pricing,
