@@ -53,19 +53,11 @@ abstract contract PeriodManager is SpaceManager {
 				newToTimestamp < currentFromTimestamp);
 	}
 
-	function _startPrice(Ad.Period memory period)
-		internal
-		pure
-		returns (uint256)
-	{
-		if (period.pricing == Ad.Pricing.RRP) {
-			return period.minPrice;
-		} else if (period.pricing == Ad.Pricing.DPBT) {
-			return period.minPrice * 10;
-		} else if (period.pricing == Ad.Pricing.BIDDING) {
-			return period.minPrice;
-		} else {
-			return 0;
+	function _checkNowOnSale(string memory spaceMetadata) internal view {
+		for (uint256 i = 0; i < periodKeys[spaceId[spaceMetadata]].length; i++) {
+			if (!allPeriods[periodKeys[spaceId[spaceMetadata]][i]].sold) {
+				revert("now on sale");
+			}
 		}
 	}
 }

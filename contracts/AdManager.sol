@@ -4,14 +4,13 @@ pragma solidity 0.8.9;
 import "./accessors/NameAccessor.sol";
 import "./base/MediaRegistry.sol";
 import "./base/AdPool.sol";
-import "./base/PeriodManager.sol";
+import "./base/PricingStrategy.sol";
 import "./base/DistributionRight.sol";
-import "./base/BlockTimestamp.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is DistributionRight, PeriodManager, BlockTimestamp {
+contract AdManager is DistributionRight, PricingStrategy {
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event ReceiveToken(
@@ -24,15 +23,6 @@ contract AdManager is DistributionRight, PeriodManager, BlockTimestamp {
 	event Accept(uint256 tokenId);
 	event Deny(uint256 tokenId, string reason);
 	event Withdraw(uint256 amount);
-
-	struct Bidding {
-		uint256 tokenId;
-		address bidder;
-		uint256 price;
-	}
-
-	/// @dev Maps tokenId with bidding info
-	mapping(uint256 => Bidding) public bidding;
 
 	modifier onlyMedia() {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
@@ -61,14 +51,6 @@ contract AdManager is DistributionRight, PeriodManager, BlockTimestamp {
 	function deleteSpace(string memory spaceMetadata) external onlyMedia {
 		_checkNowOnSale(spaceMetadata);
 		_deleteSpace(spaceMetadata);
-	}
-
-	function _checkNowOnSale(string memory spaceMetadata) internal view {
-		for (uint256 i = 0; i < periodKeys[spaceId[spaceMetadata]].length; i++) {
-			if (!allPeriods[periodKeys[spaceId[spaceMetadata]][i]].sold) {
-				revert("now on sale");
-			}
-		}
 	}
 
 	/// @dev Create a new period for a space. This function requires some params
@@ -187,24 +169,6 @@ contract AdManager is DistributionRight, PeriodManager, BlockTimestamp {
 			msg.sender,
 			_blockTimestamp()
 		);
-	}
-
-	function currentPrice(uint256 tokenId) public view returns (uint256) {
-		Ad.Period memory period = allPeriods[tokenId];
-		if (period.pricing == Ad.Pricing.RRP) {
-			return period.minPrice;
-		}
-		if (period.pricing == Ad.Pricing.DPBT) {
-			return
-				period.startPrice -
-				((period.startPrice - period.minPrice) *
-					(_blockTimestamp() - period.salesStartTimestamp)) /
-				(period.fromTimestamp - period.salesStartTimestamp);
-		}
-		if (period.pricing == Ad.Pricing.BIDDING) {
-			return bidding[tokenId].price;
-		}
-		revert("not exist");
 	}
 
 	function withdraw() external onlyMedia {
