@@ -11,12 +11,24 @@ import "./MediaRegistry.sol";
 contract AdPool is BlockTimestamp, NameAccessor {
 	mapping(uint256 => Ad.Period) public allPeriods;
 
+	modifier onlyProxies() {
+		require(_mediaRegistry().ownerOf(msg.sender) != address(0x0), "KD");
+		_;
+	}
+
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
 	}
 
-	function addPeriod(uint256 tokenId, Ad.Period memory period) external {
+	function addPeriod(uint256 tokenId, Ad.Period memory period)
+		external
+		onlyProxies
+	{
 		allPeriods[tokenId] = period;
+	}
+
+	function deletePeriod(uint256 tokenId) external onlyProxies {
+		delete allPeriods[tokenId];
 	}
 
 	function mediaProxyOf(uint256 tokenId) public view returns (address) {

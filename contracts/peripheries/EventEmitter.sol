@@ -21,6 +21,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		Ad.Pricing pricing,
 		uint256 minPrice
 	);
+	event DeletePeriod(uint256 tokenId);
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 
@@ -59,6 +60,10 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 			pricing,
 			minPrice
 		);
+	}
+
+	function emitDeletePeriod(uint256 tokenId) external onlyProxies {
+		emit DeletePeriod(tokenId);
 	}
 
 	function emitBuy(

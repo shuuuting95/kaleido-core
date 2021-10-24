@@ -137,8 +137,16 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		);
 	}
 
-	function _collectFees() internal {
-		payable(vaultAddress()).transfer(msg.value / 10);
+	function deletePeriod(string memory spaceMetadata, uint256 tokenId)
+		external
+		onlyMedia
+	{
+		// TODO
+		// periodKeys[spaceId[spaceMetadata]]
+		delete allPeriods[tokenId];
+		_burnRight(tokenId);
+		_adPool().deletePeriod(tokenId);
+		_eventEmitter().emitDeletePeriod(tokenId);
 	}
 
 	function buy(uint256 tokenId) external payable notYourself {
@@ -215,6 +223,10 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 
 	function balance() public view returns (uint256) {
 		return address(this).balance;
+	}
+
+	function _collectFees() internal {
+		payable(vaultAddress()).transfer(msg.value / 10);
 	}
 }
 
