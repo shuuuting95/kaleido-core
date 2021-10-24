@@ -11,7 +11,6 @@ import "hardhat/console.sol";
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is DistributionRight, PricingStrategy {
-	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event ReceiveToken(
 		uint256 tokenId,
@@ -104,18 +103,22 @@ contract AdManager is DistributionRight, PricingStrategy {
 		);
 	}
 
-	function buy(uint256 tokenId) external payable {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.RRP, "not RRP");
-		require(!allPeriods[tokenId].sold, "has already sold");
+	modifier notYourself() {
 		require(
 			_mediaRegistry().ownerOf(address(this)) != msg.sender,
 			"is the owner"
 		);
-		require(allPeriods[tokenId].minPrice == msg.value, "inappropriate amount");
-		allPeriods[tokenId].sold = true;
-		_soldRight(tokenId);
+		_;
+	}
+
+	function _collectFees() internal {
 		payable(vaultAddress()).transfer(msg.value / 10);
-		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
+	}
+
+	function buy(uint256 tokenId) external payable notYourself {
+		_buy(tokenId);
+		_dropToken(tokenId);
+		_collectFees();
 	}
 
 	function buyBasedOnTime(uint256 tokenId) external payable {
@@ -127,7 +130,7 @@ contract AdManager is DistributionRight, PricingStrategy {
 		);
 		require(currentPrice(tokenId) <= msg.value, "low price");
 		allPeriods[tokenId].sold = true;
-		_soldRight(tokenId);
+		_dropToken(tokenId);
 		payable(vaultAddress()).transfer(msg.value / 10);
 		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
@@ -161,7 +164,7 @@ contract AdManager is DistributionRight, PricingStrategy {
 		require(!allPeriods[tokenId].sold, "has already sold");
 
 		allPeriods[tokenId].sold = true;
-		_soldRight(tokenId);
+		_dropToken(tokenId);
 		payable(vaultAddress()).transfer(bidding[tokenId].price / 10);
 		emit ReceiveToken(
 			tokenId,

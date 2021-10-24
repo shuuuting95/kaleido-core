@@ -47,7 +47,7 @@ contract DistributionRight is ERC721, NameAccessor {
 		_tokenURIs[tokenId] = "";
 	}
 
-	function _soldRight(uint256 tokenId) internal {
+	function _dropToken(uint256 tokenId) internal {
 		_transfer(address(this), msg.sender, tokenId);
 	}
 
