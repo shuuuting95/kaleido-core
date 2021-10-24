@@ -8,6 +8,8 @@ import "./BlockTimestamp.sol";
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
+	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
+
 	struct Bidding {
 		uint256 tokenId;
 		address bidder;
@@ -24,6 +26,21 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 		allPeriods[tokenId].sold = true;
 		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
+
+	function _buyBasedOnTime(uint256 tokenId) internal {
+		require(allPeriods[tokenId].pricing == Ad.Pricing.DPBT, "not DPBT");
+		require(!allPeriods[tokenId].sold, "has already sold");
+		require(currentPrice(tokenId) <= msg.value, "low price");
+		allPeriods[tokenId].sold = true;
+		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
+	}
+
+	// function _bid(uint256 tokenId) internal {
+	// 	require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
+	// 	require(!allPeriods[tokenId].sold, "has already sold");
+	// 	require(currentPrice(tokenId) <= msg.value, "low price");
+	// 	emit Bid(tokenId, msg.value, msg.sender, _blockTimestamp());
+	// }
 
 	/// @dev Returns the current price.
 	/// @param tokenId uint256 of the token ID

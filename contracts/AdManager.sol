@@ -6,12 +6,12 @@ import "./base/MediaRegistry.sol";
 import "./base/AdPool.sol";
 import "./base/PricingStrategy.sol";
 import "./base/DistributionRight.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is DistributionRight, PricingStrategy {
-	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
+contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	event ReceiveToken(
 		uint256 tokenId,
 		uint256 price,
@@ -121,29 +121,16 @@ contract AdManager is DistributionRight, PricingStrategy {
 		_collectFees();
 	}
 
-	function buyBasedOnTime(uint256 tokenId) external payable {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.DPBT, "not DPBT");
-		require(!allPeriods[tokenId].sold, "has already sold");
-		require(
-			_mediaRegistry().ownerOf(address(this)) != msg.sender,
-			"is the owner"
-		);
-		require(currentPrice(tokenId) <= msg.value, "low price");
-		allPeriods[tokenId].sold = true;
+	function buyBasedOnTime(uint256 tokenId) external payable notYourself {
+		_buyBasedOnTime(tokenId);
 		_dropToken(tokenId);
-		payable(vaultAddress()).transfer(msg.value / 10);
-		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
+		_collectFees();
 	}
 
-	function bid(uint256 tokenId) external payable {
+	function bid(uint256 tokenId) external payable notYourself nonReentrant {
 		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
 		require(!allPeriods[tokenId].sold, "has already sold");
-		require(
-			_mediaRegistry().ownerOf(address(this)) != msg.sender,
-			"is the owner"
-		);
 		require(currentPrice(tokenId) <= msg.value, "low price");
-		// TODO: avoid reentrancy
 		payable(bidding[tokenId].bidder).transfer(bidding[tokenId].price);
 		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
 		// TODO: save history on AdPool
