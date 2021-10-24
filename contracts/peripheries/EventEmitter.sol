@@ -2,12 +2,13 @@
 pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
+import "../common/BlockTimestamp.sol";
 import "../peripheries/MediaRegistry.sol";
 import "../libraries/Ad.sol";
 
 /// @title EventEmitter - emits events on behalf of each proxy.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract EventEmitter is NameAccessor {
+contract EventEmitter is NameAccessor, BlockTimestamp {
 	event NewPeriod(
 		uint256 tokenId,
 		string spaceMetadata,
@@ -17,6 +18,8 @@ contract EventEmitter is NameAccessor {
 		Ad.Pricing pricing,
 		uint256 minPrice
 	);
+	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
+	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
@@ -35,7 +38,7 @@ contract EventEmitter is NameAccessor {
 		uint256 toTimestamp,
 		Ad.Pricing pricing,
 		uint256 minPrice
-	) public onlyProxies {
+	) external onlyProxies {
 		emit NewPeriod(
 			tokenId,
 			spaceMetadata,
@@ -45,6 +48,22 @@ contract EventEmitter is NameAccessor {
 			pricing,
 			minPrice
 		);
+	}
+
+	function emitBuy(
+		uint256 tokenId,
+		uint256 msgValue,
+		address msgSender
+	) external onlyProxies {
+		emit Buy(tokenId, msgValue, msgSender, _blockTimestamp());
+	}
+
+	function emitBid(
+		uint256 tokenId,
+		uint256 msgValue,
+		address msgSender
+	) external onlyProxies {
+		emit Bid(tokenId, msgValue, msgSender, _blockTimestamp());
 	}
 
 	/**

@@ -126,7 +126,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		allPeriods[tokenId].sold = true;
 		_dropToken(tokenId);
 		_collectFees();
-		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
+		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
 	}
 
 	function buyBasedOnTime(uint256 tokenId) external payable notYourself {
@@ -134,7 +134,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		allPeriods[tokenId].sold = true;
 		_dropToken(tokenId);
 		_collectFees();
-		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
+		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
 	}
 
 	function bid(uint256 tokenId) external payable notYourself nonReentrant {
@@ -142,7 +142,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		payable(bidding[tokenId].bidder).transfer(bidding[tokenId].price);
 		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
 		// TODO: save history on AdPool
-		emit Bid(tokenId, msg.value, msg.sender, _blockTimestamp());
+		_eventEmitter().emitBid(tokenId, msg.value, msg.sender);
 	}
 
 	function receiveToken(uint256 tokenId)

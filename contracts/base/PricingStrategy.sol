@@ -7,9 +7,6 @@ import "../common/BlockTimestamp.sol";
 /// @title PricingStrategy - manages how to sell them out.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
-	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
-	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
-
 	struct Bidding {
 		uint256 tokenId;
 		address bidder;
