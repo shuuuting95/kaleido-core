@@ -41,11 +41,8 @@ contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
 		uint256 price;
 	}
 
-	/// @dev Returns true if the space metadata has already registered.
-	mapping(string => bool) public spaced;
-
-	/// @dev Maps the space metadata with tokenIds of ad periods.
-	mapping(string => uint256[]) public periodKeys;
+	/// @dev Maps the spaceId with tokenIds of ad periods.
+	mapping(bytes32 => uint256[]) public periodKeys;
 
 	/// @dev tokenId <- metadata * fromTimestamp * toTimestamp
 	mapping(uint256 => Ad.Period) public allPeriods;
@@ -122,7 +119,6 @@ contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
 		Ad.Pricing pricing,
 		uint256 minPrice
 	) external onlyMedia {
-		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
 		require(fromTimestamp < toTimestamp, "KD103");
 		require(toTimestamp > _blockTimestamp(), "KD104");
 		if (spaceId[spaceMetadata] == 0) {
@@ -130,7 +126,7 @@ contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
 		}
 		_checkOverlapping(spaceMetadata, fromTimestamp, toTimestamp);
 		uint256 tokenId = Ad.id(spaceMetadata, fromTimestamp, toTimestamp);
-		periodKeys[spaceMetadata].push(tokenId);
+		periodKeys[spaceId[spaceMetadata]].push(tokenId);
 		Ad.Period memory period = Ad.Period(
 			address(this),
 			spaceMetadata,
@@ -259,11 +255,7 @@ contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
 		revert("not exist");
 	}
 
-	function withdraw() external {
-		require(
-			_mediaRegistry().ownerOf(address(this)) == msg.sender,
-			"is not the owner"
-		);
+	function withdraw() external onlyMedia {
 		uint256 remained = address(this).balance;
 		payable(msg.sender).transfer(remained);
 		emit Withdraw(remained);
@@ -301,8 +293,8 @@ contract AdManager is DistributionRight, SpaceManager, BlockTimestamp {
 		uint256 fromTimestamp,
 		uint256 toTimestamp
 	) internal view {
-		for (uint256 i = 0; i < periodKeys[metadata].length; i++) {
-			Ad.Period memory existing = allPeriods[periodKeys[metadata][i]];
+		for (uint256 i = 0; i < periodKeys[spaceId[metadata]].length; i++) {
+			Ad.Period memory existing = allPeriods[periodKeys[spaceId[metadata]][i]];
 			if (
 				_isOverlapped(
 					fromTimestamp,
