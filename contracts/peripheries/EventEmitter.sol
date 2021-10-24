@@ -9,6 +9,9 @@ import "../libraries/Ad.sol";
 /// @title EventEmitter - emits events on behalf of each proxy.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract EventEmitter is NameAccessor, BlockTimestamp {
+	event NewSpace(string metadata);
+	event DeleteSpace(string metadata);
+
 	event NewPeriod(
 		uint256 tokenId,
 		string spaceMetadata,
@@ -28,6 +31,14 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	modifier onlyProxies() {
 		require(_mediaRegistry().ownerOf(msg.sender) != address(0x0), "AR011");
 		_;
+	}
+
+	function emitNewSpace(string memory metadata) external onlyProxies {
+		emit NewSpace(metadata);
+	}
+
+	function emitDeleteSpace(string memory metadata) external onlyProxies {
+		emit DeleteSpace(metadata);
 	}
 
 	function emitNewPeriod(

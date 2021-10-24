@@ -2,12 +2,8 @@
 pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./accessors/NameAccessor.sol";
 import "./base/PricingStrategy.sol";
 import "./base/DistributionRight.sol";
-import "./peripheries/MediaRegistry.sol";
-import "./peripheries/AdPool.sol";
-import "./peripheries/EventEmitter.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
@@ -24,11 +20,13 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	event Deny(uint256 tokenId, string reason);
 	event Withdraw(uint256 amount);
 
+	/// @dev Can call it by only the media
 	modifier onlyMedia() {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
 		_;
 	}
 
+	/// @dev Prevents the media from calling by yourself
 	modifier notYourself() {
 		require(
 			_mediaRegistry().ownerOf(address(this)) != msg.sender,
@@ -37,9 +35,31 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_;
 	}
 
+	/// @dev Called by the successful bidder
 	modifier onlySuccessfulBidder(uint256 tokenId) {
 		require(bidding[tokenId].bidder == msg.sender, "is not successful bidder");
 		_;
+	}
+
+	/// @dev Can call it only once
+	modifier initializer() {
+		require(address(_nameRegistry) == address(0x0), "AR000");
+		_;
+	}
+
+	/// @dev Initialize the instance.
+	/// @param title string of the title of the instance
+	/// @param baseURI string of the base URI
+	/// @param nameRegistry address of NameRegistry
+	function initialize(
+		string memory title,
+		string memory baseURI,
+		address nameRegistry
+	) external initializer {
+		_name = title;
+		_symbol = string(abi.encodePacked("Kaleido_", title));
+		_baseURI = baseURI;
+		initialize(nameRegistry);
 	}
 
 	/// @dev Creates a new space for the media account.
@@ -195,21 +215,6 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 
 	function balance() public view returns (uint256) {
 		return address(this).balance;
-	}
-
-	/**
-	 * Accessors
-	 */
-	function _mediaRegistry() internal view returns (MediaRegistry) {
-		return MediaRegistry(mediaRegistryAddress());
-	}
-
-	function _adPool() internal view returns (AdPool) {
-		return AdPool(adPoolAddress());
-	}
-
-	function _eventEmitter() internal view returns (EventEmitter) {
-		return EventEmitter(eventEmitterAddress());
 	}
 }
 
