@@ -7,6 +7,7 @@ import "./base/PricingStrategy.sol";
 import "./base/DistributionRight.sol";
 import "./peripheries/MediaRegistry.sol";
 import "./peripheries/AdPool.sol";
+import "./peripheries/EventEmitter.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
@@ -105,7 +106,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		allPeriods[tokenId] = period;
 		_mintRight(tokenId, tokenMetadata);
 		_adPool().addPeriod(tokenId, period);
-		emit NewPeriod(
+		_eventEmitter().emitNewPeriod(
 			tokenId,
 			spaceMetadata,
 			tokenMetadata,
@@ -205,6 +206,10 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 
 	function _adPool() internal view returns (AdPool) {
 		return AdPool(adPoolAddress());
+	}
+
+	function _eventEmitter() internal view returns (EventEmitter) {
+		return EventEmitter(eventEmitterAddress());
 	}
 }
 

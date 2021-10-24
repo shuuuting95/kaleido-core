@@ -46,6 +46,11 @@ contract NameAccessor {
 		return _nameRegistry.get(keccak256(abi.encodePacked("Vault")));
 	}
 
+	/// @dev Gets the address of EventEmitter.
+	function eventEmitterAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("EventEmitter")));
+	}
+
 	/// @dev Gets the owner address.
 	function owner() public view returns (address) {
 		return _nameRegistry.owner();

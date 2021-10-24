@@ -27,6 +27,12 @@ export const getVaultContract = async () => {
   return contract.attach(Deployment.address)
 }
 
+export const getEventEmitterContract = async () => {
+  const Deployment = await deployments.get('EventEmitter')
+  const contract = await hre.ethers.getContractFactory('EventEmitter')
+  return contract.attach(Deployment.address)
+}
+
 export const getMediaFactoryContract = async () => {
   const Deployment = await deployments.get('MediaFactory')
   const contract = await hre.ethers.getContractFactory('MediaFactory')
