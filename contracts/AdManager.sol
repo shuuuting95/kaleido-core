@@ -116,15 +116,19 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	}
 
 	function buy(uint256 tokenId) external payable notYourself {
-		_buy(tokenId);
+		_checkBeforeBuy(tokenId);
+		allPeriods[tokenId].sold = true;
 		_dropToken(tokenId);
 		_collectFees();
+		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
 	function buyBasedOnTime(uint256 tokenId) external payable notYourself {
-		_buyBasedOnTime(tokenId);
+		_checkBeforeBuyBasedOnTime(tokenId);
+		allPeriods[tokenId].sold = true;
 		_dropToken(tokenId);
 		_collectFees();
+		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
 	function bid(uint256 tokenId) external payable notYourself nonReentrant {

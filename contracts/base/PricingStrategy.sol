@@ -19,27 +19,23 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 	/// @dev Maps tokenId with bidding info
 	mapping(uint256 => Bidding) public bidding;
 
-	function _buy(uint256 tokenId) internal {
+	function _checkBeforeBuy(uint256 tokenId) internal {
 		require(allPeriods[tokenId].pricing == Ad.Pricing.RRP, "not RRP");
 		require(!allPeriods[tokenId].sold, "has already sold");
 		require(allPeriods[tokenId].minPrice == msg.value, "inappropriate amount");
-		allPeriods[tokenId].sold = true;
-		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
-	function _buyBasedOnTime(uint256 tokenId) internal {
+	function _checkBeforeBuyBasedOnTime(uint256 tokenId) internal {
 		require(allPeriods[tokenId].pricing == Ad.Pricing.DPBT, "not DPBT");
 		require(!allPeriods[tokenId].sold, "has already sold");
 		require(currentPrice(tokenId) <= msg.value, "low price");
-		allPeriods[tokenId].sold = true;
-		emit Buy(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
-	// function _bid(uint256 tokenId) internal {
+	// function _beforeBid(uint256 tokenId) internal {
 	// 	require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
 	// 	require(!allPeriods[tokenId].sold, "has already sold");
 	// 	require(currentPrice(tokenId) <= msg.value, "low price");
-	// 	emit Bid(tokenId, msg.value, msg.sender, _blockTimestamp());
+	// 	// emit Bid(tokenId, msg.value, msg.sender, _blockTimestamp());
 	// }
 
 	/// @dev Returns the current price.
