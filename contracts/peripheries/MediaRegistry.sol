@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "../base/BlockTimestamp.sol";
 import "../accessors/NameAccessor.sol";
+import "../common/BlockTimestamp.sol";
 import "hardhat/console.sol";
 
 /// @title MediaRegistry - registers a list of media accounts.

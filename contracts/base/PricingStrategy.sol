@@ -2,7 +2,7 @@
 pragma solidity 0.8.9;
 
 import "./PeriodManager.sol";
-import "./BlockTimestamp.sol";
+import "../common/BlockTimestamp.sol";
 
 /// @title PricingStrategy - manages how to sell them out.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
