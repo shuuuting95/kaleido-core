@@ -12,7 +12,6 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	event Propose(uint256 tokenId, string metadata);
 	event Accept(uint256 tokenId);
 	event Deny(uint256 tokenId, string reason);
-	event Withdraw(uint256 amount);
 
 	/// @dev Can call it by only the media
 	modifier onlyMedia() {
@@ -190,7 +189,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	function withdraw() external onlyMedia {
 		uint256 remained = address(this).balance;
 		payable(msg.sender).transfer(remained);
-		emit Withdraw(remained);
+		_eventEmitter().emitWithdraw(remained);
 	}
 
 	function propose(uint256 tokenId, string memory metadata) external {

@@ -446,36 +446,29 @@ describe('AdManager', async () => {
   //   })
   // })
 
-  // describe('withdraw', async () => {
-  //   it('should buy a period', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name)
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const pricing = 0
-  //     const price = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       spaceMetadata: spaceMetadata,
-  //       displayStartTimestamp: displayStartTimestamp,
-  //       displayEndTimestamp: displayEndTimestamp,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
-  //     await buyWith(manager.connect(user2), {
-  //       tokenId,
-  //       value: price,
-  //     })
-  //     expect(await manager.withdraw())
-  //       .to.emit(manager, 'Withdraw')
-  //       .withArgs(parseEther('0.18'))
-  //   })
-  // })
+  describe('withdraw', async () => {
+    it('should withdraw the fund after a user bought', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      const pricing = 0
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
+      await buyWith(manager.connect(user2), {
+        tokenId,
+        value: price,
+      })
+
+      expect(await manager.withdraw())
+        .to.emit(manager, 'Withdraw')
+        .withArgs(parseEther('0.18'))
+    })
+  })
 
   // describe('propose', async () => {
   //   it('should propose to the right you bought', async () => {

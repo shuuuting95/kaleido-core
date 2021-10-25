@@ -31,6 +31,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		address buyer,
 		uint256 timestamp
 	);
+	event Withdraw(uint256 amount);
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
@@ -99,6 +100,10 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		address buyer
 	) external onlyProxies {
 		emit ReceiveToken(tokenId, price, buyer, _blockTimestamp());
+	}
+
+	function emitWithdraw(uint256 amount) external onlyProxies {
+		emit Withdraw(amount);
 	}
 
 	/**
