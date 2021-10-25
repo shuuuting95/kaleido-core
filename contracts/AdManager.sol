@@ -142,7 +142,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	function buy(uint256 tokenId) external payable notYourself {
 		_checkBeforeBuy(tokenId);
 		allPeriods[tokenId].sold = true;
-		_dropToken(tokenId);
+		_dropRight(tokenId);
 		_collectFees();
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
 	}
@@ -153,7 +153,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	function buyBasedOnTime(uint256 tokenId) external payable notYourself {
 		_checkBeforeBuyBasedOnTime(tokenId);
 		allPeriods[tokenId].sold = true;
-		_dropToken(tokenId);
+		_dropRight(tokenId);
 		_collectFees();
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
 	}
@@ -168,6 +168,8 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_eventEmitter().emitBid(tokenId, msg.value, msg.sender);
 	}
 
+	/// @dev Receives the token you bidded if you are the successful bidder.
+	/// @param tokenId uint256 of the token ID
 	function receiveToken(uint256 tokenId)
 		external
 		payable
@@ -175,7 +177,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	{
 		_checkBeforeReceiveToken(tokenId);
 		allPeriods[tokenId].sold = true;
-		_dropToken(tokenId);
+		_dropRight(tokenId);
 		_collectFees();
 		_eventEmitter().emitReceiveToken(
 			tokenId,
@@ -234,8 +236,9 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	}
 
 	function _checkBeforeReceiveToken(uint256 tokenId) internal view {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
-		require(!allPeriods[tokenId].sold, "has already sold");
+		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "KD124");
+		require(!allPeriods[tokenId].sold, "KD121");
+		require(allPeriods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
 	}
 
 	function _collectFees() internal {

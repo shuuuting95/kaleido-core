@@ -427,36 +427,34 @@ describe('AdManager', async () => {
     })
   })
 
-  // describe('receiveToken', async () => {
-  //   it('should receive token by the successful bidder', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name)
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const pricing = 2
-  //     const price = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       spaceMetadata: spaceMetadata,
-  //       displayStartTimestamp: displayStartTimestamp,
-  //       displayEndTimestamp: displayEndTimestamp,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
-  //     await manager
-  //       .connect(user2)
-  //       .bid(tokenId, option({ value: parseEther('0.3') }))
+  describe('receiveToken', async () => {
+    it('should receive token by the successful bidder', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
-  //     expect(await manager.connect(user2).receiveToken(tokenId, option()))
-  //       .to.emit(manager, 'ReceiveToken')
-  //       .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
-  //   })
-  // })
+      const saleEndTimestamp = now + 2400
+      const pricing = 2
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        saleEndTimestamp: saleEndTimestamp,
+        pricing: pricing,
+        minPrice: price,
+      })
+      await manager
+        .connect(user2)
+        .bid(tokenId, option({ value: parseEther('0.3') }))
+
+      // passed the end timestamp of the sale
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 2410])
+      await network.provider.send('evm_mine')
+
+      expect(await manager.connect(user2).receiveToken(tokenId, option()))
+        .to.emit(event, 'ReceiveToken')
+        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
+    })
+  })
 
   describe('withdraw', async () => {
     it('should withdraw the fund after a user bought', async () => {

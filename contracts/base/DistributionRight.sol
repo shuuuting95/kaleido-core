@@ -22,7 +22,7 @@ contract DistributionRight is ERC721 {
 		_tokenURIs[tokenId] = "";
 	}
 
-	function _dropToken(uint256 tokenId) internal {
+	function _dropRight(uint256 tokenId) internal {
 		_transfer(address(this), msg.sender, tokenId);
 	}
 
