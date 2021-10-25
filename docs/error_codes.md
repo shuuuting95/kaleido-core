@@ -26,4 +26,6 @@
 
 ## Buy / Bid related
 
-- `KD120`:
+- `KD120`: `Not RBP`
+- `KD121`: `Sold out`
+- `KD122`: `Inappopriate price`

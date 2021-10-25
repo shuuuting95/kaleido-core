@@ -37,9 +37,9 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 	}
 
 	function _checkBeforeBuy(uint256 tokenId) internal {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.RRP, "not RRP");
-		require(!allPeriods[tokenId].sold, "has already sold");
-		require(allPeriods[tokenId].minPrice == msg.value, "inappropriate amount");
+		require(allPeriods[tokenId].pricing == Ad.Pricing.RRP, "KD120");
+		require(!allPeriods[tokenId].sold, "KD121");
+		require(allPeriods[tokenId].minPrice == msg.value, "KD122");
 	}
 
 	function _checkBeforeBuyBasedOnTime(uint256 tokenId) internal {
