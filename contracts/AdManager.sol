@@ -9,8 +9,6 @@ import "hardhat/console.sol";
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
-	event Deny(uint256 tokenId, string reason);
-
 	/// @dev Can call it by only the media
 	modifier onlyMedia() {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
@@ -192,6 +190,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	}
 
 	/// @dev Proposes the metadata to the token you bought.
+	///      Users can propose many times as long as it is accepted.
 	/// @param tokenId uint256 of the token ID
 	/// @param metadata string of the proposal metadata
 	function propose(uint256 tokenId, string memory metadata) external {
@@ -210,9 +209,14 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_eventEmitter().emitAcceptProposal(tokenId, metadata);
 	}
 
+	/// @dev Denies the submitted proposal, mentioning what is the problem.
+	/// @param tokenId uint256 of the token ID
+	/// @param reason string of the reason why it is rejected
 	function deny(uint256 tokenId, string memory reason) external {
+		string memory metadata = proposed[tokenId];
+		require(bytes(metadata).length != 0, "KD130");
 		deniedReason[tokenId] = reason;
-		emit Deny(tokenId, reason);
+		_eventEmitter().emitDenyProposal(tokenId, metadata, reason);
 	}
 
 	function adId(
