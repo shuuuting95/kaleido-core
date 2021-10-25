@@ -49,9 +49,9 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 	}
 
 	function _checkBeforeBid(uint256 tokenId) internal {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
-		require(!allPeriods[tokenId].sold, "has already sold");
-		require(currentPrice(tokenId) <= msg.value, "low price");
+		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "KD124");
+		require(!allPeriods[tokenId].sold, "KD121");
+		require(currentPrice(tokenId) <= msg.value, "KD122");
 	}
 
 	function _refundLockedAmount(uint256 tokenId) internal {

@@ -383,37 +383,49 @@ describe('AdManager', async () => {
     })
   })
 
-  // describe('bid', async () => {
-  //   it('should bid', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name)
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const pricing = 2
-  //     const price = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       spaceMetadata: spaceMetadata,
-  //       displayStartTimestamp: displayStartTimestamp,
-  //       displayEndTimestamp: displayEndTimestamp,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
+  describe('bid', async () => {
+    it('should bid', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
-  //     expect(
-  //       await manager
-  //         .connect(user2)
-  //         .bid(tokenId, option({ value: parseEther('0.3') }))
-  //     )
-  //       .to.emit(manager, 'Bid')
-  //       .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
-  //   })
-  // })
+      const pricing = 2
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
+
+      expect(
+        await manager
+          .connect(user2)
+          .bid(tokenId, option({ value: parseEther('0.3') }))
+      )
+        .to.emit(event, 'Bid')
+        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
+    })
+
+    it('should revert because it is not bidding', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      const pricing = 0
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
+
+      await expect(
+        manager
+          .connect(user2)
+          .bid(tokenId, option({ value: parseEther('0.3') }))
+      ).to.be.revertedWith('KD124')
+    })
+  })
 
   // describe('receiveToken', async () => {
   //   it('should receive token by the successful bidder', async () => {

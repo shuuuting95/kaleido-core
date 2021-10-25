@@ -158,11 +158,13 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
 	}
 
+	/// @dev Bids to participate in an auction.
+	/// @param tokenId uint256 of the token ID
 	function bid(uint256 tokenId) external payable notYourself nonReentrant {
 		_checkBeforeBid(tokenId);
-		payable(bidding[tokenId].bidder).transfer(bidding[tokenId].price);
-		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
+		_refundLockedAmount(tokenId);
 		// TODO: save history on AdPool
+		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
 		_eventEmitter().emitBid(tokenId, msg.value, msg.sender);
 	}
 
