@@ -556,21 +556,21 @@ describe('AdManager', async () => {
         .withArgs(tokenId, proposalMetadata, deniedReason)
     })
 
-    // it('should revert because it has already proposed', async () => {
-    //   const { now, factory, name } = await setupTests()
-    //   const manager = await managerInstance(factory, name)
-    //   const { tokenId } = await defaultPeriodProps(manager, now)
+    it('should revert because there is not any proposals', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
-    //   const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
-    //   await newPeriodWith(manager, { now })
-    //   await buyWith(manager.connect(user2), { tokenId })
-    //   await manager.connect(user2).propose(tokenId, proposalMetadata)
-    //   await manager.accept(tokenId, option())
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      const deniedReason =
+        'This is a violence image a bit. We can not accept, sorry.'
+      await newPeriodWith(manager, { now })
+      await buyWith(manager.connect(user2), { tokenId })
 
-    //   await expect(manager.accept(tokenId, option())).to.be.revertedWith(
-    //     'KD130'
-    //   )
-    // })
+      await expect(
+        manager.deny(tokenId, deniedReason, option())
+      ).to.be.revertedWith('KD130')
+    })
   })
 })
 

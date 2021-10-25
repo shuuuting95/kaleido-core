@@ -212,7 +212,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	/// @dev Denies the submitted proposal, mentioning what is the problem.
 	/// @param tokenId uint256 of the token ID
 	/// @param reason string of the reason why it is rejected
-	function deny(uint256 tokenId, string memory reason) external {
+	function deny(uint256 tokenId, string memory reason) external onlyMedia {
 		string memory metadata = proposed[tokenId];
 		require(bytes(metadata).length != 0, "KD130");
 		deniedReason[tokenId] = reason;
