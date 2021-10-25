@@ -29,3 +29,4 @@
 - `KD120`: `Not RBP`
 - `KD121`: `Sold out`
 - `KD122`: `Inappopriate price`
+- `KD123`: `Not Dynamic Prcing Based on Time`

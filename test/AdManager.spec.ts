@@ -331,47 +331,57 @@ describe('AdManager', async () => {
     })
   })
 
-  // describe('buyBasedOnTime', async () => {
-  //   it('should buy a period', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name)
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const pricing = 1
-  //     const price = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       spaceMetadata: spaceMetadata,
-  //       displayStartTimestamp: displayStartTimestamp,
-  //       displayEndTimestamp: displayEndTimestamp,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
+  describe('buyBasedOnTime', async () => {
+    it('should buy a period', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
-  //     // 2400/3600 -> 66% passed
-  //     await network.provider.send('evm_setNextBlockTimestamp', [now + 2400])
-  //     await network.provider.send('evm_mine')
+      const pricing = 1
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
 
-  //     const currentPrice = await manager.currentPrice(tokenId)
+      // 2400/3600 -> 66% passed
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 2400])
+      await network.provider.send('evm_mine')
 
-  //     // slightly passed for its operation
-  //     await network.provider.send('evm_setNextBlockTimestamp', [now + 2460])
-  //     await network.provider.send('evm_mine')
+      const currentPrice = await manager.currentPrice(tokenId)
 
-  //     expect(
-  //       await manager
-  //         .connect(user2)
-  //         .buyBasedOnTime(tokenId, option({ value: currentPrice }))
-  //     )
-  //       .to.emit(manager, 'Buy')
-  //       .withArgs(tokenId, currentPrice, user2.address, now + 3)
-  //   })
-  // })
+      // slightly passed for its operation
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 2460])
+      await network.provider.send('evm_mine')
+
+      expect(
+        await manager
+          .connect(user2)
+          .buyBasedOnTime(tokenId, option({ value: currentPrice }))
+      )
+        .to.emit(event, 'Buy')
+        .withArgs(tokenId, currentPrice, user2.address, now + 3)
+    })
+
+    it('should revert because the pricing is not DPBT', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const pricing = 2
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+      })
+
+      const currentPrice = await manager.currentPrice(tokenId)
+      await expect(
+        manager
+          .connect(user2)
+          .buyBasedOnTime(tokenId, option({ value: currentPrice }))
+      ).to.be.revertedWith('KD123')
+    })
+  })
 
   // describe('bid', async () => {
   //   it('should bid', async () => {
