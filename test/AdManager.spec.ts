@@ -465,7 +465,7 @@ describe('AdManager', async () => {
       })
 
       expect(await manager.withdraw())
-        .to.emit(manager, 'Withdraw')
+        .to.emit(event, 'Withdraw')
         .withArgs(parseEther('0.18'))
     })
   })
@@ -488,6 +488,20 @@ describe('AdManager', async () => {
         .to.emit(event, 'Propose')
         .withArgs(tokenId, proposalMetadata)
       expect(await manager.proposed(tokenId)).to.be.eq(proposalMetadata)
+    })
+
+    it('should revert because the token is not yours', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      await newPeriodWith(manager, { now })
+      await buyWith(manager.connect(user2), { tokenId })
+
+      await expect(
+        manager.connect(user3).propose(tokenId, proposalMetadata, option())
+      ).to.be.revertedWith('KD012')
     })
   })
 
