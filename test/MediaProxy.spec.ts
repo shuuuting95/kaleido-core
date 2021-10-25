@@ -32,7 +32,7 @@ describe('MediaProxy', async () => {
   const _manager = (proxy: string) =>
     new ethers.Contract(proxy, getAdManagerABI(), user1)
 
-  describe('newSpace', async () => {
+  describe('fallback', async () => {
     it('should transfer ETH to a proxy', async () => {
       const { factory, name, vault } = await setupTests()
       const { proxy } = await newMediaWith(factory, name)
