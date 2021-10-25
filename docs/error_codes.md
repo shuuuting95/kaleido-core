@@ -16,6 +16,8 @@
 
 - `KD100`: `The space has already created`
 
+## Ad Period related
+
 - `KD100`: `The ad has not created yet`
 - `KD101`: `Overlapped period`
 - `KD102`: `Existing space`

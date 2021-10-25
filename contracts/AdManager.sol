@@ -97,7 +97,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 			displayStartTimestamp,
 			displayEndTimestamp
 		);
-		periodKeys[spaceMetadata].push(tokenId);
+		_periodKeys[spaceMetadata].push(tokenId);
 		Ad.Period memory period = Ad.Period(
 			address(this),
 			spaceMetadata,
@@ -133,7 +133,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		onlyMedia
 	{
 		// TODO
-		// periodKeys[spaceId[spaceMetadata]]
+		// _periodKeys[spaceId[spaceMetadata]]
 		delete allPeriods[tokenId];
 		_burnRight(tokenId);
 		_adPool().deletePeriod(tokenId);

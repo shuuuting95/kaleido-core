@@ -103,6 +103,21 @@ describe('AdManager', async () => {
           pricing,
           minPrice
         )
+      expect(await manager.spaced(spaceMetadata)).to.be.true
+      expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
+      expect(await manager.allPeriods(tokenId)).to.deep.equal([
+        manager.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now + 2),
+        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        pricing,
+        minPrice,
+        minPrice,
+        false,
+      ])
     })
 
     it('should revert because the media is not yours', async () => {
