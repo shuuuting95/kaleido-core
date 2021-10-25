@@ -38,7 +38,7 @@ abstract contract PeriodManager is SpaceManager {
 					existing.displayEndTimestamp
 				)
 			) {
-				revert("KD101");
+				revert("KD110");
 			}
 		}
 	}

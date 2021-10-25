@@ -80,10 +80,10 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		Ad.Pricing pricing,
 		uint256 minPrice
 	) external onlyMedia {
-		// require(saleEndTimestamp > block.timestamp, "KD");
-		// require(saleEndTimestamp < displayStartTimestamp, "KD");
-		require(displayStartTimestamp < displayEndTimestamp, "KD103");
-		require(displayEndTimestamp > _blockTimestamp(), "KD104");
+		require(saleEndTimestamp > _blockTimestamp(), "KD111");
+		require(saleEndTimestamp < displayStartTimestamp, "KD112");
+		require(displayStartTimestamp < displayEndTimestamp, "KD113");
+
 		if (!spaced[spaceMetadata]) {
 			_newSpace(spaceMetadata);
 		}

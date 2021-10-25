@@ -163,10 +163,38 @@ describe('AdManager', async () => {
           displayStartTimestamp: now + 7100,
           displayEndTimestamp: now + 9000,
         })
-      ).to.be.revertedWith('KD101')
+      ).to.be.revertedWith('KD110')
     })
 
-    it('should revert because of improper time sequence', async () => {
+    it('should revert because the sale end time is the past', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const saleEndTimestamp = now - 1000
+
+      await expect(
+        newPeriodWith(manager, {
+          saleEndTimestamp: saleEndTimestamp,
+        })
+      ).to.be.revertedWith('KD111')
+    })
+
+    it('should revert because the display start time is before the end of the sale', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const saleEndTimestamp = now + 3600
+      const displayStartTimestamp = now + 2400
+      const displayEndTimestamp = now + 7200
+
+      await expect(
+        newPeriodWith(manager, {
+          saleEndTimestamp: saleEndTimestamp,
+          displayStartTimestamp: displayStartTimestamp,
+          displayEndTimestamp: displayEndTimestamp,
+        })
+      ).to.be.revertedWith('KD112')
+    })
+
+    it('should revert because the display end time is before the start of the display', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
       const displayStartTimestamp = now + 7200
@@ -177,23 +205,7 @@ describe('AdManager', async () => {
           displayStartTimestamp: displayStartTimestamp,
           displayEndTimestamp: displayEndTimestamp,
         })
-      ).to.be.revertedWith('KD103')
-    })
-
-    it('should revert because of the past period', async () => {
-      const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
-      const saleEndTimestamp = now - 8400
-      const displayStartTimestamp = now - 7200
-      const displayEndTimestamp = now - 3600
-
-      await expect(
-        newPeriodWith(manager, {
-          saleEndTimestamp: saleEndTimestamp,
-          displayStartTimestamp: displayStartTimestamp,
-          displayEndTimestamp: displayEndTimestamp,
-        })
-      ).to.be.revertedWith('KD')
+      ).to.be.revertedWith('KD113')
     })
   })
 

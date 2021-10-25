@@ -18,8 +18,7 @@
 
 ## Ad Period related
 
-- `KD100`: `The ad has not created yet`
-- `KD101`: `Overlapped period`
-- `KD102`: `Existing space`
-- `KD103`: `Improper time sequence`
-- `KD104`: `Past period`
+- `KD110`: `Overlapped period`
+- `KD111`: `Invalid sale end time`
+- `KD112`: `The sale end should be before the display start`
+- `KD113`: `The display end should be before the display start`
