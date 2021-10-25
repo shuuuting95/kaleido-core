@@ -16,8 +16,8 @@ abstract contract PeriodManager is SpaceManager {
 		Ad.Pricing pricing,
 		uint256 minPrice
 	);
-	/// @dev Maps the spaceId with tokenIds of ad periods.
-	mapping(bytes32 => uint256[]) public periodKeys;
+	/// @dev Maps the space metadata with tokenIds of ad periods.
+	mapping(string => uint256[]) public periodKeys;
 
 	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
 	mapping(uint256 => Ad.Period) public allPeriods;
@@ -27,8 +27,8 @@ abstract contract PeriodManager is SpaceManager {
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp
 	) internal view {
-		for (uint256 i = 0; i < periodKeys[spaceId[metadata]].length; i++) {
-			Ad.Period memory existing = allPeriods[periodKeys[spaceId[metadata]][i]];
+		for (uint256 i = 0; i < periodKeys[metadata].length; i++) {
+			Ad.Period memory existing = allPeriods[periodKeys[metadata][i]];
 			if (
 				_isOverlapped(
 					displayStartTimestamp,
@@ -54,8 +54,8 @@ abstract contract PeriodManager is SpaceManager {
 	}
 
 	function _checkNowOnSale(string memory spaceMetadata) internal view {
-		for (uint256 i = 0; i < periodKeys[spaceId[spaceMetadata]].length; i++) {
-			if (!allPeriods[periodKeys[spaceId[spaceMetadata]][i]].sold) {
+		for (uint256 i = 0; i < periodKeys[spaceMetadata].length; i++) {
+			if (!allPeriods[periodKeys[spaceMetadata][i]].sold) {
 				revert("now on sale");
 			}
 		}

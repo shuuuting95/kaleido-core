@@ -9,33 +9,13 @@ import "../peripheries/EventEmitter.sol";
 /// @title SpaceManager - manages ad spaces.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 abstract contract SpaceManager is NameAccessor {
-	uint256 public spaceNonce = 10000001;
-
 	/// @dev Returns spaceId that is tied with space metadata.
-	mapping(string => bytes32) public spaceId;
+	mapping(string => bool) public spaced;
 
 	function _newSpace(string memory spaceMetadata) internal {
-		require(spaceId[spaceMetadata] == 0, "KD100");
-		spaceId[spaceMetadata] = computeSpaceId(spaceNonce++);
+		require(!spaced[spaceMetadata], "KD100");
+		spaced[spaceMetadata] = true;
 		_eventEmitter().emitNewSpace(spaceMetadata);
-	}
-
-	function _link(string memory spaceMetadata, bytes32 _spaceId) internal {
-		spaceId[spaceMetadata] = _spaceId;
-	}
-
-	function _deleteSpace(string memory spaceMetadata)
-		internal
-		returns (bytes32 _spaceId)
-	{
-		require(spaceId[spaceMetadata] != 0, "KD");
-		_spaceId = spaceId[spaceMetadata];
-		spaceId[spaceMetadata] = 0;
-		_eventEmitter().emitDeleteSpace(spaceMetadata);
-	}
-
-	function computeSpaceId(uint256 nonce) public view returns (bytes32) {
-		return keccak256(abi.encodePacked(nonce, address(this)));
 	}
 
 	/**

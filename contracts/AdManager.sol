@@ -62,24 +62,6 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_newSpace(spaceMetadata);
 	}
 
-	/// @dev Updates metadata.
-	/// @param oldMetadata string of the old space metadata
-	/// @param newMetadata string of the new space metadata
-	function updateSpace(string memory oldMetadata, string memory newMetadata)
-		external
-		onlyMedia
-	{
-		bytes32 spaceId = _deleteSpace(oldMetadata);
-		_link(newMetadata, spaceId);
-	}
-
-	/// @dev Deletes a space.
-	/// @param spaceMetadata string of the space metadata
-	function deleteSpace(string memory spaceMetadata) external onlyMedia {
-		_checkNowOnSale(spaceMetadata);
-		_deleteSpace(spaceMetadata);
-	}
-
 	/// @dev Create a new period for a space. This function requires some params
 	///      to decide which kinds of pricing way and how much price to get started.
 	/// @param spaceMetadata string of the space metadata
@@ -102,7 +84,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		// require(saleEndTimestamp < displayStartTimestamp, "KD");
 		require(displayStartTimestamp < displayEndTimestamp, "KD103");
 		require(displayEndTimestamp > _blockTimestamp(), "KD104");
-		if (spaceId[spaceMetadata] == 0) {
+		if (!spaced[spaceMetadata]) {
 			_newSpace(spaceMetadata);
 		}
 		_checkOverlapping(
@@ -115,7 +97,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 			displayStartTimestamp,
 			displayEndTimestamp
 		);
-		periodKeys[spaceId[spaceMetadata]].push(tokenId);
+		periodKeys[spaceMetadata].push(tokenId);
 		Ad.Period memory period = Ad.Period(
 			address(this),
 			spaceMetadata,
