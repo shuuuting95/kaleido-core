@@ -32,6 +32,7 @@
 - `KD123`: `Not Dynamic Prcing Based on Time`
 - `KD124`: `Not Bidding`
 - `KD125`: `Auction continues`
+- `KD126`: `Not the successful bidder`
 
 ## Proposal related
 

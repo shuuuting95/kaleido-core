@@ -26,7 +26,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 
 	/// @dev Called by the successful bidder
 	modifier onlySuccessfulBidder(uint256 tokenId) {
-		require(bidding[tokenId].bidder == msg.sender, "is not successful bidder");
+		require(bidding[tokenId].bidder == msg.sender, "KD126");
 		_;
 	}
 

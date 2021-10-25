@@ -99,7 +99,7 @@ describe('AdManager', async () => {
           tokenId,
           spaceMetadata,
           tokenMetadata,
-          now + 3,
+          now + 2,
           saleEndTimestamp,
           displayStartTimestamp,
           displayEndTimestamp,
@@ -361,7 +361,7 @@ describe('AdManager', async () => {
           .buyBasedOnTime(tokenId, option({ value: currentPrice }))
       )
         .to.emit(event, 'Buy')
-        .withArgs(tokenId, currentPrice, user2.address, now + 3)
+        .withArgs(tokenId, currentPrice, user2.address, now + 2461)
     })
 
     it('should revert because the pricing is not DPBT', async () => {
@@ -403,7 +403,7 @@ describe('AdManager', async () => {
           .bid(tokenId, option({ value: parseEther('0.3') }))
       )
         .to.emit(event, 'Bid')
-        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
+        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 2)
     })
 
     it('should revert because it is not bidding', async () => {
@@ -452,7 +452,57 @@ describe('AdManager', async () => {
 
       expect(await manager.connect(user2).receiveToken(tokenId, option()))
         .to.emit(event, 'ReceiveToken')
-        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
+        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 5)
+    })
+
+    it('should revert because the caller is not the successful bidder', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      const saleEndTimestamp = now + 2400
+      const pricing = 2
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        saleEndTimestamp: saleEndTimestamp,
+        pricing: pricing,
+        minPrice: price,
+      })
+      await manager
+        .connect(user2)
+        .bid(tokenId, option({ value: parseEther('0.3') }))
+
+      // passed the end timestamp of the sale
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 2410])
+      await network.provider.send('evm_mine')
+
+      await expect(
+        manager.connect(user3).receiveToken(tokenId, option())
+      ).to.be.revertedWith('KD126')
+    })
+
+    it('should revert because the auction has not ended yet', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      const saleEndTimestamp = now + 2400
+      const pricing = 2
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        saleEndTimestamp: saleEndTimestamp,
+        pricing: pricing,
+        minPrice: price,
+      })
+      await manager
+        .connect(user2)
+        .bid(tokenId, option({ value: parseEther('0.3') }))
+
+      await expect(
+        manager.connect(user2).receiveToken(tokenId, option())
+      ).to.be.revertedWith('KD125')
     })
   })
 
