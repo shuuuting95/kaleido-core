@@ -470,38 +470,26 @@ describe('AdManager', async () => {
     })
   })
 
-  // describe('propose', async () => {
-  //   it('should propose to the right you bought', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name)
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const pricing = 0
-  //     const price = parseEther('0.2')
-  //     const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
-  //     await newPeriodWith(manager, {
-  //       spaceMetadata: spaceMetadata,
-  //       displayStartTimestamp: displayStartTimestamp,
-  //       displayEndTimestamp: displayEndTimestamp,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
-  //     await buyWith(manager.connect(user2), {
-  //       tokenId,
-  //       value: price,
-  //     })
+  describe('propose', async () => {
+    it('should propose to the right you bought', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
-  //     expect(await manager.connect(user2).propose(tokenId, proposalMetadata))
-  //       .to.emit(manager, 'Propose')
-  //       .withArgs(tokenId, proposalMetadata)
-  //   })
-  // })
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      await newPeriodWith(manager, { now })
+      await buyWith(manager.connect(user2), { tokenId })
+
+      expect(
+        await manager
+          .connect(user2)
+          .propose(tokenId, proposalMetadata, option())
+      )
+        .to.emit(event, 'Propose')
+        .withArgs(tokenId, proposalMetadata)
+      expect(await manager.proposed(tokenId)).to.be.eq(proposalMetadata)
+    })
+  })
 
   // describe('accept', async () => {
   //   it('should accept a proposal', async () => {

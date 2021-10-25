@@ -9,7 +9,6 @@ import "hardhat/console.sol";
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
-	event Propose(uint256 tokenId, string metadata);
 	event Accept(uint256 tokenId);
 	event Deny(uint256 tokenId, string reason);
 
@@ -186,15 +185,20 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		);
 	}
 
+	/// @dev Withdraws the fund deposited to the proxy contract.
 	function withdraw() external onlyMedia {
 		uint256 remained = address(this).balance;
 		payable(msg.sender).transfer(remained);
 		_eventEmitter().emitWithdraw(remained);
 	}
 
+	/// @dev Proposes the metadata to the token you bought.
+	/// @param tokenId uint256 of the token ID
+	/// @param metadata string of the proposal metadata
 	function propose(uint256 tokenId, string memory metadata) external {
+		require(ownerOf(tokenId) == msg.sender, "KD012");
 		_proposeToRight(tokenId, metadata);
-		emit Propose(tokenId, metadata);
+		_eventEmitter().emitPropose(tokenId, metadata);
 	}
 
 	function accept(uint256 tokenId) external {
