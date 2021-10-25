@@ -9,7 +9,6 @@ import "hardhat/console.sol";
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
-	event Accept(uint256 tokenId);
 	event Deny(uint256 tokenId, string reason);
 
 	/// @dev Can call it by only the media
@@ -201,9 +200,12 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_eventEmitter().emitPropose(tokenId, metadata);
 	}
 
-	function accept(uint256 tokenId) external {
+	function accept(uint256 tokenId) external onlyMedia {
+		string memory metadata = proposed[tokenId];
+		require(bytes(metadata).length != 0, "KD130");
 		_burnRight(tokenId);
-		emit Accept(tokenId);
+		_clearProposal(tokenId);
+		_eventEmitter().emitAcceptProposal(tokenId, metadata);
 	}
 
 	function deny(uint256 tokenId, string memory reason) external {

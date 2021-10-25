@@ -30,3 +30,7 @@
 - `KD121`: `Sold out`
 - `KD122`: `Inappopriate price`
 - `KD123`: `Not Dynamic Prcing Based on Time`
+
+## Proposal related
+
+- `KD130`: `Not proposed yet`

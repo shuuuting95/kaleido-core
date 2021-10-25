@@ -33,6 +33,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	);
 	event Withdraw(uint256 amount);
 	event Propose(uint256 tokenId, string metadata);
+	event AcceptProposal(uint256 tokenId, string metadata);
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
@@ -112,6 +113,13 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		onlyProxies
 	{
 		emit Propose(tokenId, metadata);
+	}
+
+	function emitAcceptProposal(uint256 tokenId, string memory metadata)
+		external
+		onlyProxies
+	{
+		emit AcceptProposal(tokenId, metadata);
 	}
 
 	/**

@@ -505,34 +505,22 @@ describe('AdManager', async () => {
     })
   })
 
-  // describe('accept', async () => {
-  //   it('should accept a proposal', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name)
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
-  //     await newPeriodWith(manager, {
-  //       spaceMetadata: spaceMetadata,
-  //       displayStartTimestamp: displayStartTimestamp,
-  //       displayEndTimestamp: displayEndTimestamp,
-  //     })
-  //     await buyWith(manager.connect(user2), {
-  //       tokenId,
-  //     })
-  //     await manager.connect(user2).propose(tokenId, proposalMetadata)
+  describe('accept', async () => {
+    it('should accept a proposal', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
-  //     expect(await manager.accept(tokenId))
-  //       .to.emit(manager, 'Accept')
-  //       .withArgs(tokenId)
-  //   })
-  // })
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      await newPeriodWith(manager, { now })
+      await buyWith(manager.connect(user2), { tokenId })
+      await manager.connect(user2).propose(tokenId, proposalMetadata)
+
+      expect(await manager.accept(tokenId, option()))
+        .to.emit(event, 'AcceptProposal')
+        .withArgs(tokenId, proposalMetadata)
+    })
+  })
 })
 
 export type NewPeriodProps = {

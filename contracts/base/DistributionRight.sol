@@ -30,6 +30,10 @@ contract DistributionRight is ERC721 {
 		proposed[tokenId] = metadata;
 	}
 
+	function _clearProposal(uint256 tokenId) internal {
+		proposed[tokenId] = "";
+	}
+
 	function transferToBundle(
 		address from,
 		address to,
