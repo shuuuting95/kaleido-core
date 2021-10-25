@@ -520,6 +520,22 @@ describe('AdManager', async () => {
         .to.emit(event, 'AcceptProposal')
         .withArgs(tokenId, proposalMetadata)
     })
+
+    it('should revert because it has already proposed', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      await newPeriodWith(manager, { now })
+      await buyWith(manager.connect(user2), { tokenId })
+      await manager.connect(user2).propose(tokenId, proposalMetadata)
+      await manager.accept(tokenId, option())
+
+      await expect(manager.accept(tokenId, option())).to.be.revertedWith(
+        'KD130'
+      )
+    })
   })
 })
 

@@ -200,6 +200,8 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_eventEmitter().emitPropose(tokenId, metadata);
 	}
 
+	/// @dev Accepts the proposal.
+	/// @param tokenId uint256 of the token ID
 	function accept(uint256 tokenId) external onlyMedia {
 		string memory metadata = proposed[tokenId];
 		require(bytes(metadata).length != 0, "KD130");
