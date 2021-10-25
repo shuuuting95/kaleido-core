@@ -45,6 +45,12 @@ export const getMediaRegistryContract = async () => {
   return contract.attach(Deployment.address)
 }
 
+export const getAdPoolContract = async () => {
+  const Deployment = await deployments.get('AdPool')
+  const contract = await hre.ethers.getContractFactory('AdPool')
+  return contract.attach(Deployment.address)
+}
+
 export const getNameRegistryContract = async () => {
   const Deployment = await deployments.get('NameRegistry')
   const contract = await hre.ethers.getContractFactory('NameRegistry')

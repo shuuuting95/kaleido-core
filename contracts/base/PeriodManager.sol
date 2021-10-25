@@ -20,6 +20,7 @@ abstract contract PeriodManager is SpaceManager {
 	mapping(string => uint256[]) internal _periodKeys;
 
 	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
+	/// TODO: delete
 	mapping(uint256 => Ad.Period) public allPeriods;
 
 	function _checkOverlapping(

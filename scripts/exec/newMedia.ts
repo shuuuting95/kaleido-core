@@ -15,7 +15,7 @@ const main = async () => {
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
   const initializer = ifaceAdManager.encodeFunctionData('initialize', [
     'Kaleido',
-    'https://base',
+    'https://base/',
     getNameRegistryAddress(network),
   ])
 

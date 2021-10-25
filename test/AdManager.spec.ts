@@ -7,6 +7,7 @@ import { option } from '../scripts/common/wallet'
 import { newMediaWith } from './MediaFactory.spec'
 import {
   getAdManagerContract,
+  getAdPoolContract,
   getEventEmitterContract,
   getMediaFactoryContract,
   getMediaRegistryContract,
@@ -27,6 +28,7 @@ describe('AdManager', async () => {
       manager: await getAdManagerContract(),
       name: await getNameRegistryContract(),
       registry: await getMediaRegistryContract(),
+      pool: await getAdPoolContract(),
       event: await getEventEmitterContract(),
     }
   })
@@ -65,7 +67,7 @@ describe('AdManager', async () => {
 
   describe('newPeirod', async () => {
     it('should new an ad period', async () => {
-      const { now, factory, name, event } = await setupTests()
+      const { now, factory, name, event, pool } = await setupTests()
       const manager = await managerInstance(factory, name)
       const spaceMetadata = 'asfafkjksjfkajf'
       const tokenMetadata = 'poiknfknajnjaer'
@@ -106,6 +108,23 @@ describe('AdManager', async () => {
       expect(await manager.spaced(spaceMetadata)).to.be.true
       expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
       expect(await manager.allPeriods(tokenId)).to.deep.equal([
+        manager.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now + 2),
+        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        pricing,
+        minPrice,
+        minPrice,
+        false,
+      ])
+      expect(await manager.ownerOf(tokenId)).to.be.eq(manager.address)
+      expect(await manager.tokenURI(tokenId)).to.be.eq(
+        `https://base/${tokenMetadata}`
+      )
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
         manager.address,
         spaceMetadata,
         tokenMetadata,
