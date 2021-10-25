@@ -43,15 +43,24 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 	}
 
 	function _checkBeforeBuyBasedOnTime(uint256 tokenId) internal {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.DPBT, "not DPBT");
-		require(!allPeriods[tokenId].sold, "has already sold");
-		require(currentPrice(tokenId) <= msg.value, "low price");
+		require(allPeriods[tokenId].pricing == Ad.Pricing.DPBT, "KD123");
+		require(!allPeriods[tokenId].sold, "KD121");
+		require(currentPrice(tokenId) <= msg.value, "KD122");
 	}
 
 	function _checkBeforeBid(uint256 tokenId) internal {
 		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "not BIDDING");
 		require(!allPeriods[tokenId].sold, "has already sold");
 		require(currentPrice(tokenId) <= msg.value, "low price");
+	}
+
+	function _refundLockedAmount(uint256 tokenId) internal {
+		if (
+			allPeriods[tokenId].pricing == Ad.Pricing.BIDDING &&
+			bidding[tokenId].bidder != address(0)
+		) {
+			payable(bidding[tokenId].bidder).transfer(bidding[tokenId].price);
+		}
 	}
 
 	function _startPrice(Ad.Period memory period)

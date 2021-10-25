@@ -128,8 +128,13 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		);
 	}
 
+	/// @dev Deletes a period and its token.
+	///      If there is any users locking the fund for the sale, the amount would be transfered
+	///      to the user when deleting the period.
+	/// @param tokenId uint256 of the token ID
 	function deletePeriod(uint256 tokenId) external onlyMedia {
 		require(allPeriods[tokenId].mediaProxy != address(0), "KD114");
+		_refundLockedAmount(tokenId);
 		delete allPeriods[tokenId];
 		_burnRight(tokenId);
 		_adPool().deletePeriod(tokenId);
