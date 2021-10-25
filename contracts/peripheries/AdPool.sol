@@ -12,7 +12,7 @@ contract AdPool is BlockTimestamp, NameAccessor {
 	mapping(uint256 => Ad.Period) public allPeriods;
 
 	modifier onlyProxies() {
-		require(_mediaRegistry().ownerOf(msg.sender) != address(0x0), "KD");
+		require(_mediaRegistry().ownerOf(msg.sender) != address(0x0), "KD011");
 		_;
 	}
 

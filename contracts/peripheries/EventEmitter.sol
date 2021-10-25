@@ -35,6 +35,11 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	event Propose(uint256 tokenId, string metadata);
 	event AcceptProposal(uint256 tokenId, string metadata);
 	event DenyProposal(uint256 tokenId, string metadata, string reason);
+	event TransferCustom(
+		address indexed from,
+		address indexed to,
+		uint256 indexed tokenId
+	);
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
@@ -129,6 +134,14 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		string memory reason
 	) external onlyProxies {
 		emit DenyProposal(tokenId, metadata, reason);
+	}
+
+	function emitTransferCustom(
+		address from,
+		address to,
+		uint256 tokenId
+	) external onlyProxies {
+		emit TransferCustom(from, to, tokenId);
 	}
 
 	/**

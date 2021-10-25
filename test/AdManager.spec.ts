@@ -106,6 +106,8 @@ describe('AdManager', async () => {
           pricing,
           minPrice
         )
+        .to.emit(event, 'TransferCustom')
+        .withArgs(ADDRESS_ZERO, manager.address, tokenId)
       expect(await manager.spaced(spaceMetadata)).to.be.true
       expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
       expect(await manager.allPeriods(tokenId)).to.deep.equal([
@@ -220,6 +222,8 @@ describe('AdManager', async () => {
       expect(await manager.deletePeriod(tokenId, option()))
         .to.emit(event, 'DeletePeriod')
         .withArgs(tokenId)
+        .to.emit(event, 'TransferCustom')
+        .withArgs(manager.address, ADDRESS_ZERO, tokenId)
       await expect(manager.ownerOf(tokenId)).to.be.revertedWith('KD114')
       expect(await pool.allPeriods(tokenId)).to.deep.equal([
         ADDRESS_ZERO,
@@ -247,6 +251,9 @@ describe('AdManager', async () => {
         'KD114'
       )
     })
+
+    // TODO: should revert because the token has already sold out
+    // KD121
   })
 
   describe('buy', async () => {
@@ -271,6 +278,8 @@ describe('AdManager', async () => {
       )
         .to.emit(event, 'Buy')
         .withArgs(tokenId, price, user2.address, now + 3)
+        .to.emit(event, 'TransferCustom')
+        .withArgs(manager.address, user2.address, tokenId)
     })
 
     it('should revert because the pricing is not RRP', async () => {
@@ -362,6 +371,8 @@ describe('AdManager', async () => {
       )
         .to.emit(event, 'Buy')
         .withArgs(tokenId, currentPrice, user2.address, now + 2461)
+        .to.emit(event, 'TransferCustom')
+        .withArgs(manager.address, user2.address, tokenId)
     })
 
     it('should revert because the pricing is not DPBT', async () => {
@@ -452,7 +463,9 @@ describe('AdManager', async () => {
 
       expect(await manager.connect(user2).receiveToken(tokenId, option()))
         .to.emit(event, 'ReceiveToken')
-        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 5)
+        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 2411)
+        .to.emit(event, 'TransferCustom')
+        .withArgs(manager.address, user2.address, tokenId)
     })
 
     it('should revert because the caller is not the successful bidder', async () => {
@@ -579,6 +592,8 @@ describe('AdManager', async () => {
       expect(await manager.accept(tokenId, option()))
         .to.emit(event, 'AcceptProposal')
         .withArgs(tokenId, proposalMetadata)
+        .to.emit(event, 'TransferCustom')
+        .withArgs(user2.address, ADDRESS_ZERO, tokenId)
     })
 
     it('should revert because it has already proposed', async () => {

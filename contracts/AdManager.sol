@@ -121,6 +121,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 			pricing,
 			minPrice
 		);
+		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
 	}
 
 	/// @dev Deletes a period and its token.
@@ -129,11 +130,13 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	function deletePeriod(uint256 tokenId) external onlyMedia {
 		require(allPeriods[tokenId].mediaProxy != address(0), "KD114");
+		require(ownerOf(tokenId) == address(this), "KD121");
 		_refundLockedAmount(tokenId);
 		delete allPeriods[tokenId];
 		_burnRight(tokenId);
 		_adPool().deletePeriod(tokenId);
 		_eventEmitter().emitDeletePeriod(tokenId);
+		_eventEmitter().emitTransferCustom(address(this), address(0), tokenId);
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
@@ -145,6 +148,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_dropRight(tokenId);
 		_collectFees();
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
+		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
@@ -156,6 +160,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_dropRight(tokenId);
 		_collectFees();
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
+		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
 	/// @dev Bids to participate in an auction.
@@ -184,6 +189,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 			bidding[tokenId].price,
 			msg.sender
 		);
+		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
@@ -211,6 +217,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_burnRight(tokenId);
 		_clearProposal(tokenId);
 		_eventEmitter().emitAcceptProposal(tokenId, metadata);
+		_eventEmitter().emitTransferCustom(msg.sender, address(0), tokenId);
 	}
 
 	/// @dev Denies the submitted proposal, mentioning what is the problem.
