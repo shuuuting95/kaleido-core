@@ -5,6 +5,7 @@ import { deployments, network, waffle } from 'hardhat'
 import { getAdManagerABI } from '../scripts/common/file'
 import { option } from '../scripts/common/wallet'
 import { newMediaWith } from './MediaFactory.spec'
+import { ADDRESS_ZERO } from './utils/address'
 import {
   getAdManagerContract,
   getAdPoolContract,
@@ -209,11 +210,12 @@ describe('AdManager', async () => {
     })
   })
 
-  describe('buy', async () => {
-    it('should buy a period', async () => {
-      const { now, factory, name } = await setupTests()
+  describe('deletePeriod', async () => {
+    it('should delete a period', async () => {
+      const { now, factory, name, event, pool } = await setupTests()
       const manager = await managerInstance(factory, name)
       const spaceMetadata = 'asfafkjksjfkajf'
+      const saleEndTimestamp = now + 2400
       const displayStartTimestamp = now + 3600
       const displayEndTimestamp = now + 7200
       const tokenId = await manager.adId(
@@ -221,224 +223,291 @@ describe('AdManager', async () => {
         displayStartTimestamp,
         displayEndTimestamp
       )
-      const pricing = 0
-      const price = parseEther('0.2')
+
       await newPeriodWith(manager, {
         spaceMetadata: spaceMetadata,
-        displayStartTimestamp: displayStartTimestamp,
-        displayEndTimestamp: displayEndTimestamp,
-        pricing: pricing,
-        minPrice: price,
-      })
-
-      expect(
-        await buyWith(manager.connect(user2), {
-          tokenId,
-          value: price,
-        })
-      )
-        .to.emit(manager, 'Buy')
-        .withArgs(tokenId, price, user2.address, now + 3)
-    })
-  })
-
-  describe('buyBasedOnTime', async () => {
-    it('should buy a period', async () => {
-      const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
-      const spaceMetadata = 'asfafkjksjfkajf'
-      const displayStartTimestamp = now + 3600
-      const displayEndTimestamp = now + 7200
-      const tokenId = await manager.adId(
-        spaceMetadata,
-        displayStartTimestamp,
-        displayEndTimestamp
-      )
-      const pricing = 1
-      const price = parseEther('0.2')
-      await newPeriodWith(manager, {
-        spaceMetadata: spaceMetadata,
-        displayStartTimestamp: displayStartTimestamp,
-        displayEndTimestamp: displayEndTimestamp,
-        pricing: pricing,
-        minPrice: price,
-      })
-
-      // 2400/3600 -> 66% passed
-      await network.provider.send('evm_setNextBlockTimestamp', [now + 2400])
-      await network.provider.send('evm_mine')
-
-      const currentPrice = await manager.currentPrice(tokenId)
-
-      // slightly passed for its operation
-      await network.provider.send('evm_setNextBlockTimestamp', [now + 2460])
-      await network.provider.send('evm_mine')
-
-      expect(
-        await manager
-          .connect(user2)
-          .buyBasedOnTime(tokenId, option({ value: currentPrice }))
-      )
-        .to.emit(manager, 'Buy')
-        .withArgs(tokenId, currentPrice, user2.address, now + 3)
-    })
-  })
-
-  describe('bid', async () => {
-    it('should bid', async () => {
-      const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
-      const spaceMetadata = 'asfafkjksjfkajf'
-      const displayStartTimestamp = now + 3600
-      const displayEndTimestamp = now + 7200
-      const tokenId = await manager.adId(
-        spaceMetadata,
-        displayStartTimestamp,
-        displayEndTimestamp
-      )
-      const pricing = 2
-      const price = parseEther('0.2')
-      await newPeriodWith(manager, {
-        spaceMetadata: spaceMetadata,
-        displayStartTimestamp: displayStartTimestamp,
-        displayEndTimestamp: displayEndTimestamp,
-        pricing: pricing,
-        minPrice: price,
-      })
-
-      expect(
-        await manager
-          .connect(user2)
-          .bid(tokenId, option({ value: parseEther('0.3') }))
-      )
-        .to.emit(manager, 'Bid')
-        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
-    })
-  })
-
-  describe('receiveToken', async () => {
-    it('should receive token by the successful bidder', async () => {
-      const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
-      const spaceMetadata = 'asfafkjksjfkajf'
-      const displayStartTimestamp = now + 3600
-      const displayEndTimestamp = now + 7200
-      const tokenId = await manager.adId(
-        spaceMetadata,
-        displayStartTimestamp,
-        displayEndTimestamp
-      )
-      const pricing = 2
-      const price = parseEther('0.2')
-      await newPeriodWith(manager, {
-        spaceMetadata: spaceMetadata,
-        displayStartTimestamp: displayStartTimestamp,
-        displayEndTimestamp: displayEndTimestamp,
-        pricing: pricing,
-        minPrice: price,
-      })
-      await manager
-        .connect(user2)
-        .bid(tokenId, option({ value: parseEther('0.3') }))
-
-      expect(await manager.connect(user2).receiveToken(tokenId, option()))
-        .to.emit(manager, 'ReceiveToken')
-        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
-    })
-  })
-
-  describe('withdraw', async () => {
-    it('should buy a period', async () => {
-      const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
-      const spaceMetadata = 'asfafkjksjfkajf'
-      const displayStartTimestamp = now + 3600
-      const displayEndTimestamp = now + 7200
-      const tokenId = await manager.adId(
-        spaceMetadata,
-        displayStartTimestamp,
-        displayEndTimestamp
-      )
-      const pricing = 0
-      const price = parseEther('0.2')
-      await newPeriodWith(manager, {
-        spaceMetadata: spaceMetadata,
-        displayStartTimestamp: displayStartTimestamp,
-        displayEndTimestamp: displayEndTimestamp,
-        pricing: pricing,
-        minPrice: price,
-      })
-      await buyWith(manager.connect(user2), {
-        tokenId,
-        value: price,
-      })
-      expect(await manager.withdraw())
-        .to.emit(manager, 'Withdraw')
-        .withArgs(parseEther('0.18'))
-    })
-  })
-
-  describe('propose', async () => {
-    it('should propose to the right you bought', async () => {
-      const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
-      const spaceMetadata = 'asfafkjksjfkajf'
-      const displayStartTimestamp = now + 3600
-      const displayEndTimestamp = now + 7200
-      const tokenId = await manager.adId(
-        spaceMetadata,
-        displayStartTimestamp,
-        displayEndTimestamp
-      )
-      const pricing = 0
-      const price = parseEther('0.2')
-      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
-      await newPeriodWith(manager, {
-        spaceMetadata: spaceMetadata,
-        displayStartTimestamp: displayStartTimestamp,
-        displayEndTimestamp: displayEndTimestamp,
-        pricing: pricing,
-        minPrice: price,
-      })
-      await buyWith(manager.connect(user2), {
-        tokenId,
-        value: price,
-      })
-
-      expect(await manager.connect(user2).propose(tokenId, proposalMetadata))
-        .to.emit(manager, 'Propose')
-        .withArgs(tokenId, proposalMetadata)
-    })
-  })
-
-  describe('accept', async () => {
-    it('should accept a proposal', async () => {
-      const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
-      const spaceMetadata = 'asfafkjksjfkajf'
-      const displayStartTimestamp = now + 3600
-      const displayEndTimestamp = now + 7200
-      const tokenId = await manager.adId(
-        spaceMetadata,
-        displayStartTimestamp,
-        displayEndTimestamp
-      )
-      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
-      await newPeriodWith(manager, {
-        spaceMetadata: spaceMetadata,
+        saleEndTimestamp: saleEndTimestamp,
         displayStartTimestamp: displayStartTimestamp,
         displayEndTimestamp: displayEndTimestamp,
       })
-      await buyWith(manager.connect(user2), {
-        tokenId,
-      })
-      await manager.connect(user2).propose(tokenId, proposalMetadata)
 
-      expect(await manager.accept(tokenId))
-        .to.emit(manager, 'Accept')
+      expect(await manager.deletePeriod(tokenId, option()))
+        .to.emit(event, 'DeletePeriod')
         .withArgs(tokenId)
+      await expect(manager.ownerOf(tokenId)).to.be.revertedWith('KD114')
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
+        ADDRESS_ZERO,
+        '',
+        '',
+        BigNumber.from(0),
+        BigNumber.from(0),
+        BigNumber.from(0),
+        BigNumber.from(0),
+        0,
+        BigNumber.from(0),
+        BigNumber.from(0),
+        false,
+      ])
+    })
+
+    it('should revert because of not existing', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const saleEndTimestamp = now + 2400
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+
+      await newPeriodWith(manager, {
+        spaceMetadata: spaceMetadata,
+        saleEndTimestamp: saleEndTimestamp,
+        displayStartTimestamp: displayStartTimestamp,
+        displayEndTimestamp: displayEndTimestamp,
+      })
+      await manager.deletePeriod(tokenId, option())
+      await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
+        'KD114'
+      )
     })
   })
+
+  // describe('buy', async () => {
+  //   it('should buy a period', async () => {
+  //     const { now, factory, name } = await setupTests()
+  //     const manager = await managerInstance(factory, name)
+  //     const spaceMetadata = 'asfafkjksjfkajf'
+  //     const saleEndTimestamp = now + 2400
+  //     const displayStartTimestamp = now + 3600
+  //     const displayEndTimestamp = now + 7200
+  //     const tokenId = await manager.adId(
+  //       spaceMetadata,
+  //       displayStartTimestamp,
+  //       displayEndTimestamp
+  //     )
+  //     const pricing = 0
+  //     const price = parseEther('0.2')
+  //     await newPeriodWith(manager, {
+  //       spaceMetadata: spaceMetadata,
+  //       saleEndTimestamp: saleEndTimestamp,
+  //       displayStartTimestamp: displayStartTimestamp,
+  //       displayEndTimestamp: displayEndTimestamp,
+  //       pricing: pricing,
+  //       minPrice: price,
+  //     })
+
+  //     expect(
+  //       await buyWith(manager.connect(user2), {
+  //         tokenId,
+  //         value: price,
+  //       })
+  //     )
+  //       .to.emit(manager, 'Buy')
+  //       .withArgs(tokenId, price, user2.address, now + 3)
+  //   })
+  // })
+
+  // describe('buyBasedOnTime', async () => {
+  //   it('should buy a period', async () => {
+  //     const { now, factory, name } = await setupTests()
+  //     const manager = await managerInstance(factory, name)
+  //     const spaceMetadata = 'asfafkjksjfkajf'
+  //     const displayStartTimestamp = now + 3600
+  //     const displayEndTimestamp = now + 7200
+  //     const tokenId = await manager.adId(
+  //       spaceMetadata,
+  //       displayStartTimestamp,
+  //       displayEndTimestamp
+  //     )
+  //     const pricing = 1
+  //     const price = parseEther('0.2')
+  //     await newPeriodWith(manager, {
+  //       spaceMetadata: spaceMetadata,
+  //       displayStartTimestamp: displayStartTimestamp,
+  //       displayEndTimestamp: displayEndTimestamp,
+  //       pricing: pricing,
+  //       minPrice: price,
+  //     })
+
+  //     // 2400/3600 -> 66% passed
+  //     await network.provider.send('evm_setNextBlockTimestamp', [now + 2400])
+  //     await network.provider.send('evm_mine')
+
+  //     const currentPrice = await manager.currentPrice(tokenId)
+
+  //     // slightly passed for its operation
+  //     await network.provider.send('evm_setNextBlockTimestamp', [now + 2460])
+  //     await network.provider.send('evm_mine')
+
+  //     expect(
+  //       await manager
+  //         .connect(user2)
+  //         .buyBasedOnTime(tokenId, option({ value: currentPrice }))
+  //     )
+  //       .to.emit(manager, 'Buy')
+  //       .withArgs(tokenId, currentPrice, user2.address, now + 3)
+  //   })
+  // })
+
+  // describe('bid', async () => {
+  //   it('should bid', async () => {
+  //     const { now, factory, name } = await setupTests()
+  //     const manager = await managerInstance(factory, name)
+  //     const spaceMetadata = 'asfafkjksjfkajf'
+  //     const displayStartTimestamp = now + 3600
+  //     const displayEndTimestamp = now + 7200
+  //     const tokenId = await manager.adId(
+  //       spaceMetadata,
+  //       displayStartTimestamp,
+  //       displayEndTimestamp
+  //     )
+  //     const pricing = 2
+  //     const price = parseEther('0.2')
+  //     await newPeriodWith(manager, {
+  //       spaceMetadata: spaceMetadata,
+  //       displayStartTimestamp: displayStartTimestamp,
+  //       displayEndTimestamp: displayEndTimestamp,
+  //       pricing: pricing,
+  //       minPrice: price,
+  //     })
+
+  //     expect(
+  //       await manager
+  //         .connect(user2)
+  //         .bid(tokenId, option({ value: parseEther('0.3') }))
+  //     )
+  //       .to.emit(manager, 'Bid')
+  //       .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
+  //   })
+  // })
+
+  // describe('receiveToken', async () => {
+  //   it('should receive token by the successful bidder', async () => {
+  //     const { now, factory, name } = await setupTests()
+  //     const manager = await managerInstance(factory, name)
+  //     const spaceMetadata = 'asfafkjksjfkajf'
+  //     const displayStartTimestamp = now + 3600
+  //     const displayEndTimestamp = now + 7200
+  //     const tokenId = await manager.adId(
+  //       spaceMetadata,
+  //       displayStartTimestamp,
+  //       displayEndTimestamp
+  //     )
+  //     const pricing = 2
+  //     const price = parseEther('0.2')
+  //     await newPeriodWith(manager, {
+  //       spaceMetadata: spaceMetadata,
+  //       displayStartTimestamp: displayStartTimestamp,
+  //       displayEndTimestamp: displayEndTimestamp,
+  //       pricing: pricing,
+  //       minPrice: price,
+  //     })
+  //     await manager
+  //       .connect(user2)
+  //       .bid(tokenId, option({ value: parseEther('0.3') }))
+
+  //     expect(await manager.connect(user2).receiveToken(tokenId, option()))
+  //       .to.emit(manager, 'ReceiveToken')
+  //       .withArgs(tokenId, parseEther('0.3'), user2.address, now + 3)
+  //   })
+  // })
+
+  // describe('withdraw', async () => {
+  //   it('should buy a period', async () => {
+  //     const { now, factory, name } = await setupTests()
+  //     const manager = await managerInstance(factory, name)
+  //     const spaceMetadata = 'asfafkjksjfkajf'
+  //     const displayStartTimestamp = now + 3600
+  //     const displayEndTimestamp = now + 7200
+  //     const tokenId = await manager.adId(
+  //       spaceMetadata,
+  //       displayStartTimestamp,
+  //       displayEndTimestamp
+  //     )
+  //     const pricing = 0
+  //     const price = parseEther('0.2')
+  //     await newPeriodWith(manager, {
+  //       spaceMetadata: spaceMetadata,
+  //       displayStartTimestamp: displayStartTimestamp,
+  //       displayEndTimestamp: displayEndTimestamp,
+  //       pricing: pricing,
+  //       minPrice: price,
+  //     })
+  //     await buyWith(manager.connect(user2), {
+  //       tokenId,
+  //       value: price,
+  //     })
+  //     expect(await manager.withdraw())
+  //       .to.emit(manager, 'Withdraw')
+  //       .withArgs(parseEther('0.18'))
+  //   })
+  // })
+
+  // describe('propose', async () => {
+  //   it('should propose to the right you bought', async () => {
+  //     const { now, factory, name } = await setupTests()
+  //     const manager = await managerInstance(factory, name)
+  //     const spaceMetadata = 'asfafkjksjfkajf'
+  //     const displayStartTimestamp = now + 3600
+  //     const displayEndTimestamp = now + 7200
+  //     const tokenId = await manager.adId(
+  //       spaceMetadata,
+  //       displayStartTimestamp,
+  //       displayEndTimestamp
+  //     )
+  //     const pricing = 0
+  //     const price = parseEther('0.2')
+  //     const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+  //     await newPeriodWith(manager, {
+  //       spaceMetadata: spaceMetadata,
+  //       displayStartTimestamp: displayStartTimestamp,
+  //       displayEndTimestamp: displayEndTimestamp,
+  //       pricing: pricing,
+  //       minPrice: price,
+  //     })
+  //     await buyWith(manager.connect(user2), {
+  //       tokenId,
+  //       value: price,
+  //     })
+
+  //     expect(await manager.connect(user2).propose(tokenId, proposalMetadata))
+  //       .to.emit(manager, 'Propose')
+  //       .withArgs(tokenId, proposalMetadata)
+  //   })
+  // })
+
+  // describe('accept', async () => {
+  //   it('should accept a proposal', async () => {
+  //     const { now, factory, name } = await setupTests()
+  //     const manager = await managerInstance(factory, name)
+  //     const spaceMetadata = 'asfafkjksjfkajf'
+  //     const displayStartTimestamp = now + 3600
+  //     const displayEndTimestamp = now + 7200
+  //     const tokenId = await manager.adId(
+  //       spaceMetadata,
+  //       displayStartTimestamp,
+  //       displayEndTimestamp
+  //     )
+  //     const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+  //     await newPeriodWith(manager, {
+  //       spaceMetadata: spaceMetadata,
+  //       displayStartTimestamp: displayStartTimestamp,
+  //       displayEndTimestamp: displayEndTimestamp,
+  //     })
+  //     await buyWith(manager.connect(user2), {
+  //       tokenId,
+  //     })
+  //     await manager.connect(user2).propose(tokenId, proposalMetadata)
+
+  //     expect(await manager.accept(tokenId))
+  //       .to.emit(manager, 'Accept')
+  //       .withArgs(tokenId)
+  //   })
+  // })
 })
 
 export type NewPeriodProps = {

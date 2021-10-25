@@ -90,7 +90,7 @@ contract ERC721 is Context, IERC721Enumerable, IERC721Metadata {
 		returns (address)
 	{
 		address owner = _owners[tokenId];
-		require(owner != address(0), "AR202");
+		require(owner != address(0), "KD114");
 		return owner;
 	}
 

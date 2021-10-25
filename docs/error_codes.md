@@ -22,3 +22,8 @@
 - `KD111`: `Invalid sale end time`
 - `KD112`: `The sale end should be before the display start`
 - `KD113`: `The display end should be before the display start`
+- `KD114`: `Not exist`
+
+## Buy / Bid related
+
+- `KD120`:

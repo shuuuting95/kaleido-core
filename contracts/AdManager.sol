@@ -128,12 +128,8 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		);
 	}
 
-	function deletePeriod(string memory spaceMetadata, uint256 tokenId)
-		external
-		onlyMedia
-	{
-		// TODO
-		// _periodKeys[spaceId[spaceMetadata]]
+	function deletePeriod(uint256 tokenId) external onlyMedia {
+		require(allPeriods[tokenId].mediaProxy != address(0), "KD114");
 		delete allPeriods[tokenId];
 		_burnRight(tokenId);
 		_adPool().deletePeriod(tokenId);
