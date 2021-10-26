@@ -11,6 +11,7 @@ import "hardhat/console.sol";
 contract DistributionRight is ERC721 {
 	mapping(uint256 => string) public proposed;
 	mapping(uint256 => string) public deniedReason;
+	mapping(uint256 => string) public accepted;
 
 	function _mintRight(uint256 tokenId, string memory metadata) internal {
 		_mint(address(this), tokenId);
@@ -32,6 +33,11 @@ contract DistributionRight is ERC721 {
 
 	function _clearProposal(uint256 tokenId) internal {
 		proposed[tokenId] = "";
+	}
+
+	function _acceptProposal(uint256 tokenId, string memory metadata) internal {
+		accepted[tokenId] = metadata;
+		_clearProposal(tokenId);
 	}
 
 	function transferToBundle(

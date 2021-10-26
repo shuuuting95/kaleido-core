@@ -215,7 +215,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		string memory metadata = proposed[tokenId];
 		require(bytes(metadata).length != 0, "KD130");
 		_burnRight(tokenId);
-		_clearProposal(tokenId);
+		_acceptProposal(tokenId, metadata);
 		_eventEmitter().emitAcceptProposal(tokenId, metadata);
 		_eventEmitter().emitTransferCustom(msg.sender, address(0), tokenId);
 	}
@@ -240,6 +240,24 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 
 	function balance() public view returns (uint256) {
 		return address(this).balance;
+	}
+
+	function display(string memory spaceMetadata)
+		external
+		view
+		returns (string memory)
+	{
+		uint256[] memory tokenIds = tokenIdsOf(spaceMetadata);
+		for (uint256 i = 0; i < tokenIds.length; i++) {
+			Ad.Period memory period = allPeriods[tokenIds[i]];
+			if (
+				period.displayStartTimestamp <= _blockTimestamp() &&
+				period.displayEndTimestamp >= _blockTimestamp()
+			) {
+				return accepted[tokenIds[i]];
+			}
+		}
+		return "";
 	}
 
 	function _checkBeforeReceiveToken(uint256 tokenId) internal view {

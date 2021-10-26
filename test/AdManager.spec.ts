@@ -636,7 +636,6 @@ describe('AdManager', async () => {
       const manager = await managerInstance(factory, name)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
-      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       const deniedReason =
         'This is a violence image a bit. We can not accept, sorry.'
       await newPeriodWith(manager, { now })
@@ -645,6 +644,26 @@ describe('AdManager', async () => {
       await expect(
         manager.deny(tokenId, deniedReason, option())
       ).to.be.revertedWith('KD130')
+    })
+  })
+
+  describe('display', async () => {
+    it('should display', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      await newPeriodWith(manager, { now })
+      await buyWith(manager.connect(user2), { tokenId })
+      await manager.connect(user2).propose(tokenId, proposalMetadata)
+      await manager.accept(tokenId, option())
+
+      // passed to the start of displaying
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 4000])
+      await network.provider.send('evm_mine')
+
+      expect(await manager.display(spaceMetadata)).to.be.eq(proposalMetadata)
     })
   })
 })

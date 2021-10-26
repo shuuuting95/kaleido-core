@@ -16,12 +16,13 @@ abstract contract PeriodManager is SpaceManager {
 		Ad.Pricing pricing,
 		uint256 minPrice
 	);
-	/// @dev Maps the space metadata with tokenIds of ad periods.
-	mapping(string => uint256[]) internal _periodKeys;
 
 	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
 	/// TODO: delete
 	mapping(uint256 => Ad.Period) public allPeriods;
+
+	/// @dev Maps the space metadata with tokenIds of ad periods.
+	mapping(string => uint256[]) internal _periodKeys;
 
 	function _checkOverlapping(
 		string memory metadata,
