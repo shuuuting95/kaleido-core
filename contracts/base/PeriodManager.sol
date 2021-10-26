@@ -51,8 +51,24 @@ abstract contract PeriodManager is SpaceManager {
 		uint256 currentToTimestamp
 	) internal pure returns (bool) {
 		return
-			!(newFromTimestamp > currentToTimestamp ||
-				newToTimestamp < currentFromTimestamp);
+			!(_isPast(newToTimestamp, currentFromTimestamp) ||
+				_isFuture(newFromTimestamp, currentToTimestamp));
+	}
+
+	function _isPast(uint256 newToTimestamp, uint256 currentFromTimestamp)
+		internal
+		pure
+		returns (bool)
+	{
+		return newToTimestamp < currentFromTimestamp;
+	}
+
+	function _isFuture(uint256 newFromTimestamp, uint256 currentToTimestamp)
+		internal
+		pure
+		returns (bool)
+	{
+		return currentToTimestamp < newFromTimestamp;
 	}
 
 	function _checkNowOnSale(string memory spaceMetadata) internal view {
