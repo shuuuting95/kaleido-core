@@ -36,6 +36,11 @@ contract NameAccessor {
 		return _nameRegistry.get(keccak256(abi.encodePacked("AdPool")));
 	}
 
+	/// @dev Gets the address of MediaFactory.
+	function mediaFactoryAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("MediaFactory")));
+	}
+
 	/// @dev Gets the address of MediaRegistry.
 	function mediaRegistryAddress() public view returns (address) {
 		return _nameRegistry.get(keccak256(abi.encodePacked("MediaRegistry")));

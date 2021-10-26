@@ -37,3 +37,7 @@
 ## Proposal related
 
 - `KD130`: `Not proposed yet`
+
+## Withdraw related
+
+- `KD140`: `Shortage`

@@ -3,6 +3,7 @@ pragma solidity 0.8.9;
 
 import "../proxies/MediaProxy.sol";
 import "../accessors/NameAccessor.sol";
+import "../peripheries/EventEmitter.sol";
 import "../peripheries/MediaRegistry.sol";
 import "hardhat/console.sol";
 
@@ -10,7 +11,7 @@ import "hardhat/console.sol";
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract MediaFactory is NameAccessor {
 	/// @dev Emitted when a new media is created.
-	event CreateProxy(MediaProxy proxy, address singleton);
+	event CreateProxy(MediaProxy proxy);
 
 	/// @dev Initializer
 	/// @param _nameRegistry address of NameRegistry
@@ -30,6 +31,7 @@ contract MediaFactory is NameAccessor {
 	) external returns (MediaProxy proxy) {
 		proxy = createProxyWithNonce(nameRegistryAddress(), initializer, saltNonce);
 		_registry().addMedia(address(proxy), accountMetadata, msg.sender);
+		_event().emitNewMedia(address(proxy), accountMetadata, saltNonce);
 	}
 
 	/// @dev Allows to create new proxy contact and execute a message call to the new proxy within one transaction.
@@ -60,7 +62,7 @@ contract MediaFactory is NameAccessor {
 					revert(0, 0)
 				}
 			}
-		emit CreateProxy(proxy, accessor);
+		emit CreateProxy(proxy);
 	}
 
 	/// @dev Allows to create new proxy contact using CREATE2 but it doesn't run the initializer.
@@ -98,5 +100,9 @@ contract MediaFactory is NameAccessor {
 	 */
 	function _registry() internal view returns (MediaRegistry) {
 		return MediaRegistry(mediaRegistryAddress());
+	}
+
+	function _event() internal view returns (EventEmitter) {
+		return EventEmitter(eventEmitterAddress());
 	}
 }

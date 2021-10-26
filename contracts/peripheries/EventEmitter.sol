@@ -9,6 +9,9 @@ import "../libraries/Ad.sol";
 /// @title EventEmitter - emits events on behalf of each proxy.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract EventEmitter is NameAccessor, BlockTimestamp {
+	/// @dev Emitted when a new media is created.
+	event NewMedia(address proxy, string accountMetadata, uint256 saltNonce);
+
 	event NewSpace(string metadata);
 	event DeleteSpace(string metadata);
 	event NewPeriod(
@@ -46,7 +49,12 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	}
 
 	modifier onlyProxies() {
-		require(_mediaRegistry().ownerOf(msg.sender) != address(0x0), "AR011");
+		require(_mediaRegistry().ownerOf(msg.sender) != address(0x0), "KD011");
+		_;
+	}
+
+	modifier onlyFactory() {
+		require(msg.sender == mediaFactoryAddress(), "KD010");
 		_;
 	}
 
@@ -142,6 +150,14 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		uint256 tokenId
 	) external onlyProxies {
 		emit TransferCustom(from, to, tokenId);
+	}
+
+	function emitNewMedia(
+		address proxy,
+		string memory accountMetadata,
+		uint256 saltNonce
+	) external onlyFactory {
+		emit NewMedia(proxy, accountMetadata, saltNonce);
 	}
 
 	/**

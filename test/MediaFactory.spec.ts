@@ -31,11 +31,10 @@ describe('MediaFactory', async () => {
       const { now, factory, manager, name, registry } = await setupTests()
 
       const metadata = 'xxdsfjakjajijraksldfjak'
-      const { proxy, singleton } = await newMediaWith(factory, name, {
+      const { proxy } = await newMediaWith(factory, name, {
         metadata: metadata,
       })
       expect(proxy).is.not.null
-      expect(singleton).to.be.eq(name.address)
       expect(await registry.allAccounts(proxy)).to.deep.equal([
         proxy,
         user1.address,
