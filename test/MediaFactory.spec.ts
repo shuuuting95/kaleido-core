@@ -41,6 +41,15 @@ describe('MediaFactory', async () => {
         metadata,
       ])
     })
+
+    it('should revert because the sender is not the owner', async () => {
+      const { now, factory, manager, name, registry } = await setupTests()
+
+      const initializer = defaultInitializer(name.address)
+      await expect(
+        factory.connect(user2).newMedia('dfajkajdjadafk', initializer, 1)
+      ).to.be.revertedWith('KD012')
+    })
   })
 })
 
@@ -55,12 +64,7 @@ export const newMediaWith = async (
   name: ethers.Contract,
   props?: NewMediaProps
 ) => {
-  const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
-  const initializer = ifaceAdManager.encodeFunctionData('initialize', [
-    'NameA',
-    'https://base/',
-    name.address,
-  ])
+  const initializer = defaultInitializer(name.address)
   const tx = await factory.newMedia(
     props?.metadata ? props?.metadata : 'abi09nadu2brasfjl',
     props?.initializer ? props.initializer : initializer,
@@ -69,4 +73,14 @@ export const newMediaWith = async (
   const rc = await tx.wait()
   const event = rc.events.find((event: any) => event.event === 'CreateProxy')
   return event.args
+}
+
+const defaultInitializer = (name: string) => {
+  const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
+  const initializer = ifaceAdManager.encodeFunctionData('initialize', [
+    'NameA',
+    'https://base/',
+    name,
+  ])
+  return initializer
 }

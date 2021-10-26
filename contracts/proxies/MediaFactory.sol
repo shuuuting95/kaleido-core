@@ -28,7 +28,7 @@ contract MediaFactory is NameAccessor {
 		string memory accountMetadata,
 		bytes memory initializer,
 		uint256 saltNonce
-	) external returns (MediaProxy proxy) {
+	) external onlyOwner returns (MediaProxy proxy) {
 		proxy = createProxyWithNonce(nameRegistryAddress(), initializer, saltNonce);
 		_registry().addMedia(address(proxy), accountMetadata, msg.sender);
 		_event().emitNewMedia(address(proxy), accountMetadata, saltNonce);

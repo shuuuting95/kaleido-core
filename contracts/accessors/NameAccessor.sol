@@ -16,13 +16,13 @@ contract NameAccessor {
 
 	/// @dev Prevents calling a function from anyone except the accepted contract.
 	modifier onlyAllowedContract() {
-		require(_nameRegistry.allowedContracts(msg.sender), "AR201");
+		require(_nameRegistry.allowedContracts(msg.sender), "KD013");
 		_;
 	}
 
 	/// @dev Throws if called by any account other than the owner.
 	modifier onlyOwner() {
-		require(owner() == msg.sender, "AR202");
+		require(owner() == msg.sender, "KD012");
 		_;
 	}
 
