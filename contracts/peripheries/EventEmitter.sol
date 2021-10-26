@@ -34,6 +34,13 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		address buyer,
 		uint256 timestamp
 	);
+	event OfferPeriod(
+		string spaceMetadata,
+		uint256 displayStartTimestamp,
+		uint256 displayEndTimestamp,
+		address sender,
+		uint256 price
+	);
 	event Withdraw(uint256 amount);
 	event Propose(uint256 tokenId, string metadata);
 	event AcceptProposal(uint256 tokenId, string metadata);
@@ -116,6 +123,22 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		address buyer
 	) external onlyProxies {
 		emit ReceiveToken(tokenId, price, buyer, _blockTimestamp());
+	}
+
+	function emitOfferPeriod(
+		string memory spaceMetadata,
+		uint256 displayStartTimestamp,
+		uint256 displayEndTimestamp,
+		address sender,
+		uint256 price
+	) external onlyProxies {
+		emit OfferPeriod(
+			spaceMetadata,
+			displayStartTimestamp,
+			displayEndTimestamp,
+			sender,
+			price
+		);
 	}
 
 	function emitWithdraw(uint256 amount) external onlyProxies {

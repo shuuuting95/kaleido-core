@@ -15,6 +15,7 @@
 ## Ad Space related
 
 - `KD100`: `The space has already created`
+- `KD101`: `The space has not created yet`
 
 ## Ad Period related
 

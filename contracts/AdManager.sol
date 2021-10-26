@@ -201,16 +201,17 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
+	/// @dev Offers to buy a period that the sender requests.
+	/// @param spaceMetadata string of the space metadata
+	/// @param displayStartTimestamp uint256 of the start timestamp for the display
+	/// @param displayEndTimestamp uint256 of the end timestamp for the display
 	function offerPeriod(
 		string memory spaceMetadata,
 		uint256 displayStartTimestamp,
-		uint256 displayEndTimestamp,
-		uint256 price
-	) external notYourself {
+		uint256 displayEndTimestamp
+	) external payable notYourself {
+		require(!spaced[spaceMetadata], "KD101");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
-		if (!spaced[spaceMetadata]) {
-			_newSpace(spaceMetadata);
-		}
 		uint256 tokenId = Ad.id(
 			spaceMetadata,
 			displayStartTimestamp,
@@ -221,7 +222,14 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 			displayStartTimestamp,
 			displayEndTimestamp,
 			msg.sender,
-			price
+			msg.value
+		);
+		_eventEmitter().emitOfferPeriod(
+			spaceMetadata,
+			displayStartTimestamp,
+			displayEndTimestamp,
+			msg.sender,
+			msg.value
 		);
 	}
 
@@ -244,6 +252,8 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 			true
 		);
 		allPeriods[tokenId] = period;
+		_dropRight(tokenId);
+		_collectFees();
 		_eventEmitter().emitNewPeriod(
 			tokenId,
 			period.spaceMetadata,

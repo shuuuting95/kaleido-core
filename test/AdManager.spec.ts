@@ -259,6 +259,36 @@ describe('AdManager', async () => {
     // KD121
   })
 
+  describe('offerPeriod', async () => {
+    it('should offer', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const price = parseEther('0.4')
+      expect(
+        await manager
+          .connect(user2)
+          .offerPeriod(
+            spaceMetadata,
+            displayStartTimestamp,
+            displayEndTimestamp,
+            option({ value: price })
+          )
+      )
+        .to.emit(event, 'OfferPeriod')
+        .withArgs(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          user2.address,
+          price
+        )
+    })
+  })
+
   describe('buy', async () => {
     it('should buy a period', async () => {
       const { now, factory, name, event } = await setupTests()
