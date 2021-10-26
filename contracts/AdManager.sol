@@ -9,6 +9,15 @@ import "hardhat/console.sol";
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
+	struct Offer {
+		string spaceMetadata;
+		uint256 displayStartTimestamp;
+		uint256 displayEndTimestamp;
+		address sender;
+		uint256 price;
+	}
+	mapping(uint256 => Offer) public offered;
+
 	/// @dev Can call it by only the media
 	modifier onlyMedia() {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
@@ -190,6 +199,63 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 			msg.sender
 		);
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
+	}
+
+	function offerPeriod(
+		string memory spaceMetadata,
+		uint256 displayStartTimestamp,
+		uint256 displayEndTimestamp,
+		uint256 price
+	) external notYourself {
+		require(displayStartTimestamp < displayEndTimestamp, "KD113");
+		if (!spaced[spaceMetadata]) {
+			_newSpace(spaceMetadata);
+		}
+		uint256 tokenId = Ad.id(
+			spaceMetadata,
+			displayStartTimestamp,
+			displayEndTimestamp
+		);
+		offered[tokenId] = Offer(
+			spaceMetadata,
+			displayStartTimestamp,
+			displayEndTimestamp,
+			msg.sender,
+			price
+		);
+	}
+
+	function acceptOffer(uint256 tokenId, string memory tokenMetadata)
+		external
+		onlyMedia
+	{
+		Offer memory offer = offered[tokenId];
+		Ad.Period memory period = Ad.Period(
+			address(this),
+			offer.spaceMetadata,
+			tokenMetadata,
+			_blockTimestamp(),
+			_blockTimestamp(),
+			offer.displayStartTimestamp,
+			offer.displayEndTimestamp,
+			Ad.Pricing.OFFER,
+			offer.price,
+			offer.price,
+			true
+		);
+		allPeriods[tokenId] = period;
+		_eventEmitter().emitNewPeriod(
+			tokenId,
+			period.spaceMetadata,
+			tokenMetadata,
+			_blockTimestamp(),
+			period.saleEndTimestamp,
+			period.displayStartTimestamp,
+			period.displayEndTimestamp,
+			period.pricing,
+			period.minPrice
+		);
+		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
 	}
 
 	/// @dev Withdraws the fund deposited to the proxy contract.

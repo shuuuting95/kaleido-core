@@ -6,10 +6,12 @@ library Ad {
 	// RBP : Recommended Retail Price
 	// DPBT: Dynamic Pricing Based on Time
 	// BIDDING : Auction, Bidding Price
+	// OFFER: Offered by others
 	enum Pricing {
 		RRP,
 		DPBT,
-		BIDDING
+		BIDDING,
+		OFFER
 	}
 	struct Period {
 		address mediaProxy;

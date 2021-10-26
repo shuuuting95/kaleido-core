@@ -33,6 +33,9 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 		if (period.pricing == Ad.Pricing.BIDDING) {
 			return bidding[tokenId].price;
 		}
+		if (period.pricing == Ad.Pricing.OFFER) {
+			return bidding[tokenId].price;
+		}
 		revert("not exist");
 	}
 
@@ -73,6 +76,8 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 		} else if (period.pricing == Ad.Pricing.DPBT) {
 			return period.minPrice * 10;
 		} else if (period.pricing == Ad.Pricing.BIDDING) {
+			return period.minPrice;
+		} else if (period.pricing == Ad.Pricing.OFFER) {
 			return period.minPrice;
 		} else {
 			return 0;
