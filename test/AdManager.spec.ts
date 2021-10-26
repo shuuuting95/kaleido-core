@@ -154,15 +154,18 @@ describe('AdManager', async () => {
     it('should revert because of overlapped period', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
+      const saleEndTimestamp = now + 2400
       const displayStartTimestamp = now + 3600
       const displayEndTimestamp = now + 7200
 
       await newPeriodWith(manager, {
+        saleEndTimestamp: saleEndTimestamp,
         displayStartTimestamp: displayStartTimestamp,
         displayEndTimestamp: displayEndTimestamp,
       })
       await expect(
         newPeriodWith(manager, {
+          saleEndTimestamp: now + 5000,
           displayStartTimestamp: now + 7100,
           displayEndTimestamp: now + 9000,
         })
