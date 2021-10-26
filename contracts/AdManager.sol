@@ -242,6 +242,8 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		return address(this).balance;
 	}
 
+	/// @dev Displays the ad content that is approved by the media owner.
+	/// @param spaceMetadata string of the space metadata
 	function display(string memory spaceMetadata)
 		external
 		view

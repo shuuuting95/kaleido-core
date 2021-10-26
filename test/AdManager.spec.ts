@@ -665,6 +665,20 @@ describe('AdManager', async () => {
 
       expect(await manager.display(spaceMetadata)).to.be.eq(proposalMetadata)
     })
+
+    it('should not display before it starts', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      await newPeriodWith(manager, { now })
+      await buyWith(manager.connect(user2), { tokenId })
+      await manager.connect(user2).propose(tokenId, proposalMetadata)
+      await manager.accept(tokenId, option())
+
+      expect(await manager.display(spaceMetadata)).to.be.eq('')
+    })
   })
 })
 
