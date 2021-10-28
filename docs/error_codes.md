@@ -24,6 +24,7 @@
 - `KD112`: `The sale end should be before the display start`
 - `KD113`: `The display end should be before the display start`
 - `KD114`: `Not exist`
+- `KD115`: `Invalid token ID`
 
 ## Buy / Bid related
 

@@ -229,6 +229,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		onlyMedia
 	{
 		Offer memory offer = offered[tokenId];
+		require(offer.sender != address(0), "KD115");
 		_checkOverlapping(
 			offer.spaceMetadata,
 			offer.displayStartTimestamp,
@@ -248,18 +249,15 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			true
 		);
 		allPeriods[tokenId] = period;
-		_dropRight(tokenId);
+		_mintRight(tokenId, tokenMetadata);
 		_collectFees();
-		_eventEmitter().emitNewPeriod(
+		_eventEmitter().emitAcceptOffer(
 			tokenId,
-			period.spaceMetadata,
+			offer.spaceMetadata,
 			tokenMetadata,
-			_blockTimestamp(),
-			period.saleEndTimestamp,
-			period.displayStartTimestamp,
-			period.displayEndTimestamp,
-			period.pricing,
-			period.minPrice
+			offer.displayStartTimestamp,
+			offer.displayEndTimestamp,
+			offer.price
 		);
 		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
 	}

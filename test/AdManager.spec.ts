@@ -310,6 +310,43 @@ describe('AdManager', async () => {
     })
   })
 
+  describe('acceptOffer', async () => {
+    it('should accept an offer', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+
+      const spaceMetadata = 'abi09nadu2brasfjl'
+      const tokenMetadata = 'poiknfknajnjaer'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.newSpace(spaceMetadata)
+      await manager
+        .connect(user2)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          option({ value: price })
+        )
+      expect(await manager.acceptOffer(tokenId, tokenMetadata, option()))
+        .to.emit(event, 'AcceptOffer')
+        .withArgs(
+          tokenId,
+          spaceMetadata,
+          tokenMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          price
+        )
+    })
+  })
+
   describe('buy', async () => {
     it('should buy a period', async () => {
       const { now, factory, name, event } = await setupTests()
