@@ -345,6 +345,74 @@ describe('AdManager', async () => {
           price
         )
     })
+
+    it('should revert because of the invalid tokenId', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+
+      const spaceMetadata = 'abi09nadu2brasfjl'
+      const tokenMetadata = 'poiknfknajnjaer'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const wrongTokenId = await manager.adId(
+        'asjkjkasjfkajkjfakjfkakdjak',
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.newSpace(spaceMetadata)
+      await manager
+        .connect(user2)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          option({ value: price })
+        )
+      await expect(
+        manager.acceptOffer(wrongTokenId, tokenMetadata, option())
+      ).to.be.revertedWith('KD115')
+    })
+
+    it('should revert because the period has already bought and overlapped', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const tokenMetadata = 'poiknfknajnjaer'
+      const saleEndTimestamp = now + 2400
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const pricing = 0
+      const minPrice = parseEther('0.2')
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp + 1000,
+        displayEndTimestamp + 1000
+      )
+
+      const price = parseEther('0.4')
+      await newPeriodWith(manager, {
+        spaceMetadata: spaceMetadata,
+        tokenMetadata: tokenMetadata,
+        saleEndTimestamp: saleEndTimestamp,
+        displayStartTimestamp: displayStartTimestamp,
+        displayEndTimestamp: displayEndTimestamp,
+        pricing: pricing,
+        minPrice: minPrice,
+      })
+      await manager
+        .connect(user2)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp + 1000,
+          displayEndTimestamp + 1000,
+          option({ value: price })
+        )
+
+      await expect(
+        manager.acceptOffer(tokenId, tokenMetadata, option())
+      ).to.be.revertedWith('KD110')
+    })
   })
 
   describe('buy', async () => {

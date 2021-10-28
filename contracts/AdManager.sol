@@ -224,6 +224,9 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		);
 	}
 
+	/// @dev Accepts an offer by the Media.
+	/// @param tokenId uint256 of the token ID
+	/// @param tokenMetadata string of the NFT token metadata
 	function acceptOffer(uint256 tokenId, string memory tokenMetadata)
 		external
 		onlyMedia
