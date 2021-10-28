@@ -268,6 +268,7 @@ describe('AdManager', async () => {
       const displayStartTimestamp = now + 3600
       const displayEndTimestamp = now + 7200
       const price = parseEther('0.4')
+      await manager.newSpace(spaceMetadata)
       expect(
         await manager
           .connect(user2)
@@ -286,6 +287,26 @@ describe('AdManager', async () => {
           user2.address,
           price
         )
+    })
+
+    it('should revert because of missing the space', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+
+      const wrongSpaceMetadata = 'asdfadfaweferhertheaeerwerafadfa'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const price = parseEther('0.4')
+      await expect(
+        manager
+          .connect(user2)
+          .offerPeriod(
+            wrongSpaceMetadata,
+            displayStartTimestamp,
+            displayEndTimestamp,
+            option({ value: price })
+          )
+      ).to.be.revertedWith('KD101')
     })
   })
 

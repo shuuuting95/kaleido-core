@@ -6,6 +6,15 @@ import "./PricingStrategy.sol";
 /// @title PrimarySales - manages how to sell them out.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 abstract contract PrimarySales is PricingStrategy {
+	struct Offer {
+		string spaceMetadata;
+		uint256 displayStartTimestamp;
+		uint256 displayEndTimestamp;
+		address sender;
+		uint256 price;
+	}
+	mapping(uint256 => Offer) public offered;
+
 	function _checkBeforeBuy(uint256 tokenId) internal {
 		require(allPeriods[tokenId].pricing == Ad.Pricing.RRP, "KD120");
 		require(!allPeriods[tokenId].sold, "KD121");

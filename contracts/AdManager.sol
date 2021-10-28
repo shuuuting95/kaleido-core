@@ -9,15 +9,6 @@ import "hardhat/console.sol";
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
-	struct Offer {
-		string spaceMetadata;
-		uint256 displayStartTimestamp;
-		uint256 displayEndTimestamp;
-		address sender;
-		uint256 price;
-	}
-	mapping(uint256 => Offer) public offered;
-
 	/// @dev Can call it by only the media
 	modifier onlyMedia() {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
@@ -210,7 +201,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp
 	) external payable exceptYourself {
-		require(!spaced[spaceMetadata], "KD101");
+		require(spaced[spaceMetadata], "KD101");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
 		uint256 tokenId = Ad.id(
 			spaceMetadata,
@@ -238,6 +229,11 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		onlyMedia
 	{
 		Offer memory offer = offered[tokenId];
+		_checkOverlapping(
+			offer.spaceMetadata,
+			offer.displayStartTimestamp,
+			offer.displayEndTimestamp
+		);
 		Ad.Period memory period = Ad.Period(
 			address(this),
 			offer.spaceMetadata,
