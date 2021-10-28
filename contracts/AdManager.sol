@@ -2,13 +2,13 @@
 pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./base/PricingStrategy.sol";
+import "./base/PrimarySales.sol";
 import "./base/DistributionRight.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
+contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	struct Offer {
 		string spaceMetadata;
 		uint256 displayStartTimestamp;
@@ -25,7 +25,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	}
 
 	/// @dev Prevents the media from calling by yourself
-	modifier notYourself() {
+	modifier exceptYourself() {
 		require(
 			_mediaRegistry().ownerOf(address(this)) != msg.sender,
 			"is the owner"
@@ -151,7 +151,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	/// @dev Buys the token that is defined as the specific period on an ad space.
 	///      The price of the token is fixed.
 	/// @param tokenId uint256 of the token ID
-	function buy(uint256 tokenId) external payable notYourself {
+	function buy(uint256 tokenId) external payable exceptYourself {
 		_checkBeforeBuy(tokenId);
 		allPeriods[tokenId].sold = true;
 		_dropRight(tokenId);
@@ -163,7 +163,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 	/// @dev Buys the token that is defined as the specific period on an ad space.
 	///      The price is decreasing as time goes by.
 	/// @param tokenId uint256 of the token ID
-	function buyBasedOnTime(uint256 tokenId) external payable notYourself {
+	function buyBasedOnTime(uint256 tokenId) external payable exceptYourself {
 		_checkBeforeBuyBasedOnTime(tokenId);
 		allPeriods[tokenId].sold = true;
 		_dropRight(tokenId);
@@ -174,7 +174,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 
 	/// @dev Bids to participate in an auction.
 	/// @param tokenId uint256 of the token ID
-	function bid(uint256 tokenId) external payable notYourself nonReentrant {
+	function bid(uint256 tokenId) external payable exceptYourself nonReentrant {
 		_checkBeforeBid(tokenId);
 		_refundLockedAmount(tokenId);
 		// TODO: save history on AdPool
@@ -209,7 +209,7 @@ contract AdManager is DistributionRight, PricingStrategy, ReentrancyGuard {
 		string memory spaceMetadata,
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp
-	) external payable notYourself {
+	) external payable exceptYourself {
 		require(!spaced[spaceMetadata], "KD101");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
 		uint256 tokenId = Ad.id(
