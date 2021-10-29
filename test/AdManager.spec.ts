@@ -537,6 +537,26 @@ describe('AdManager', async () => {
         })
       ).to.be.revertedWith('KD122')
     })
+
+    it('should revert because the sender is the media EOA', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const pricing = 0
+      const price = parseEther('0.3')
+
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
+      await expect(
+        buyWith(manager.connect(user2), {
+          tokenId,
+          value: parseEther('0.1'),
+        })
+      ).to.be.revertedWith('KD014')
+    })
   })
 
   describe('buyBasedOnTime', async () => {

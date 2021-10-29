@@ -17,10 +17,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Prevents the media from calling by yourself
 	modifier exceptYourself() {
-		require(
-			_mediaRegistry().ownerOf(address(this)) != msg.sender,
-			"is the owner"
-		);
+		require(_mediaRegistry().ownerOf(address(this)) != msg.sender, "KD014");
 		_;
 	}
 

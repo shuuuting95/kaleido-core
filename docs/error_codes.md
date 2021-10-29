@@ -11,6 +11,7 @@
 - `KD011`: `Only proxies created by MediaFactory can access it`
 - `KD012`: `Only owner`
 - `KD013`: `Only allowed contracts`
+- `KD014`: `Except yourself`
 
 ## Ad Space related
 
