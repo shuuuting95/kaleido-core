@@ -111,6 +111,10 @@ describe('AdManager', async () => {
         displayEndTimestamp
       )
 
+      // refresh timestamp
+      await network.provider.send('evm_setNextBlockTimestamp', [now + 2])
+      await network.provider.send('evm_mine')
+
       expect(
         await newPeriodWith(manager, {
           spaceMetadata: spaceMetadata,
@@ -127,7 +131,7 @@ describe('AdManager', async () => {
           tokenId,
           spaceMetadata,
           tokenMetadata,
-          now + 2,
+          now + 3,
           saleEndTimestamp,
           displayStartTimestamp,
           displayEndTimestamp,
@@ -142,7 +146,7 @@ describe('AdManager', async () => {
         manager.address,
         spaceMetadata,
         tokenMetadata,
-        BigNumber.from(now + 2),
+        BigNumber.from(now + 3),
         BigNumber.from(saleEndTimestamp),
         BigNumber.from(displayStartTimestamp),
         BigNumber.from(displayEndTimestamp),
@@ -159,7 +163,7 @@ describe('AdManager', async () => {
         manager.address,
         spaceMetadata,
         tokenMetadata,
-        BigNumber.from(now + 2),
+        BigNumber.from(now + 3),
         BigNumber.from(saleEndTimestamp),
         BigNumber.from(displayStartTimestamp),
         BigNumber.from(displayEndTimestamp),

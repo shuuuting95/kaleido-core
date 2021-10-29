@@ -101,12 +101,11 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			displayEndTimestamp
 		);
 		_periodKeys[spaceMetadata].push(tokenId);
-		uint256 currentTimestamp = _blockTimestamp();
 		Ad.Period memory period = Ad.Period(
 			address(this),
 			spaceMetadata,
 			tokenMetadata,
-			currentTimestamp,
+			_blockTimestamp(),
 			saleEndTimestamp,
 			displayStartTimestamp,
 			displayEndTimestamp,
@@ -123,7 +122,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			tokenId,
 			spaceMetadata,
 			tokenMetadata,
-			currentTimestamp,
+			_blockTimestamp(),
 			saleEndTimestamp,
 			displayStartTimestamp,
 			displayEndTimestamp,
