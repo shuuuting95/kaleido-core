@@ -1,40 +1,24 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.9;
 
-pragma solidity ^0.8.0;
-
-import "../interfaces/IERC721.sol";
-import "../interfaces/IERC721Receiver.sol";
 import "../interfaces/IERC721Metadata.sol";
+import "../interfaces/IERC721Receiver.sol";
 import "../interfaces/IERC721Enumerable.sol";
-import "../utils/ERC165.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "../base/PostOwnerPool.sol";
-import "../base/Vault.sol";
-import "../accessors/NameAccessor.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
 
-/**
- * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
- * the Metadata extension, but not including the Enumerable extension, which is available separately as
- * {ERC721Enumerable}.
- */
-contract ERC721Base is
-	Context,
-	ERC165,
-	IERC721,
-	IERC721Enumerable,
-	IERC721Metadata,
-	NameAccessor
-{
+contract ERC721 is Context, IERC721Enumerable, IERC721Metadata {
 	using Address for address;
 	using Strings for uint256;
 
+	string internal dummy; // TODO: delete
+
 	// Token name
-	string private _name;
+	string internal _name;
 
 	// Token symbol
-	string private _symbol;
+	string internal _symbol;
 
 	// Base URI
 	string internal _baseURI;
@@ -43,10 +27,10 @@ contract ERC721Base is
 	mapping(uint256 => string) internal _tokenURIs;
 
 	// Mapping from token ID to owner address
-	mapping(uint256 => address) private _owners;
+	mapping(uint256 => address) internal _owners;
 
 	// Mapping owner address to token count
-	mapping(address => uint256) private _balances;
+	mapping(address => uint256) internal _balances;
 
 	// Mapping from token ID to approved address
 	mapping(uint256 => address) internal _tokenApprovals;
@@ -67,33 +51,18 @@ contract ERC721Base is
 	mapping(uint256 => uint256) private _allTokensIndex;
 
 	/**
-	 * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
-	 */
-	constructor(
-		string memory name_,
-		string memory symbol_,
-		string memory baseURI_,
-		address nameRegistry
-	) NameAccessor(nameRegistry) {
-		_name = name_;
-		_symbol = symbol_;
-		_baseURI = baseURI_;
-	}
-
-	/**
 	 * @dev See {IERC165-supportsInterface}.
 	 */
 	function supportsInterface(bytes4 interfaceId)
 		public
-		view
+		pure
 		virtual
-		override(ERC165, IERC165)
+		override(IERC165)
 		returns (bool)
 	{
 		return
 			interfaceId == type(IERC721).interfaceId ||
-			interfaceId == type(IERC721Metadata).interfaceId ||
-			super.supportsInterface(interfaceId);
+			interfaceId == type(IERC721Metadata).interfaceId;
 	}
 
 	/**
@@ -121,7 +90,7 @@ contract ERC721Base is
 		returns (address)
 	{
 		address owner = _owners[tokenId];
-		require(owner != address(0), "ERC721: owner query for nonexistent token");
+		require(owner != address(0), "KD114");
 		return owner;
 	}
 
@@ -224,7 +193,7 @@ contract ERC721Base is
 		address from,
 		address to,
 		uint256 tokenId
-	) public payable virtual override {
+	) public virtual override {
 		//solhint-disable-next-line max-line-length
 		require(
 			_isApprovedOrOwner(_msgSender(), tokenId),
@@ -425,28 +394,15 @@ contract ERC721Base is
 		require(to != address(0), "ERC721: transfer to the zero address");
 
 		_beforeTokenTransfer(from, to, tokenId);
-		if (msg.value != 0) {
-			payable(_postOwnerPool().ownerOf(tokenId)).transfer(
-				(msg.value * 3) / 100
-			);
-			payable(_vault()).transfer((msg.value * 3) / 100);
-			payable(to).transfer((msg.value * 94) / 100);
-		}
+
 		// Clear approvals from the previous owner
 		_approve(address(0), tokenId);
+
 		_balances[from] -= 1;
 		_balances[to] += 1;
 		_owners[tokenId] = to;
 
 		emit Transfer(from, to, tokenId);
-	}
-
-	function _vault() internal view returns (Vault) {
-		return Vault(payable(vaultAddress()));
-	}
-
-	function _postOwnerPool() internal view returns (PostOwnerPool) {
-		return PostOwnerPool(postOwnerPoolAddress());
 	}
 
 	/**
