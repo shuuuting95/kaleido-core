@@ -142,7 +142,7 @@ describe('AdManager', async () => {
         manager.address,
         spaceMetadata,
         tokenMetadata,
-        BigNumber.from(now + 2),
+        BigNumber.from(now + 3),
         BigNumber.from(saleEndTimestamp),
         BigNumber.from(displayStartTimestamp),
         BigNumber.from(displayEndTimestamp),
