@@ -10,8 +10,13 @@ import "../libraries/Ad.sol";
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract EventEmitter is NameAccessor, BlockTimestamp {
 	/// @dev Emitted when a new media is created.
-	event NewMedia(address proxy, string accountMetadata, uint256 saltNonce);
-
+	event NewMedia(
+		address proxy,
+		address mediaEOA,
+		string accountMetadata,
+		uint256 saltNonce
+	);
+	event UpdateMedia(address proxy, address mediaEOA, string accountMetadata);
 	event NewSpace(string metadata);
 	event DeleteSpace(string metadata);
 	event NewPeriod(
@@ -198,10 +203,19 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 
 	function emitNewMedia(
 		address proxy,
+		address mediaEOA,
 		string memory accountMetadata,
 		uint256 saltNonce
 	) external onlyFactory {
-		emit NewMedia(proxy, accountMetadata, saltNonce);
+		emit NewMedia(proxy, mediaEOA, accountMetadata, saltNonce);
+	}
+
+	function emitUpdateMedia(
+		address proxy,
+		address mediaEOA,
+		string memory accountMetadata
+	) external onlyProxies {
+		emit UpdateMedia(proxy, mediaEOA, accountMetadata);
 	}
 
 	/**

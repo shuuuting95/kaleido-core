@@ -51,6 +51,17 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		initialize(nameRegistry);
 	}
 
+	/// @dev Updates the media EOA and the metadata.
+	/// @param newMediaEOA address of a new EOA
+	/// @param newMetadata string of a new metadata
+	function updateMedia(address newMediaEOA, string memory newMetadata)
+		external
+		onlyMedia
+	{
+		_mediaRegistry().updateMedia(newMediaEOA, newMetadata);
+		_eventEmitter().emitUpdateMedia(address(this), newMediaEOA, newMetadata);
+	}
+
 	/// @dev Creates a new space for the media account.
 	/// @param spaceMetadata string of the space metadata
 	function newSpace(string memory spaceMetadata) external onlyMedia {

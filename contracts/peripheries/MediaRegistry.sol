@@ -15,6 +15,11 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 	}
 	mapping(address => Account) public allAccounts;
 
+	modifier onlyProxies() {
+		require(ownerOf(msg.sender) != address(0), "KD011");
+		_;
+	}
+
 	/// Constructor
 	/// @dev _nameRegistry address of the NameRegistry
 	constructor(address _nameRegistry) {
@@ -33,7 +38,15 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 		allAccounts[proxy] = Account(proxy, mediaEOA, metadata);
 	}
 
-	// TODO: updateMedia
+	/// @dev Updates media account.
+	/// @param metadata string of the account metadata
+	/// @param mediaEOA address of the media account
+	function updateMedia(address mediaEOA, string memory metadata)
+		external
+		onlyProxies
+	{
+		allAccounts[msg.sender] = Account(msg.sender, mediaEOA, metadata);
+	}
 
 	/// @dev Returns whether the account has created or not.
 	/// @param proxy address of the proxy contract that represents an account.

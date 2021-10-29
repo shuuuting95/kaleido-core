@@ -33,7 +33,7 @@ contract MediaFactory is NameAccessor {
 	) external onlyOwner returns (MediaProxy proxy) {
 		proxy = createProxyWithNonce(nameRegistryAddress(), initializer, saltNonce);
 		_registry().addMedia(address(proxy), accountMetadata, mediaEOA);
-		_event().emitNewMedia(address(proxy), accountMetadata, saltNonce);
+		_event().emitNewMedia(address(proxy), mediaEOA, accountMetadata, saltNonce);
 	}
 
 	/// @dev Allows to create new proxy contact and execute a message call to the new proxy within one transaction.
