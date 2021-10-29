@@ -48,6 +48,30 @@ describe('AdManager', async () => {
     return _manager(proxy)
   }
 
+  describe('updateMedia', async () => {
+    it('should update a media', async () => {
+      const { factory, registry, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const newMetadata = 'sfjjrtjwjtkljwlejr;tfjk'
+
+      expect(
+        await manager.connect(user2).updateMedia(user4.address, newMetadata)
+      )
+        .to.emit(event, 'UpdateMedia')
+        .withArgs(manager.address, user4.address, newMetadata)
+    })
+
+    it('should revert because the sender is not the media EOA', async () => {
+      const { factory, registry, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const newMetadata = 'sfjjrtjwjtkljwlejr;tfjk'
+
+      await expect(
+        manager.connect(user4).updateMedia(user4.address, newMetadata)
+      ).to.be.revertedWith('KD012')
+    })
+  })
+
   describe('newSpace', async () => {
     it('should new an ad space', async () => {
       const { factory, name, event } = await setupTests()
