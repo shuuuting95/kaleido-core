@@ -179,7 +179,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	function bid(uint256 tokenId) external payable exceptYourself nonReentrant {
 		_checkBeforeBid(tokenId);
 		_refundLockedAmount(tokenId);
-		// TODO: save history on AdPool
 		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
 		_eventEmitter().emitBid(tokenId, msg.value, msg.sender);
 	}

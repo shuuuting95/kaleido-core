@@ -283,8 +283,20 @@ describe('AdManager', async () => {
       )
     })
 
-    // TODO: should revert because the token has already sold out
-    // KD121
+    it('should revert because of not existing', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      await newPeriodWith(manager.connect(user2), { now })
+      await buyWith(manager.connect(user3), {
+        tokenId,
+        value: parseEther('0.1'),
+      })
+      await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
+        'KD121'
+      )
+    })
   })
 
   describe('offerPeriod', async () => {
