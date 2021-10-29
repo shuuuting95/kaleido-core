@@ -7,18 +7,7 @@ import "../libraries/Ad.sol";
 /// @title PeriodManager - manages ad periods.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 abstract contract PeriodManager is SpaceManager {
-	event NewPeriod(
-		uint256 tokenId,
-		string spaceMetadata,
-		string tokenMetadata,
-		uint256 fromTimestamp,
-		uint256 toTimestamp,
-		Ad.Pricing pricing,
-		uint256 minPrice
-	);
-
 	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
-	/// TODO: delete
 	mapping(uint256 => Ad.Period) public allPeriods;
 
 	/// @dev Maps the space metadata with tokenIds of ad periods.

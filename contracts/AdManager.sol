@@ -276,8 +276,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
 	}
 
-	// TODO: denyOffer
-
 	/// @dev Withdraws the fund deposited to the proxy contract.
 	function withdraw() external onlyMedia {
 		uint256 remained = address(this).balance;

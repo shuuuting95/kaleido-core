@@ -9,6 +9,7 @@ import "./MediaRegistry.sol";
 /// @title AdPool - stores all ads accorss every space.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdPool is BlockTimestamp, NameAccessor {
+	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
 	mapping(uint256 => Ad.Period) public allPeriods;
 
 	modifier onlyProxies() {
