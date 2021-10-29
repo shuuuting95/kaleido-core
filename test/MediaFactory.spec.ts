@@ -31,23 +31,25 @@ describe('MediaFactory', async () => {
       const { now, factory, manager, name, registry } = await setupTests()
 
       const metadata = 'xxdsfjakjajijraksldfjak'
-      const { proxy } = await newMediaWith(factory, name, {
+      const { proxy } = await newMediaWith(user2, factory, name, {
         metadata: metadata,
       })
       expect(proxy).is.not.null
       expect(await registry.allAccounts(proxy)).to.deep.equal([
         proxy,
-        user1.address,
+        user2.address,
         metadata,
       ])
     })
 
     it('should revert because the sender is not the owner', async () => {
-      const { now, factory, manager, name, registry } = await setupTests()
+      const { factory, name } = await setupTests()
 
       const initializer = defaultInitializer(name.address)
       await expect(
-        factory.connect(user2).newMedia('dfajkajdjadafk', initializer, 1)
+        factory
+          .connect(user2)
+          .newMedia(user2.address, 'dfajkajdjadafk', initializer, 1)
       ).to.be.revertedWith('KD012')
     })
   })
@@ -60,12 +62,14 @@ export type NewMediaProps = {
 }
 
 export const newMediaWith = async (
+  user: ethers.Wallet,
   factory: ethers.Contract,
   name: ethers.Contract,
   props?: NewMediaProps
 ) => {
   const initializer = defaultInitializer(name.address)
   const tx = await factory.newMedia(
+    user.address,
     props?.metadata ? props?.metadata : 'abi09nadu2brasfjl',
     props?.initializer ? props.initializer : initializer,
     props?.saltNonce ? props.saltNonce : 1

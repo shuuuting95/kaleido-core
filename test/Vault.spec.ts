@@ -14,7 +14,7 @@ import {
 } from './utils/setup'
 
 describe('Vault', async () => {
-  const [user1, user2, user3] = waffle.provider.getWallets()
+  const [user1, user2, user3, user4] = waffle.provider.getWallets()
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {
     await deployments.fixture()
@@ -36,7 +36,7 @@ describe('Vault', async () => {
   describe('withdraw', async () => {
     it('should withdraw fees', async () => {
       const { factory, name, vault } = await setupTests()
-      const { proxy } = await newMediaWith(factory, name)
+      const { proxy } = await newMediaWith(user4, factory, name)
       const manager = _manager(proxy)
 
       await user3.sendTransaction({
@@ -62,7 +62,7 @@ describe('Vault', async () => {
 
     it('should revert because the amount exceeds the deposited amount', async () => {
       const { factory, name, vault } = await setupTests()
-      const { proxy } = await newMediaWith(factory, name)
+      const { proxy } = await newMediaWith(user4, factory, name)
       const manager = _manager(proxy)
 
       await user3.sendTransaction({
@@ -79,7 +79,7 @@ describe('Vault', async () => {
 
     it('should revert because the caller is not the owner', async () => {
       const { factory, name, vault } = await setupTests()
-      const { proxy } = await newMediaWith(factory, name)
+      const { proxy } = await newMediaWith(user4, factory, name)
       const manager = _manager(proxy)
 
       await user3.sendTransaction({

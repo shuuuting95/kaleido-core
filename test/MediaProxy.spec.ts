@@ -13,7 +13,7 @@ import {
 } from './utils/setup'
 
 describe('MediaProxy', async () => {
-  const [user1, user2, user3] = waffle.provider.getWallets()
+  const [user1, user2, user3, user4] = waffle.provider.getWallets()
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {
     await deployments.fixture()
@@ -35,7 +35,7 @@ describe('MediaProxy', async () => {
   describe('fallback', async () => {
     it('should transfer ETH to a proxy', async () => {
       const { factory, name, vault } = await setupTests()
-      const { proxy } = await newMediaWith(factory, name)
+      const { proxy } = await newMediaWith(user4, factory, name)
       const manager = _manager(proxy)
 
       expect(await manager.balance()).to.be.eq(0)

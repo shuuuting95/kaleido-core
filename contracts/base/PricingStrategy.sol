@@ -34,7 +34,8 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 			return bidding[tokenId].price;
 		}
 		if (period.pricing == Ad.Pricing.OFFER) {
-			return bidding[tokenId].price;
+			// TODO
+			// return bidding[tokenId].price;
 		}
 		revert("not exist");
 	}

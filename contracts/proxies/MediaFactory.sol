@@ -21,16 +21,18 @@ contract MediaFactory is NameAccessor {
 
 	/// @dev Create a new account for media. Each proxy has its own storage and saves
 	///      data related to NFTs.
+	/// @param mediaEOA address of the media EOA
 	/// @param accountMetadata string of metadata for the defailts of the account
 	/// @param initializer bytes of the initalize calldata
 	/// @param saltNonce uint256 of the salt number to create a proxy address
 	function newMedia(
+		address mediaEOA,
 		string memory accountMetadata,
 		bytes memory initializer,
 		uint256 saltNonce
 	) external onlyOwner returns (MediaProxy proxy) {
 		proxy = createProxyWithNonce(nameRegistryAddress(), initializer, saltNonce);
-		_registry().addMedia(address(proxy), accountMetadata, msg.sender);
+		_registry().addMedia(address(proxy), accountMetadata, mediaEOA);
 		_event().emitNewMedia(address(proxy), accountMetadata, saltNonce);
 	}
 

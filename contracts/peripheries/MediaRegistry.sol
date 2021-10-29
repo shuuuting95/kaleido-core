@@ -10,7 +10,7 @@ import "hardhat/console.sol";
 contract MediaRegistry is BlockTimestamp, NameAccessor {
 	struct Account {
 		address proxy;
-		address owner;
+		address mediaEOA;
 		string metadata;
 	}
 	mapping(address => Account) public allAccounts;
@@ -21,13 +21,19 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 		initialize(_nameRegistry);
 	}
 
+	/// @dev Adds media account.
+	/// @param proxy address of the proxy contract
+	/// @param metadata string of the account metadata
+	/// @param mediaEOA address of the media account
 	function addMedia(
 		address proxy,
 		string memory metadata,
-		address owner /**onlyMediaFactory*/
-	) external {
-		allAccounts[proxy] = Account(proxy, owner, metadata);
+		address mediaEOA
+	) external onlyFactory {
+		allAccounts[proxy] = Account(proxy, mediaEOA, metadata);
 	}
+
+	// TODO: updateMedia
 
 	/// @dev Returns whether the account has created or not.
 	/// @param proxy address of the proxy contract that represents an account.
@@ -38,6 +44,6 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 	/// @dev Returns the owner of the account.
 	/// @param proxy address of the proxy contract that represents an account.
 	function ownerOf(address proxy) public view returns (address) {
-		return allAccounts[proxy].owner;
+		return allAccounts[proxy].mediaEOA;
 	}
 }

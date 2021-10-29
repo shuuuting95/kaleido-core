@@ -68,11 +68,6 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		_;
 	}
 
-	modifier onlyFactory() {
-		require(msg.sender == mediaFactoryAddress(), "KD010");
-		_;
-	}
-
 	function emitNewSpace(string memory metadata) external onlyProxies {
 		emit NewSpace(metadata);
 	}

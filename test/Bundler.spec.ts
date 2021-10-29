@@ -14,7 +14,7 @@ import {
 } from './utils/setup'
 
 describe('Bundler', async () => {
-  const [user1, user2, user3] = waffle.provider.getWallets()
+  const [user1, user2, user3, user4] = waffle.provider.getWallets()
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {
     await deployments.fixture()
@@ -37,7 +37,7 @@ describe('Bundler', async () => {
   describe('bundleToken', async () => {
     it('should bundle', async () => {
       const { now, factory, name, vault, bundler } = await setupTests()
-      const { proxy } = await newMediaWith(factory, name)
+      const { proxy } = await newMediaWith(user2, factory, name)
       const manager = _manager(proxy)
 
       const spaceMetadata = 'asfafkjksjfkajf'
@@ -48,12 +48,12 @@ describe('Bundler', async () => {
         displayStartTimestamp,
         displayEndTimestamp
       )
-      await newPeriodWith(manager, {
+      await newPeriodWith(manager.connect(user2), {
         spaceMetadata: spaceMetadata,
         displayStartTimestamp: displayStartTimestamp,
         displayEndTimestamp: displayEndTimestamp,
       })
-      await buyWith(manager.connect(user2), {
+      await buyWith(manager.connect(user3), {
         tokenId: tokenId1,
       })
 
@@ -62,12 +62,12 @@ describe('Bundler', async () => {
         displayStartTimestamp + 5000,
         displayEndTimestamp + 5000
       )
-      await newPeriodWith(manager, {
+      await newPeriodWith(manager.connect(user2), {
         spaceMetadata: spaceMetadata,
         displayStartTimestamp: displayStartTimestamp + 5000,
         displayEndTimestamp: displayEndTimestamp + 5000,
       })
-      await buyWith(manager.connect(user2), {
+      await buyWith(manager.connect(user3), {
         tokenId: tokenId2,
       })
 
@@ -76,12 +76,12 @@ describe('Bundler', async () => {
         displayStartTimestamp + 10000,
         displayEndTimestamp + 10000
       )
-      await newPeriodWith(manager, {
+      await newPeriodWith(manager.connect(user2), {
         spaceMetadata: spaceMetadata,
         displayStartTimestamp: displayStartTimestamp + 10000,
         displayEndTimestamp: displayEndTimestamp + 10000,
       })
-      await buyWith(manager.connect(user2), {
+      await buyWith(manager.connect(user3), {
         tokenId: tokenId3,
       })
 
@@ -89,7 +89,7 @@ describe('Bundler', async () => {
       const bundleMetadata = 'sajjjrqijalkwejwjkjakdfe'
 
       expect(
-        await bundler.connect(user2).bundleTokens(concatenated, bundleMetadata)
+        await bundler.connect(user3).bundleTokens(concatenated, bundleMetadata)
       )
         .to.emit(bundler, 'BundleTokens')
         .withArgs(10000001, concatenated, bundleMetadata)

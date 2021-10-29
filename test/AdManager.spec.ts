@@ -16,7 +16,11 @@ import {
 } from './utils/setup'
 
 describe('AdManager', async () => {
-  const [user1, user2, user3] = waffle.provider.getWallets()
+  // user1: Deployer (Bridges)
+  // user2: Media
+  // user3: Buyer, Ad Owner
+  // user4: Wrong others
+  const [user1, user2, user3, user4] = waffle.provider.getWallets()
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {
     await deployments.fixture()
@@ -34,13 +38,13 @@ describe('AdManager', async () => {
     }
   })
   const _manager = (proxy: string) =>
-    new ethers.Contract(proxy, getAdManagerABI(), user1)
+    new ethers.Contract(proxy, getAdManagerABI(), user2)
 
   const managerInstance = async (
     factory: ethers.Contract,
     name: ethers.Contract
   ) => {
-    const { proxy } = await newMediaWith(factory, name)
+    const { proxy } = await newMediaWith(user2, factory, name)
     return _manager(proxy)
   }
 
@@ -146,7 +150,7 @@ describe('AdManager', async () => {
       const { factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
 
-      await expect(newPeriodWith(manager.connect(user2))).to.be.revertedWith(
+      await expect(newPeriodWith(manager.connect(user4))).to.be.revertedWith(
         'KD012'
       )
     })
@@ -268,10 +272,10 @@ describe('AdManager', async () => {
       const displayStartTimestamp = now + 3600
       const displayEndTimestamp = now + 7200
       const price = parseEther('0.4')
-      await manager.newSpace(spaceMetadata)
+      await manager.connect(user2).newSpace(spaceMetadata)
       expect(
         await manager
-          .connect(user2)
+          .connect(user3)
           .offerPeriod(
             spaceMetadata,
             displayStartTimestamp,
@@ -284,7 +288,7 @@ describe('AdManager', async () => {
           spaceMetadata,
           displayStartTimestamp,
           displayEndTimestamp,
-          user2.address,
+          user3.address,
           price
         )
     })
@@ -299,7 +303,7 @@ describe('AdManager', async () => {
       const price = parseEther('0.4')
       await expect(
         manager
-          .connect(user2)
+          .connect(user3)
           .offerPeriod(
             wrongSpaceMetadata,
             displayStartTimestamp,
@@ -327,7 +331,7 @@ describe('AdManager', async () => {
       const price = parseEther('0.4')
       await manager.newSpace(spaceMetadata)
       await manager
-        .connect(user2)
+        .connect(user3)
         .offerPeriod(
           spaceMetadata,
           displayStartTimestamp,
@@ -362,7 +366,7 @@ describe('AdManager', async () => {
       const price = parseEther('0.4')
       await manager.newSpace(spaceMetadata)
       await manager
-        .connect(user2)
+        .connect(user3)
         .offerPeriod(
           spaceMetadata,
           displayStartTimestamp,
@@ -391,7 +395,7 @@ describe('AdManager', async () => {
       )
 
       const price = parseEther('0.4')
-      await newPeriodWith(manager, {
+      await newPeriodWith(manager.connect(user2), {
         spaceMetadata: spaceMetadata,
         tokenMetadata: tokenMetadata,
         saleEndTimestamp: saleEndTimestamp,
@@ -401,7 +405,7 @@ describe('AdManager', async () => {
         minPrice: minPrice,
       })
       await manager
-        .connect(user2)
+        .connect(user3)
         .offerPeriod(
           spaceMetadata,
           displayStartTimestamp + 1000,
@@ -410,7 +414,7 @@ describe('AdManager', async () => {
         )
 
       await expect(
-        manager.acceptOffer(tokenId, tokenMetadata, option())
+        manager.connect(user2).acceptOffer(tokenId, tokenMetadata, option())
       ).to.be.revertedWith('KD110')
     })
   })
@@ -430,15 +434,15 @@ describe('AdManager', async () => {
       })
 
       expect(
-        await buyWith(manager.connect(user2), {
+        await buyWith(manager.connect(user3), {
           tokenId,
           value: price,
         })
       )
         .to.emit(event, 'Buy')
-        .withArgs(tokenId, price, user2.address, now + 3)
+        .withArgs(tokenId, price, user3.address, now + 3)
         .to.emit(event, 'TransferCustom')
-        .withArgs(manager.address, user2.address, tokenId)
+        .withArgs(manager.address, user3.address, tokenId)
     })
 
     it('should revert because the pricing is not RRP', async () => {
@@ -452,7 +456,7 @@ describe('AdManager', async () => {
       })
 
       await expect(
-        buyWith(manager.connect(user2), {
+        buyWith(manager.connect(user3), {
           tokenId,
         })
       ).to.be.revertedWith('KD120')
@@ -468,11 +472,11 @@ describe('AdManager', async () => {
         now,
         pricing: pricing,
       })
-      await buyWith(manager.connect(user2), {
+      await buyWith(manager.connect(user3), {
         tokenId,
       })
       await expect(
-        buyWith(manager.connect(user3), {
+        buyWith(manager.connect(user4), {
           tokenId,
         })
       ).to.be.revertedWith('KD121')
@@ -491,7 +495,7 @@ describe('AdManager', async () => {
         minPrice: price,
       })
       await expect(
-        buyWith(manager.connect(user2), {
+        buyWith(manager.connect(user3), {
           tokenId,
           value: parseEther('0.1'),
         })
@@ -525,13 +529,13 @@ describe('AdManager', async () => {
 
       expect(
         await manager
-          .connect(user2)
+          .connect(user3)
           .buyBasedOnTime(tokenId, option({ value: currentPrice }))
       )
         .to.emit(event, 'Buy')
-        .withArgs(tokenId, currentPrice, user2.address, now + 2461)
+        .withArgs(tokenId, currentPrice, user3.address, now + 2461)
         .to.emit(event, 'TransferCustom')
-        .withArgs(manager.address, user2.address, tokenId)
+        .withArgs(manager.address, user3.address, tokenId)
     })
 
     it('should revert because the pricing is not DPBT', async () => {
@@ -547,7 +551,7 @@ describe('AdManager', async () => {
       const currentPrice = await manager.currentPrice(tokenId)
       await expect(
         manager
-          .connect(user2)
+          .connect(user3)
           .buyBasedOnTime(tokenId, option({ value: currentPrice }))
       ).to.be.revertedWith('KD123')
     })
@@ -569,11 +573,11 @@ describe('AdManager', async () => {
 
       expect(
         await manager
-          .connect(user2)
+          .connect(user3)
           .bid(tokenId, option({ value: parseEther('0.3') }))
       )
         .to.emit(event, 'Bid')
-        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 2)
+        .withArgs(tokenId, parseEther('0.3'), user3.address, now + 2)
     })
 
     it('should revert because it is not bidding', async () => {
@@ -591,7 +595,7 @@ describe('AdManager', async () => {
 
       await expect(
         manager
-          .connect(user2)
+          .connect(user3)
           .bid(tokenId, option({ value: parseEther('0.3') }))
       ).to.be.revertedWith('KD124')
     })
@@ -613,18 +617,18 @@ describe('AdManager', async () => {
         minPrice: price,
       })
       await manager
-        .connect(user2)
+        .connect(user3)
         .bid(tokenId, option({ value: parseEther('0.3') }))
 
       // passed the end timestamp of the sale
       await network.provider.send('evm_setNextBlockTimestamp', [now + 2410])
       await network.provider.send('evm_mine')
 
-      expect(await manager.connect(user2).receiveToken(tokenId, option()))
+      expect(await manager.connect(user3).receiveToken(tokenId, option()))
         .to.emit(event, 'ReceiveToken')
-        .withArgs(tokenId, parseEther('0.3'), user2.address, now + 2411)
+        .withArgs(tokenId, parseEther('0.3'), user3.address, now + 2411)
         .to.emit(event, 'TransferCustom')
-        .withArgs(manager.address, user2.address, tokenId)
+        .withArgs(manager.address, user3.address, tokenId)
     })
 
     it('should revert because the caller is not the successful bidder', async () => {
@@ -642,7 +646,7 @@ describe('AdManager', async () => {
         minPrice: price,
       })
       await manager
-        .connect(user2)
+        .connect(user3)
         .bid(tokenId, option({ value: parseEther('0.3') }))
 
       // passed the end timestamp of the sale
@@ -650,7 +654,7 @@ describe('AdManager', async () => {
       await network.provider.send('evm_mine')
 
       await expect(
-        manager.connect(user3).receiveToken(tokenId, option())
+        manager.connect(user4).receiveToken(tokenId, option())
       ).to.be.revertedWith('KD126')
     })
 
@@ -669,11 +673,11 @@ describe('AdManager', async () => {
         minPrice: price,
       })
       await manager
-        .connect(user2)
+        .connect(user3)
         .bid(tokenId, option({ value: parseEther('0.3') }))
 
       await expect(
-        manager.connect(user2).receiveToken(tokenId, option())
+        manager.connect(user3).receiveToken(tokenId, option())
       ).to.be.revertedWith('KD125')
     })
   })
@@ -691,7 +695,7 @@ describe('AdManager', async () => {
         pricing: pricing,
         minPrice: price,
       })
-      await buyWith(manager.connect(user2), {
+      await buyWith(manager.connect(user3), {
         tokenId,
         value: price,
       })
@@ -710,11 +714,11 @@ describe('AdManager', async () => {
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       await newPeriodWith(manager, { now })
-      await buyWith(manager.connect(user2), { tokenId })
+      await buyWith(manager.connect(user3), { tokenId })
 
       expect(
         await manager
-          .connect(user2)
+          .connect(user3)
           .propose(tokenId, proposalMetadata, option())
       )
         .to.emit(event, 'Propose')
@@ -729,10 +733,10 @@ describe('AdManager', async () => {
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       await newPeriodWith(manager, { now })
-      await buyWith(manager.connect(user2), { tokenId })
+      await buyWith(manager.connect(user3), { tokenId })
 
       await expect(
-        manager.connect(user3).propose(tokenId, proposalMetadata, option())
+        manager.connect(user4).propose(tokenId, proposalMetadata, option())
       ).to.be.revertedWith('KD012')
     })
   })
@@ -745,14 +749,14 @@ describe('AdManager', async () => {
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       await newPeriodWith(manager, { now })
-      await buyWith(manager.connect(user2), { tokenId })
-      await manager.connect(user2).propose(tokenId, proposalMetadata)
+      await buyWith(manager.connect(user3), { tokenId })
+      await manager.connect(user3).propose(tokenId, proposalMetadata)
 
       expect(await manager.accept(tokenId, option()))
         .to.emit(event, 'AcceptProposal')
         .withArgs(tokenId, proposalMetadata)
         .to.emit(event, 'TransferCustom')
-        .withArgs(user2.address, ADDRESS_ZERO, tokenId)
+        .withArgs(user3.address, ADDRESS_ZERO, tokenId)
     })
 
     it('should revert because it has already proposed', async () => {
@@ -762,8 +766,8 @@ describe('AdManager', async () => {
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       await newPeriodWith(manager, { now })
-      await buyWith(manager.connect(user2), { tokenId })
-      await manager.connect(user2).propose(tokenId, proposalMetadata)
+      await buyWith(manager.connect(user3), { tokenId })
+      await manager.connect(user3).propose(tokenId, proposalMetadata)
       await manager.accept(tokenId, option())
 
       await expect(manager.accept(tokenId, option())).to.be.revertedWith(
@@ -780,8 +784,8 @@ describe('AdManager', async () => {
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       await newPeriodWith(manager, { now })
-      await buyWith(manager.connect(user2), { tokenId })
-      await manager.connect(user2).propose(tokenId, proposalMetadata)
+      await buyWith(manager.connect(user3), { tokenId })
+      await manager.connect(user3).propose(tokenId, proposalMetadata)
 
       const deniedReason =
         'This is a violence image a bit. We can not accept, sorry.'
@@ -798,7 +802,7 @@ describe('AdManager', async () => {
       const deniedReason =
         'This is a violence image a bit. We can not accept, sorry.'
       await newPeriodWith(manager, { now })
-      await buyWith(manager.connect(user2), { tokenId })
+      await buyWith(manager.connect(user3), { tokenId })
 
       await expect(
         manager.deny(tokenId, deniedReason, option())
@@ -814,8 +818,8 @@ describe('AdManager', async () => {
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       await newPeriodWith(manager, { now })
-      await buyWith(manager.connect(user2), { tokenId })
-      await manager.connect(user2).propose(tokenId, proposalMetadata)
+      await buyWith(manager.connect(user3), { tokenId })
+      await manager.connect(user3).propose(tokenId, proposalMetadata)
       await manager.accept(tokenId, option())
 
       // passed to the start of displaying
@@ -832,8 +836,8 @@ describe('AdManager', async () => {
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
       await newPeriodWith(manager, { now })
-      await buyWith(manager.connect(user2), { tokenId })
-      await manager.connect(user2).propose(tokenId, proposalMetadata)
+      await buyWith(manager.connect(user3), { tokenId })
+      await manager.connect(user3).propose(tokenId, proposalMetadata)
       await manager.accept(tokenId, option())
 
       expect(await manager.display(spaceMetadata)).to.be.eq('')
