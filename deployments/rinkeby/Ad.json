@@ -1,0 +1,69 @@
+{
+  "address": "0xCE6AB13A1A1c0586Df701f1140040fA77366C71C",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "metadata",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "displayStartTimestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "displayEndTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "id",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x4725d6887d9a04914242f0718e51ccdc75d2a8186c27eba5dcb10eb47e8558be",
+  "receipt": {
+    "to": null,
+    "from": "0x50414Ac6431279824df9968855181474c919a94B",
+    "contractAddress": "0xCE6AB13A1A1c0586Df701f1140040fA77366C71C",
+    "transactionIndex": 0,
+    "gasUsed": "172576",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xc512aab1361680e8a3e9a5dae55dd57699dfa1f89c64077fa20dec06a6b5d7ec",
+    "transactionHash": "0x4725d6887d9a04914242f0718e51ccdc75d2a8186c27eba5dcb10eb47e8558be",
+    "logs": [],
+    "blockNumber": 9565097,
+    "cumulativeGasUsed": "172576",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "solcInputHash": "d0e76e3fd00ba9904ab4c8e105cc42ab",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"string\",\"name\":\"metadata\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"displayStartTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"displayEndTimestamp\",\"type\":\"uint256\"}],\"name\":\"id\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/libraries/Ad.sol\":\"Ad\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":1000},\"remappings\":[]},\"sources\":{\"contracts/libraries/Ad.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nlibrary Ad {\\n\\tuint256 private constant _ID_LENGTH = 100000000000000000000000000000000;\\n\\t// RBP : Recommended Retail Price\\n\\t// DPBT: Dynamic Pricing Based on Time\\n\\t// BIDDING : Auction, Bidding Price\\n\\t// OFFER: Offered by others\\n\\tenum Pricing {\\n\\t\\tRRP,\\n\\t\\tDPBT,\\n\\t\\tBIDDING,\\n\\t\\tOFFER\\n\\t}\\n\\tstruct Period {\\n\\t\\taddress mediaProxy;\\n\\t\\tstring spaceMetadata;\\n\\t\\tstring tokenMetadata;\\n\\t\\tuint256 saleStartTimestamp;\\n\\t\\tuint256 saleEndTimestamp;\\n\\t\\tuint256 displayStartTimestamp;\\n\\t\\tuint256 displayEndTimestamp;\\n\\t\\tPricing pricing;\\n\\t\\tuint256 minPrice;\\n\\t\\tuint256 startPrice;\\n\\t\\tbool sold;\\n\\t}\\n\\n\\tfunction id(\\n\\t\\tstring memory metadata,\\n\\t\\tuint256 displayStartTimestamp,\\n\\t\\tuint256 displayEndTimestamp\\n\\t) public pure returns (uint256) {\\n\\t\\treturn\\n\\t\\t\\tuint256(\\n\\t\\t\\t\\tkeccak256(\\n\\t\\t\\t\\t\\tabi.encodePacked(metadata, displayStartTimestamp, displayEndTimestamp)\\n\\t\\t\\t\\t)\\n\\t\\t\\t) % _ID_LENGTH;\\n\\t}\\n}\\n\",\"keccak256\":\"0x2a6f64a80bd3d7318051d10a6e82d719a531287f0ddc7ccc8175b336eddbe8ce\",\"license\":\"UNLICENSED\"}},\"version\":1}",
+  "bytecode": "0x61022861003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600436106100355760003560e01c80633fb4aab01461003a575b600080fd5b61004d6100483660046100c6565b61005f565b60405190815260200160405180910390f35b60006d04ee2d6d415b85acef81000000008484846040516020016100859392919061018a565b6040516020818303038152906040528051906020012060001c6100a891906101d0565b949350505050565b634e487b7160e01b600052604160045260246000fd5b6000806000606084860312156100db57600080fd5b833567ffffffffffffffff808211156100f357600080fd5b818601915086601f83011261010757600080fd5b813581811115610119576101196100b0565b604051601f8201601f19908116603f01168101908382118183101715610141576101416100b0565b8160405282815289602084870101111561015a57600080fd5b82602086016020830137600060208483010152809750505050505060208401359150604084013590509250925092565b6000845160005b818110156101ab5760208188018101518583015201610191565b818111156101ba576000828501525b5091909101928352506020820152604001919050565b6000826101ed57634e487b7160e01b600052601260045260246000fd5b50069056fea264697066735822122050090c869989f0d07ded8990b07f65d81df3820661ecc5cb557d6f4932a0272964736f6c63430008090033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600436106100355760003560e01c80633fb4aab01461003a575b600080fd5b61004d6100483660046100c6565b61005f565b60405190815260200160405180910390f35b60006d04ee2d6d415b85acef81000000008484846040516020016100859392919061018a565b6040516020818303038152906040528051906020012060001c6100a891906101d0565b949350505050565b634e487b7160e01b600052604160045260246000fd5b6000806000606084860312156100db57600080fd5b833567ffffffffffffffff808211156100f357600080fd5b818601915086601f83011261010757600080fd5b813581811115610119576101196100b0565b604051601f8201601f19908116603f01168101908382118183101715610141576101416100b0565b8160405282815289602084870101111561015a57600080fd5b82602086016020830137600060208483010152809750505050505060208401359150604084013590509250925092565b6000845160005b818110156101ab5760208188018101518583015201610191565b818111156101ba576000828501525b5091909101928352506020820152604001919050565b6000826101ed57634e487b7160e01b600052601260045260246000fd5b50069056fea264697066735822122050090c869989f0d07ded8990b07f65d81df3820661ecc5cb557d6f4932a0272964736f6c63430008090033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}
