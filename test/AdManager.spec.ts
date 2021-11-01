@@ -112,7 +112,7 @@ describe('AdManager', async () => {
       )
 
       // refresh timestamp
-      await network.provider.send('evm_setNextBlockTimestamp', [now + 2])
+      await network.provider.send('evm_increaseTime', [1])
       await network.provider.send('evm_mine')
 
       expect(
