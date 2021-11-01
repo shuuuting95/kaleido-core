@@ -223,6 +223,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			msg.value
 		);
 		_eventEmitter().emitOfferPeriod(
+			tokenId,
 			spaceMetadata,
 			displayStartTimestamp,
 			displayEndTimestamp,

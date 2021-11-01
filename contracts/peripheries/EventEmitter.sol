@@ -40,6 +40,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		uint256 timestamp
 	);
 	event OfferPeriod(
+		uint256 tokenId,
 		string spaceMetadata,
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp,
@@ -134,6 +135,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	}
 
 	function emitOfferPeriod(
+		uint256 tokenId,
 		string memory spaceMetadata,
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp,
@@ -141,6 +143,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		uint256 price
 	) external onlyProxies {
 		emit OfferPeriod(
+			tokenId,
 			spaceMetadata,
 			displayStartTimestamp,
 			displayEndTimestamp,
