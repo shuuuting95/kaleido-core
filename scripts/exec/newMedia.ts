@@ -5,7 +5,7 @@ import {
   getMediaFactoryAddress,
   getNameRegistryAddress,
 } from '../common/file'
-import { getWallet } from '../common/wallet'
+import { getWallet, option } from '../common/wallet'
 
 const network = process.env.NETWORK || 'ganache'
 
@@ -15,7 +15,7 @@ const main = async () => {
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
   const initializer = ifaceAdManager.encodeFunctionData('initialize', [
     'Kaleido',
-    'https://base/',
+    'ipfs://jkasjkfajkjakjskjfa;k/',
     getNameRegistryAddress(network),
   ])
 
@@ -23,9 +23,11 @@ const main = async () => {
   const mediaFactory = getMediaFactoryInstance(factoryAddress, adminWallet)
 
   const tx = await mediaFactory.newMedia(
+    '0xf19fb9fe1725bc6e3615e5ad656d3b8fc3b12176',
     '_ojROEcQk1EJTEwYAovVBT0uh6t-X7YTDzHjxYLvCfY',
     initializer,
-    1
+    3,
+    option()
   )
   const rc = await tx.wait()
   const event = rc.events.find((event: any) => event.event === 'CreateProxy')
