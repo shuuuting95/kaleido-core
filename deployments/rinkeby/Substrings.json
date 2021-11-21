@@ -1,0 +1,122 @@
+{
+  "address": "0xF7E2EA814b98a030c6fe6848806c27568777dd70",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_base",
+          "type": "string"
+        },
+        {
+          "internalType": "int256",
+          "name": "_length",
+          "type": "int256"
+        },
+        {
+          "internalType": "int256",
+          "name": "_offset",
+          "type": "int256"
+        }
+      ],
+      "name": "substring",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_base",
+          "type": "string"
+        },
+        {
+          "internalType": "int256",
+          "name": "_length",
+          "type": "int256"
+        }
+      ],
+      "name": "substring",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xa09394ddf07ec99ce30fa5b8b0f2636702f43d058f3e9f4fe12c83f7080ca663",
+  "receipt": {
+    "to": null,
+    "from": "0xCdfc500F7f0FCe1278aECb0340b523cD55b3EBbb",
+    "contractAddress": "0xF7E2EA814b98a030c6fe6848806c27568777dd70",
+    "transactionIndex": 0,
+    "gasUsed": "289488",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x3f82ae13b3470947d9a329a6b923756b915d44b8a6de3b5a2674f5047881f11b",
+    "transactionHash": "0xa09394ddf07ec99ce30fa5b8b0f2636702f43d058f3e9f4fe12c83f7080ca663",
+    "logs": [],
+    "blockNumber": 9628070,
+    "cumulativeGasUsed": "289488",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "solcInputHash": "e8d9bb358a5713c49109d8869137d9b3",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_base\",\"type\":\"string\"},{\"internalType\":\"int256\",\"name\":\"_length\",\"type\":\"int256\"},{\"internalType\":\"int256\",\"name\":\"_offset\",\"type\":\"int256\"}],\"name\":\"substring\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_base\",\"type\":\"string\"},{\"internalType\":\"int256\",\"name\":\"_length\",\"type\":\"int256\"}],\"name\":\"substring\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Shumpei Koike - <shumpei.koike@bridges.inc>\",\"kind\":\"dev\",\"methods\":{\"substring(string,int256)\":{\"params\":{\"_base\":\"When being used for a data type this is the extended object              otherwise this is the string that will be used for              extracting the sub string from\",\"_length\":\"The length of the sub string to be extracted from the base\"},\"returns\":{\"_0\":\"string The extracted sub string\"}},\"substring(string,int256,int256)\":{\"params\":{\"_base\":\"When being used for a data type this is the extended object              otherwise this is the string that will be used for              extracting the sub string from\",\"_length\":\"The length of the sub string to be extracted from the base\",\"_offset\":\"The starting point to extract the sub string from\"},\"returns\":{\"_0\":\"string The extracted sub string\"}}},\"title\":\"Substrings - utilities for Substrings.\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"substring(string,int256)\":{\"notice\":\"Sub String Extracts the beginning part of a string based on the desired length\"},\"substring(string,int256,int256)\":{\"notice\":\"Sub String Extracts the part of a string based on the desired length and offset. The offset and length must not exceed the lenth of the base string.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/libraries/Substrings.sol\":\"Substrings\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":1000},\"remappings\":[]},\"sources\":{\"contracts/libraries/Substrings.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\n/// @title Substrings - utilities for Substrings.\\n/// @author Shumpei Koike - <shumpei.koike@bridges.inc>\\nlibrary Substrings {\\n\\t/**\\n\\t * Sub String\\n\\t *\\n\\t * Extracts the beginning part of a string based on the desired length\\n\\t *\\n\\t * @param _base When being used for a data type this is the extended object\\n\\t *              otherwise this is the string that will be used for\\n\\t *              extracting the sub string from\\n\\t * @param _length The length of the sub string to be extracted from the base\\n\\t * @return string The extracted sub string\\n\\t */\\n\\tfunction substring(string memory _base, int256 _length)\\n\\t\\tpublic\\n\\t\\tpure\\n\\t\\treturns (string memory)\\n\\t{\\n\\t\\treturn substring(_base, _length, 0);\\n\\t}\\n\\n\\t/**\\n\\t * Sub String\\n\\t *\\n\\t * Extracts the part of a string based on the desired length and offset. The\\n\\t * offset and length must not exceed the lenth of the base string.\\n\\t *\\n\\t * @param _base When being used for a data type this is the extended object\\n\\t *              otherwise this is the string that will be used for\\n\\t *              extracting the sub string from\\n\\t * @param _length The length of the sub string to be extracted from the base\\n\\t * @param _offset The starting point to extract the sub string from\\n\\t * @return string The extracted sub string\\n\\t */\\n\\tfunction substring(\\n\\t\\tstring memory _base,\\n\\t\\tint256 _length,\\n\\t\\tint256 _offset\\n\\t) public pure returns (string memory) {\\n\\t\\tbytes memory _baseBytes = bytes(_base);\\n\\n\\t\\tassert(uint256(_offset + _length) <= _baseBytes.length);\\n\\n\\t\\tstring memory _tmp = new string(uint256(_length));\\n\\t\\tbytes memory _tmpBytes = bytes(_tmp);\\n\\n\\t\\tuint256 j = 0;\\n\\t\\tfor (uint256 i = uint256(_offset); i < uint256(_offset + _length); i++) {\\n\\t\\t\\t_tmpBytes[j++] = _baseBytes[i];\\n\\t\\t}\\n\\n\\t\\treturn string(_tmpBytes);\\n\\t}\\n}\\n\",\"keccak256\":\"0x6fff5f07145723a3e1ca61c7c09687a88068095f146bc919a08b152abda4aac6\",\"license\":\"UNLICENSED\"}},\"version\":1}",
+  "bytecode": "0x61044961003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600436106100405760003560e01c806315ad73a5146100455780638f0563b91461006e575b600080fd5b61005861005336600461025a565b610081565b60405161006591906102a8565b60405180910390f35b61005861007c3660046102fd565b6101a2565b825160609084906100928585610358565b11156100a0576100a06103cc565b60008467ffffffffffffffff8111156100bb576100bb6101b7565b6040519080825280601f01601f1916602001820160405280156100e5576020820181803683370190505b509050806000855b6100f78888610358565b81101561019557848181518110610110576101106103e2565b01602001517fff00000000000000000000000000000000000000000000000000000000000000168383610142816103f8565b945081518110610154576101546103e2565b60200101907effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1916908160001a9053508061018d816103f8565b9150506100ed565b5090979650505050505050565b60606101b083836000610081565b9392505050565b634e487b7160e01b600052604160045260246000fd5b600082601f8301126101de57600080fd5b813567ffffffffffffffff808211156101f9576101f96101b7565b604051601f8301601f19908116603f01168101908282118183101715610221576102216101b7565b8160405283815286602085880101111561023a57600080fd5b836020870160208301376000602085830101528094505050505092915050565b60008060006060848603121561026f57600080fd5b833567ffffffffffffffff81111561028657600080fd5b610292868287016101cd565b9660208601359650604090950135949350505050565b600060208083528351808285015260005b818110156102d5578581018301518582016040015282016102b9565b818111156102e7576000604083870101525b50601f01601f1916929092016040019392505050565b6000806040838503121561031057600080fd5b823567ffffffffffffffff81111561032757600080fd5b610333858286016101cd565b95602094909401359450505050565b634e487b7160e01b600052601160045260246000fd5b6000808212827f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0384138115161561039257610392610342565b827f80000000000000000000000000000000000000000000000000000000000000000384128116156103c6576103c6610342565b50500190565b634e487b7160e01b600052600160045260246000fd5b634e487b7160e01b600052603260045260246000fd5b600060001982141561040c5761040c610342565b506001019056fea26469706673582212204e468e17566e6ef3d593cd77748adcaf8a6a56fac3268c7d996cf0bd8657c0be64736f6c63430008090033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600436106100405760003560e01c806315ad73a5146100455780638f0563b91461006e575b600080fd5b61005861005336600461025a565b610081565b60405161006591906102a8565b60405180910390f35b61005861007c3660046102fd565b6101a2565b825160609084906100928585610358565b11156100a0576100a06103cc565b60008467ffffffffffffffff8111156100bb576100bb6101b7565b6040519080825280601f01601f1916602001820160405280156100e5576020820181803683370190505b509050806000855b6100f78888610358565b81101561019557848181518110610110576101106103e2565b01602001517fff00000000000000000000000000000000000000000000000000000000000000168383610142816103f8565b945081518110610154576101546103e2565b60200101907effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1916908160001a9053508061018d816103f8565b9150506100ed565b5090979650505050505050565b60606101b083836000610081565b9392505050565b634e487b7160e01b600052604160045260246000fd5b600082601f8301126101de57600080fd5b813567ffffffffffffffff808211156101f9576101f96101b7565b604051601f8301601f19908116603f01168101908282118183101715610221576102216101b7565b8160405283815286602085880101111561023a57600080fd5b836020870160208301376000602085830101528094505050505092915050565b60008060006060848603121561026f57600080fd5b833567ffffffffffffffff81111561028657600080fd5b610292868287016101cd565b9660208601359650604090950135949350505050565b600060208083528351808285015260005b818110156102d5578581018301518582016040015282016102b9565b818111156102e7576000604083870101525b50601f01601f1916929092016040019392505050565b6000806040838503121561031057600080fd5b823567ffffffffffffffff81111561032757600080fd5b610333858286016101cd565b95602094909401359450505050565b634e487b7160e01b600052601160045260246000fd5b6000808212827f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0384138115161561039257610392610342565b827f80000000000000000000000000000000000000000000000000000000000000000384128116156103c6576103c6610342565b50500190565b634e487b7160e01b600052600160045260246000fd5b634e487b7160e01b600052603260045260246000fd5b600060001982141561040c5761040c610342565b506001019056fea26469706673582212204e468e17566e6ef3d593cd77748adcaf8a6a56fac3268c7d996cf0bd8657c0be64736f6c63430008090033",
+  "devdoc": {
+    "author": "Shumpei Koike - <shumpei.koike@bridges.inc>",
+    "kind": "dev",
+    "methods": {
+      "substring(string,int256)": {
+        "params": {
+          "_base": "When being used for a data type this is the extended object              otherwise this is the string that will be used for              extracting the sub string from",
+          "_length": "The length of the sub string to be extracted from the base"
+        },
+        "returns": {
+          "_0": "string The extracted sub string"
+        }
+      },
+      "substring(string,int256,int256)": {
+        "params": {
+          "_base": "When being used for a data type this is the extended object              otherwise this is the string that will be used for              extracting the sub string from",
+          "_length": "The length of the sub string to be extracted from the base",
+          "_offset": "The starting point to extract the sub string from"
+        },
+        "returns": {
+          "_0": "string The extracted sub string"
+        }
+      }
+    },
+    "title": "Substrings - utilities for Substrings.",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "substring(string,int256)": {
+        "notice": "Sub String Extracts the beginning part of a string based on the desired length"
+      },
+      "substring(string,int256,int256)": {
+        "notice": "Sub String Extracts the part of a string based on the desired length and offset. The offset and length must not exceed the lenth of the base string."
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

@@ -112,7 +112,7 @@ describe('AdManager', async () => {
       )
 
       // refresh timestamp
-      await network.provider.send('evm_setNextBlockTimestamp', [now + 2])
+      await network.provider.send('evm_increaseTime', [1])
       await network.provider.send('evm_mine')
 
       expect(
@@ -311,6 +311,11 @@ describe('AdManager', async () => {
       const spaceMetadata = 'asfafkjksjfkajf'
       const displayStartTimestamp = now + 3600
       const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
       const price = parseEther('0.4')
       await manager.connect(user2).newSpace(spaceMetadata)
       expect(
@@ -325,6 +330,7 @@ describe('AdManager', async () => {
       )
         .to.emit(event, 'OfferPeriod')
         .withArgs(
+          tokenId,
           spaceMetadata,
           displayStartTimestamp,
           displayEndTimestamp,
