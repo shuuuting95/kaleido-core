@@ -30,15 +30,18 @@ describe('MediaFactory', async () => {
     it('should new a account of media', async () => {
       const { now, factory, manager, name, registry } = await setupTests()
 
-      const metadata = 'xxdsfjakjajijraksldfjak'
+      const constantMetadata = 'xxdsfjakjajijraksldfjak'
+      const updatableMetadata = 'kykesrjisjklwjeidfhsjfa'
       const { proxy } = await newMediaWith(user2, factory, name, {
-        metadata: metadata,
+        constantMetadata: constantMetadata,
+        updatableMetadata: updatableMetadata,
       })
       expect(proxy).is.not.null
       expect(await registry.allAccounts(proxy)).to.deep.equal([
         proxy,
         user2.address,
-        metadata,
+        constantMetadata,
+        updatableMetadata,
       ])
     })
 
@@ -49,7 +52,13 @@ describe('MediaFactory', async () => {
       await expect(
         factory
           .connect(user2)
-          .newMedia(user2.address, 'dfajkajdjadafk', initializer, 1)
+          .newMedia(
+            user2.address,
+            'dfajkajdjadafk',
+            'kykesrjisjklwjeidfhsjfa',
+            initializer,
+            1
+          )
       ).to.be.revertedWith('KD012')
     })
   })
@@ -57,7 +66,8 @@ describe('MediaFactory', async () => {
 
 export type NewMediaProps = {
   initializer?: string
-  metadata?: string
+  constantMetadata?: string
+  updatableMetadata?: string
   saltNonce?: number
 }
 
@@ -70,7 +80,8 @@ export const newMediaWith = async (
   const initializer = defaultInitializer(name.address)
   const tx = await factory.newMedia(
     user.address,
-    props?.metadata ? props?.metadata : 'abi09nadu2brasfjl',
+    props?.constantMetadata ? props?.constantMetadata : 'abi09nadu2brasfjl',
+    props?.updatableMetadata ? props?.updatableMetadata : '1eqe23kerfkamfka',
     props?.initializer ? props.initializer : initializer,
     props?.saltNonce ? props.saltNonce : 1
   )

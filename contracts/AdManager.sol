@@ -55,7 +55,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		external
 		onlyMedia
 	{
-		// TODO: add updatable metadata
 		_mediaRegistry().updateMedia(newMediaEOA, newMetadata);
 		_eventEmitter().emitUpdateMedia(address(this), newMediaEOA, newMetadata);
 	}
