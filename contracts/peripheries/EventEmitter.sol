@@ -59,7 +59,12 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	event Withdraw(uint256 amount);
 	event Propose(uint256 tokenId, string metadata);
 	event AcceptProposal(uint256 tokenId, string metadata);
-	event DenyProposal(uint256 tokenId, string metadata, string reason);
+	event DenyProposal(
+		uint256 tokenId,
+		string metadata,
+		string reason,
+		bool offensive
+	);
 	event TransferCustom(
 		address indexed from,
 		address indexed to,
@@ -192,9 +197,10 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	function emitDenyProposal(
 		uint256 tokenId,
 		string memory metadata,
-		string memory reason
+		string memory reason,
+		bool offensive
 	) external onlyProxies {
-		emit DenyProposal(tokenId, metadata, reason);
+		emit DenyProposal(tokenId, metadata, reason, offensive);
 	}
 
 	function emitTransferCustom(

@@ -312,13 +312,16 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Denies the submitted proposal, mentioning what is the problem.
 	/// @param tokenId uint256 of the token ID
 	/// @param reason string of the reason why it is rejected
-	/// TODO: flag
-	function deny(uint256 tokenId, string memory reason) external onlyMedia {
+	/// @param offensive bool if the content would offend somebody
+	function deny(
+		uint256 tokenId,
+		string memory reason,
+		bool offensive
+	) external onlyMedia {
 		string memory metadata = proposed[tokenId];
 		require(bytes(metadata).length != 0, "KD130");
-		deniedReason[tokenId] = reason;
-		// TODO: denies N
-		_eventEmitter().emitDenyProposal(tokenId, metadata, reason);
+		deniedReasons[tokenId].push(Denied(reason, offensive));
+		_eventEmitter().emitDenyProposal(tokenId, metadata, reason, offensive);
 	}
 
 	/// @dev Overrides transferFrom to emit an event from the common emitter.

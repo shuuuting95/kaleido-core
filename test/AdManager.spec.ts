@@ -855,9 +855,10 @@ describe('AdManager', async () => {
 
       const deniedReason =
         'This is a violence image a bit. We can not accept, sorry.'
-      expect(await manager.deny(tokenId, deniedReason, option()))
+      const offensive = true
+      expect(await manager.deny(tokenId, deniedReason, offensive, option()))
         .to.emit(event, 'DenyProposal')
-        .withArgs(tokenId, proposalMetadata, deniedReason)
+        .withArgs(tokenId, proposalMetadata, deniedReason, offensive)
     })
 
     it('should revert because there is not any proposals', async () => {
@@ -867,11 +868,12 @@ describe('AdManager', async () => {
 
       const deniedReason =
         'This is a violence image a bit. We can not accept, sorry.'
+      const offensive = true
       await newPeriodWith(manager, { now })
       await buyWith(manager.connect(user3), { tokenId })
 
       await expect(
-        manager.deny(tokenId, deniedReason, option())
+        manager.deny(tokenId, deniedReason, offensive, option())
       ).to.be.revertedWith('KD130')
     })
   })

@@ -9,8 +9,12 @@ import "hardhat/console.sol";
 /// @title DistributionRight - represents NFTs based on ad spaces and periods.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract DistributionRight is ERC721 {
+	struct Denied {
+		string reason;
+		bool offensive;
+	}
 	mapping(uint256 => string) public proposed;
-	mapping(uint256 => string) public deniedReason;
+	mapping(uint256 => Denied[]) public deniedReasons;
 	mapping(uint256 => string) public accepted;
 
 	function _mintRight(uint256 tokenId, string memory metadata) internal {
@@ -39,13 +43,4 @@ contract DistributionRight is ERC721 {
 		accepted[tokenId] = metadata;
 		_clearProposal(tokenId);
 	}
-
-	// function transferToBundle(
-	// 	address from,
-	// 	address to,
-	// 	uint256 tokenId
-	// ) external {
-	// 	// TODO: only from bundler
-	// 	_transfer(from, to, tokenId);
-	// }
 }
