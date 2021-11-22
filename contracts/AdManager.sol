@@ -55,6 +55,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		external
 		onlyMedia
 	{
+		// TODO: add updatable metadata
 		_mediaRegistry().updateMedia(newMediaEOA, newMetadata);
 		_eventEmitter().emitUpdateMedia(address(this), newMediaEOA, newMetadata);
 	}
@@ -87,6 +88,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		require(saleEndTimestamp < displayStartTimestamp, "KD112");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
 
+		// TODO: check spacemetadata if the data is already stored
 		if (!spaced[spaceMetadata]) {
 			_newSpace(spaceMetadata);
 		}
@@ -141,6 +143,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		require(ownerOf(tokenId) == address(this), "KD121");
 		_refundLockedAmount(tokenId);
 		delete allPeriods[tokenId];
+		// TODO: delete _periodKeys[spaceMetadata]
 		_burnRight(tokenId);
 		_adPool().deletePeriod(tokenId);
 		_eventEmitter().emitDeletePeriod(tokenId);
@@ -190,7 +193,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_checkBeforeReceiveToken(tokenId);
 		allPeriods[tokenId].sold = true;
 		_dropRight(tokenId);
-		_collectFees();
+		_collectFees(); // TODO: modify
 		_eventEmitter().emitReceiveToken(
 			tokenId,
 			bidding[tokenId].price,
@@ -232,6 +235,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		);
 	}
 
+	// TODO: cancel function
+
 	/// @dev Accepts an offer by the Media.
 	/// @param tokenId uint256 of the token ID
 	/// @param tokenMetadata string of the NFT token metadata
@@ -260,8 +265,9 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			true
 		);
 		allPeriods[tokenId] = period;
-		_mintRight(tokenId, tokenMetadata);
-		_collectFees();
+		// TODO: adPool() * allPeriods * periodKeys
+		_mintRight(tokenId, tokenMetadata); // TODO: transfer
+		_collectFees(); // TODO: modify
 		_eventEmitter().emitAcceptOffer(
 			tokenId,
 			offer.spaceMetadata,
@@ -275,6 +281,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
 	function withdraw() external onlyMedia {
+		// TODO: withdrawal amount
 		uint256 remained = address(this).balance;
 		payable(msg.sender).transfer(remained);
 		_eventEmitter().emitWithdraw(remained);
@@ -296,7 +303,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		string memory metadata = proposed[tokenId];
 		require(bytes(metadata).length != 0, "KD130");
 		address currentOwner = ownerOf(tokenId);
-		_burnRight(tokenId);
+		// TODO: check if the current owner is the same as the proposer
+		// TODO: delete _burnRight(tokenId);
 		_acceptProposal(tokenId, metadata);
 		_eventEmitter().emitAcceptProposal(tokenId, metadata);
 		_eventEmitter().emitTransferCustom(currentOwner, address(0), tokenId);
@@ -305,11 +313,33 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Denies the submitted proposal, mentioning what is the problem.
 	/// @param tokenId uint256 of the token ID
 	/// @param reason string of the reason why it is rejected
+	/// TODO: flag
 	function deny(uint256 tokenId, string memory reason) external onlyMedia {
 		string memory metadata = proposed[tokenId];
 		require(bytes(metadata).length != 0, "KD130");
 		deniedReason[tokenId] = reason;
+		// TODO: denies N
 		_eventEmitter().emitDenyProposal(tokenId, metadata, reason);
+	}
+
+	/// @dev Overrides transferFrom to emit an event from the common emitter.
+	function transferFrom(
+		address from,
+		address to,
+		uint256 tokenId
+	) public override {
+		super.transferFrom(from, to, tokenId);
+		_eventEmitter().emitTransferCustom(from, to, tokenId);
+	}
+
+	/// @dev Overrides transferFrom to emit an event from the common emitter.
+	function safeTransferFrom(
+		address from,
+		address to,
+		uint256 tokenId
+	) public override {
+		super.safeTransferFrom(from, to, tokenId);
+		_eventEmitter().emitTransferCustom(from, to, tokenId);
 	}
 
 	/// @dev Returns ID based on the space metadata, display start timestamp, and

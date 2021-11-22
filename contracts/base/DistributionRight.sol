@@ -40,12 +40,12 @@ contract DistributionRight is ERC721 {
 		_clearProposal(tokenId);
 	}
 
-	function transferToBundle(
-		address from,
-		address to,
-		uint256 tokenId
-	) external {
-		// TODO: only from bundler
-		_transfer(from, to, tokenId);
-	}
+	// function transferToBundle(
+	// 	address from,
+	// 	address to,
+	// 	uint256 tokenId
+	// ) external {
+	// 	// TODO: only from bundler
+	// 	_transfer(from, to, tokenId);
+	// }
 }

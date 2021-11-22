@@ -37,7 +37,7 @@ contract Bundler is ERC721, NameAccessor {
 			uint256 tokenId = Integers.parseInt(sliced);
 			address proxy = _adPool().mediaProxyOf(tokenId);
 			AdManager manager = AdManager(proxy);
-			manager.transferToBundle(msg.sender, address(this), tokenId);
+			// manager.transferToBundle(msg.sender, address(this), tokenId);
 		}
 		tokenIds[nextBundleId] = concatenated;
 		_mint(address(this), nextBundleId);
