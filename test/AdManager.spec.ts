@@ -20,7 +20,8 @@ describe('AdManager', async () => {
   // user2: Media
   // user3: Buyer, Ad Owner
   // user4: Wrong others
-  const [user1, user2, user3, user4] = waffle.provider.getWallets()
+  // user5: Another Media
+  const [user1, user2, user3, user4, user5] = waffle.provider.getWallets()
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {
     await deployments.fixture()
@@ -91,6 +92,19 @@ describe('AdManager', async () => {
       await manager.newSpace(spaceMetadata)
 
       await expect(manager.newSpace(spaceMetadata)).to.be.revertedWith('KD100')
+    })
+
+    it('should revert because the space has already created by another media', async () => {
+      const { factory, name } = await setupTests()
+      const manager2 = await managerInstance(factory, name)
+      const { proxy } = await newMediaWith(user5, factory, name, {
+        saltNonce: 100,
+      })
+      const manager5 = new ethers.Contract(proxy, getAdManagerABI(), user5)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      await manager5.newSpace(spaceMetadata)
+
+      await expect(manager2.newSpace(spaceMetadata)).to.be.revertedWith('KD100')
     })
   })
 

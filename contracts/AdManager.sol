@@ -87,7 +87,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		require(saleEndTimestamp < displayStartTimestamp, "KD112");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
 
-		// TODO: check spacemetadata if the data is already stored
 		if (!spaced[spaceMetadata]) {
 			_newSpace(spaceMetadata);
 		}

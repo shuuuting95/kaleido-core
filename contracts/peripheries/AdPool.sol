@@ -11,6 +11,8 @@ import "./MediaRegistry.sol";
 contract AdPool is BlockTimestamp, NameAccessor {
 	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
 	mapping(uint256 => Ad.Period) public allPeriods;
+	/// @dev Returns spaceId that is tied with space metadata.
+	mapping(string => bool) public spaced;
 
 	modifier onlyProxies() {
 		require(_mediaRegistry().ownerOf(msg.sender) != address(0x0), "KD011");
@@ -19,6 +21,10 @@ contract AdPool is BlockTimestamp, NameAccessor {
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
+	}
+
+	function addSpace(string memory spaceMetadata) external onlyProxies {
+		spaced[spaceMetadata] = true;
 	}
 
 	function addPeriod(uint256 tokenId, Ad.Period memory period)
