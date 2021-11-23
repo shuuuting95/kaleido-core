@@ -883,7 +883,7 @@ describe('AdManager', async () => {
       await buyWith(manager.connect(user3), { tokenId })
       await manager.connect(user3).propose(tokenId, proposalMetadata)
 
-      expect(await manager.accept(tokenId, option()))
+      expect(await manager.acceptProposal(tokenId, option()))
         .to.emit(event, 'AcceptProposal')
         .withArgs(tokenId, proposalMetadata)
       expect(await manager.ownerOf(tokenId)).to.be.eq(user3.address)
@@ -898,11 +898,11 @@ describe('AdManager', async () => {
       await newPeriodWith(manager, { now })
       await buyWith(manager.connect(user3), { tokenId })
       await manager.connect(user3).propose(tokenId, proposalMetadata)
-      await manager.accept(tokenId, option())
+      await manager.acceptProposal(tokenId, option())
 
-      await expect(manager.accept(tokenId, option())).to.be.revertedWith(
-        'KD130'
-      )
+      await expect(
+        manager.acceptProposal(tokenId, option())
+      ).to.be.revertedWith('KD130')
     })
   })
 
@@ -920,7 +920,9 @@ describe('AdManager', async () => {
       const deniedReason =
         'This is a violence image a bit. We can not accept, sorry.'
       const offensive = true
-      expect(await manager.deny(tokenId, deniedReason, offensive, option()))
+      expect(
+        await manager.denyProposal(tokenId, deniedReason, offensive, option())
+      )
         .to.emit(event, 'DenyProposal')
         .withArgs(tokenId, proposalMetadata, deniedReason, offensive)
     })
@@ -937,7 +939,7 @@ describe('AdManager', async () => {
       await buyWith(manager.connect(user3), { tokenId })
 
       await expect(
-        manager.deny(tokenId, deniedReason, offensive, option())
+        manager.denyProposal(tokenId, deniedReason, offensive, option())
       ).to.be.revertedWith('KD130')
     })
   })
@@ -952,7 +954,7 @@ describe('AdManager', async () => {
       await newPeriodWith(manager, { now })
       await buyWith(manager.connect(user3), { tokenId })
       await manager.connect(user3).propose(tokenId, proposalMetadata)
-      await manager.accept(tokenId, option())
+      await manager.acceptProposal(tokenId, option())
 
       // passed to the start of displaying
       await network.provider.send('evm_setNextBlockTimestamp', [now + 4000])
@@ -970,7 +972,7 @@ describe('AdManager', async () => {
       await newPeriodWith(manager, { now })
       await buyWith(manager.connect(user3), { tokenId })
       await manager.connect(user3).propose(tokenId, proposalMetadata)
-      await manager.accept(tokenId, option())
+      await manager.acceptProposal(tokenId, option())
 
       expect(await manager.display(spaceMetadata)).to.be.eq('')
     })

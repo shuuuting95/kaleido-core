@@ -293,7 +293,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Accepts the proposal.
 	/// @param tokenId uint256 of the token ID
-	function accept(uint256 tokenId) external onlyMedia {
+	function acceptProposal(uint256 tokenId) external onlyMedia {
 		string memory metadata = proposed[tokenId];
 		require(bytes(metadata).length != 0, "KD130");
 		address currentOwner = ownerOf(tokenId);
@@ -306,7 +306,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	/// @param reason string of the reason why it is rejected
 	/// @param offensive bool if the content would offend somebody
-	function deny(
+	function denyProposal(
 		uint256 tokenId,
 		string memory reason,
 		bool offensive
