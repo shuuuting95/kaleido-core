@@ -26,6 +26,7 @@
 - `KD113`: `The display end should be before the display start`
 - `KD114`: `Not exist`
 - `KD115`: `Invalid token ID`
+- `KD116`: `Not yours`
 
 ## Buy / Bid related
 
@@ -40,6 +41,7 @@
 ## Proposal related
 
 - `KD130`: `Not proposed yet`
+- `KD131`: `Proposer does not have the token`
 
 ## Withdraw related
 

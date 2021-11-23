@@ -13,7 +13,8 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	event NewMedia(
 		address proxy,
 		address mediaEOA,
-		string accountMetadata,
+		string constantMetadata,
+		string updatableMetadata,
 		uint256 saltNonce
 	);
 	event UpdateMedia(address proxy, address mediaEOA, string accountMetadata);
@@ -47,6 +48,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		address sender,
 		uint256 price
 	);
+	event CancelOffer(uint256 tokenId);
 	event AcceptOffer(
 		uint256 tokenId,
 		string spaceMetadata,
@@ -58,7 +60,12 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	event Withdraw(uint256 amount);
 	event Propose(uint256 tokenId, string metadata);
 	event AcceptProposal(uint256 tokenId, string metadata);
-	event DenyProposal(uint256 tokenId, string metadata, string reason);
+	event DenyProposal(
+		uint256 tokenId,
+		string metadata,
+		string reason,
+		bool offensive
+	);
 	event TransferCustom(
 		address indexed from,
 		address indexed to,
@@ -152,6 +159,10 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		);
 	}
 
+	function emitCancelOffer(uint256 tokenId) external onlyProxies {
+		emit CancelOffer(tokenId);
+	}
+
 	function emitAcceptOffer(
 		uint256 tokenId,
 		string memory spaceMetadata,
@@ -191,9 +202,10 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	function emitDenyProposal(
 		uint256 tokenId,
 		string memory metadata,
-		string memory reason
+		string memory reason,
+		bool offensive
 	) external onlyProxies {
-		emit DenyProposal(tokenId, metadata, reason);
+		emit DenyProposal(tokenId, metadata, reason, offensive);
 	}
 
 	function emitTransferCustom(
@@ -207,10 +219,17 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	function emitNewMedia(
 		address proxy,
 		address mediaEOA,
-		string memory accountMetadata,
+		string memory constantMetadata,
+		string memory updatableMetadata,
 		uint256 saltNonce
 	) external onlyFactory {
-		emit NewMedia(proxy, mediaEOA, accountMetadata, saltNonce);
+		emit NewMedia(
+			proxy,
+			mediaEOA,
+			constantMetadata,
+			updatableMetadata,
+			saltNonce
+		);
 	}
 
 	function emitUpdateMedia(

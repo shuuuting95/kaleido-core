@@ -55,7 +55,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		external
 		onlyMedia
 	{
-		// TODO: add updatable metadata
 		_mediaRegistry().updateMedia(newMediaEOA, newMetadata);
 		_eventEmitter().emitUpdateMedia(address(this), newMediaEOA, newMetadata);
 	}
@@ -88,7 +87,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		require(saleEndTimestamp < displayStartTimestamp, "KD112");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
 
-		// TODO: check spacemetadata if the data is already stored
 		if (!spaced[spaceMetadata]) {
 			_newSpace(spaceMetadata);
 		}
@@ -102,7 +100,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			displayStartTimestamp,
 			displayEndTimestamp
 		);
-		_periodKeys[spaceMetadata].push(tokenId);
 		Ad.Period memory period = Ad.Period(
 			address(this),
 			spaceMetadata,
@@ -117,9 +114,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			false
 		);
 		period.startPrice = _startPrice(period);
-		allPeriods[tokenId] = period;
-		_mintRight(tokenId, tokenMetadata);
-		_adPool().addPeriod(tokenId, period);
+		_savePeriod(spaceMetadata, tokenId, period);
+		_mintRight(address(this), tokenId, tokenMetadata);
 		_eventEmitter().emitNewPeriod(
 			tokenId,
 			spaceMetadata,
@@ -139,13 +135,11 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	///      to the user when deleting the period.
 	/// @param tokenId uint256 of the token ID
 	function deletePeriod(uint256 tokenId) external onlyMedia {
-		require(allPeriods[tokenId].mediaProxy != address(0), "KD114");
+		require(periods[tokenId].mediaProxy != address(0), "KD114");
 		require(ownerOf(tokenId) == address(this), "KD121");
-		_refundLockedAmount(tokenId);
-		delete allPeriods[tokenId];
-		// TODO: delete _periodKeys[spaceMetadata]
+		_refundBiddingAmount(tokenId);
 		_burnRight(tokenId);
-		_adPool().deletePeriod(tokenId);
+		_deletePeriod(tokenId, periods[tokenId]);
 		_eventEmitter().emitDeletePeriod(tokenId);
 		_eventEmitter().emitTransferCustom(address(this), address(0), tokenId);
 	}
@@ -155,9 +149,9 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	function buy(uint256 tokenId) external payable exceptYourself {
 		_checkBeforeBuy(tokenId);
-		allPeriods[tokenId].sold = true;
+		periods[tokenId].sold = true;
 		_dropRight(tokenId);
-		_collectFees();
+		_collectFees(msg.value / 10);
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
@@ -167,9 +161,9 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	function buyBasedOnTime(uint256 tokenId) external payable exceptYourself {
 		_checkBeforeBuyBasedOnTime(tokenId);
-		allPeriods[tokenId].sold = true;
+		periods[tokenId].sold = true;
 		_dropRight(tokenId);
-		_collectFees();
+		_collectFees(msg.value / 10);
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
@@ -178,7 +172,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	function bid(uint256 tokenId) external payable exceptYourself nonReentrant {
 		_checkBeforeBid(tokenId);
-		_refundLockedAmount(tokenId);
+		_refundBiddingAmount(tokenId);
+		_biddingTotal += (msg.value - bidding[tokenId].price);
 		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
 		_eventEmitter().emitBid(tokenId, msg.value, msg.sender);
 	}
@@ -191,14 +186,13 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		onlySuccessfulBidder(tokenId)
 	{
 		_checkBeforeReceiveToken(tokenId);
-		allPeriods[tokenId].sold = true;
+		uint256 price = bidding[tokenId].price;
+		periods[tokenId].sold = true;
+		_biddingTotal -= price;
 		_dropRight(tokenId);
-		_collectFees(); // TODO: modify
-		_eventEmitter().emitReceiveToken(
-			tokenId,
-			bidding[tokenId].price,
-			msg.sender
-		);
+		_collectFees(price / 10);
+		delete bidding[tokenId];
+		_eventEmitter().emitReceiveToken(tokenId, price, msg.sender);
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
@@ -225,6 +219,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			msg.sender,
 			msg.value
 		);
+		_offeredTotal += msg.value;
 		_eventEmitter().emitOfferPeriod(
 			tokenId,
 			spaceMetadata,
@@ -235,7 +230,15 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		);
 	}
 
-	// TODO: cancel function
+	/// @dev Cancels an offer.
+	/// @param tokenId uint256 of the token ID
+	function cancelOffer(uint256 tokenId) external payable exceptYourself {
+		require(offered[tokenId].sender == msg.sender, "KD116");
+		_refundOfferedAmount(tokenId);
+		_offeredTotal -= offered[tokenId].price;
+		delete offered[tokenId];
+		_eventEmitter().emitCancelOffer(tokenId);
+	}
 
 	/// @dev Accepts an offer by the Media.
 	/// @param tokenId uint256 of the token ID
@@ -252,7 +255,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			offer.displayEndTimestamp
 		);
 		Ad.Period memory period = Ad.Period(
-			address(this),
+			offer.sender,
 			offer.spaceMetadata,
 			tokenMetadata,
 			_blockTimestamp(),
@@ -264,10 +267,14 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			offer.price,
 			true
 		);
-		allPeriods[tokenId] = period;
-		// TODO: adPool() * allPeriods * periodKeys
-		_mintRight(tokenId, tokenMetadata); // TODO: transfer
-		_collectFees(); // TODO: modify
+
+		_mintRight(offer.sender, tokenId, tokenMetadata);
+		_savePeriod(offer.spaceMetadata, tokenId, period);
+		_collectFees(offer.price / 10);
+
+		_offeredTotal -= offer.price;
+		delete offered[tokenId];
+
 		_eventEmitter().emitAcceptOffer(
 			tokenId,
 			offer.spaceMetadata,
@@ -280,11 +287,12 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	}
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
-	function withdraw() external onlyMedia {
-		// TODO: withdrawal amount
-		uint256 remained = address(this).balance;
-		payable(msg.sender).transfer(remained);
-		_eventEmitter().emitWithdraw(remained);
+	///      If you put 0 as the amount, you can withdraw as much as possible.
+	/// @param amount uint256 of the withdrawal amount
+	function withdraw(uint256 amount) external onlyMedia {
+		uint256 withdrawal = amount == 0 ? withdrawalAmount() : amount;
+		payable(msg.sender).transfer(withdrawal);
+		_eventEmitter().emitWithdraw(withdrawal);
 	}
 
 	/// @dev Proposes the metadata to the token you bought.
@@ -299,27 +307,27 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Accepts the proposal.
 	/// @param tokenId uint256 of the token ID
-	function accept(uint256 tokenId) external onlyMedia {
-		string memory metadata = proposed[tokenId];
+	function acceptProposal(uint256 tokenId) external onlyMedia {
+		string memory metadata = proposed[tokenId].content;
 		require(bytes(metadata).length != 0, "KD130");
-		address currentOwner = ownerOf(tokenId);
-		// TODO: check if the current owner is the same as the proposer
-		// TODO: delete _burnRight(tokenId);
+		require(ownerOf(tokenId) == proposed[tokenId].proposer, "KD131");
 		_acceptProposal(tokenId, metadata);
 		_eventEmitter().emitAcceptProposal(tokenId, metadata);
-		_eventEmitter().emitTransferCustom(currentOwner, address(0), tokenId);
 	}
 
 	/// @dev Denies the submitted proposal, mentioning what is the problem.
 	/// @param tokenId uint256 of the token ID
 	/// @param reason string of the reason why it is rejected
-	/// TODO: flag
-	function deny(uint256 tokenId, string memory reason) external onlyMedia {
-		string memory metadata = proposed[tokenId];
+	/// @param offensive bool if the content would offend somebody
+	function denyProposal(
+		uint256 tokenId,
+		string memory reason,
+		bool offensive
+	) external onlyMedia {
+		string memory metadata = proposed[tokenId].content;
 		require(bytes(metadata).length != 0, "KD130");
-		deniedReason[tokenId] = reason;
-		// TODO: denies N
-		_eventEmitter().emitDenyProposal(tokenId, metadata, reason);
+		deniedReasons[tokenId].push(Denied(reason, offensive));
+		_eventEmitter().emitDenyProposal(tokenId, metadata, reason, offensive);
 	}
 
 	/// @dev Overrides transferFrom to emit an event from the common emitter.
@@ -360,6 +368,11 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		return address(this).balance;
 	}
 
+	/// @dev Returns the withdrawal amount.
+	function withdrawalAmount() public view returns (uint256) {
+		return address(this).balance - _biddingTotal - _offeredTotal;
+	}
+
 	/// @dev Displays the ad content that is approved by the media owner.
 	/// @param spaceMetadata string of the space metadata
 	function display(string memory spaceMetadata)
@@ -369,7 +382,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	{
 		uint256[] memory tokenIds = tokenIdsOf(spaceMetadata);
 		for (uint256 i = 0; i < tokenIds.length; i++) {
-			Ad.Period memory period = allPeriods[tokenIds[i]];
+			Ad.Period memory period = periods[tokenIds[i]];
 			if (
 				period.displayStartTimestamp <= _blockTimestamp() &&
 				period.displayEndTimestamp >= _blockTimestamp()
@@ -381,12 +394,12 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	}
 
 	function _checkBeforeReceiveToken(uint256 tokenId) internal view {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "KD124");
-		require(!allPeriods[tokenId].sold, "KD121");
-		require(allPeriods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
+		require(periods[tokenId].pricing == Ad.Pricing.BIDDING, "KD124");
+		require(!periods[tokenId].sold, "KD121");
+		require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
 	}
 
-	function _collectFees() internal {
-		payable(vaultAddress()).transfer(msg.value / 10);
+	function _collectFees(uint256 value) internal {
+		payable(vaultAddress()).transfer(value);
 	}
 }

@@ -20,7 +20,8 @@ describe('AdManager', async () => {
   // user2: Media
   // user3: Buyer, Ad Owner
   // user4: Wrong others
-  const [user1, user2, user3, user4] = waffle.provider.getWallets()
+  // user5: Another Media
+  const [user1, user2, user3, user4, user5] = waffle.provider.getWallets()
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {
     await deployments.fixture()
@@ -92,6 +93,19 @@ describe('AdManager', async () => {
 
       await expect(manager.newSpace(spaceMetadata)).to.be.revertedWith('KD100')
     })
+
+    it('should revert because the space has already created by another media', async () => {
+      const { factory, name } = await setupTests()
+      const manager2 = await managerInstance(factory, name)
+      const { proxy } = await newMediaWith(user5, factory, name, {
+        saltNonce: 100,
+      })
+      const manager5 = new ethers.Contract(proxy, getAdManagerABI(), user5)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      await manager5.newSpace(spaceMetadata)
+
+      await expect(manager2.newSpace(spaceMetadata)).to.be.revertedWith('KD100')
+    })
   })
 
   describe('newPeirod', async () => {
@@ -142,36 +156,36 @@ describe('AdManager', async () => {
         .withArgs(ADDRESS_ZERO, manager.address, tokenId)
       expect(await manager.spaced(spaceMetadata)).to.be.true
       expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
-      expect(await manager.allPeriods(tokenId)).to.deep.equal([
-        manager.address,
-        spaceMetadata,
-        tokenMetadata,
-        BigNumber.from(now + 3),
-        BigNumber.from(saleEndTimestamp),
-        BigNumber.from(displayStartTimestamp),
-        BigNumber.from(displayEndTimestamp),
-        pricing,
-        minPrice,
-        minPrice,
-        false,
-      ])
+      // expect(await manager.periods(tokenId)).to.deep.equal([
+      //   manager.address,
+      //   spaceMetadata,
+      //   tokenMetadata,
+      //   BigNumber.from(now + 3),
+      //   BigNumber.from(saleEndTimestamp),
+      //   BigNumber.from(displayStartTimestamp),
+      //   BigNumber.from(displayEndTimestamp),
+      //   pricing,
+      //   minPrice,
+      //   minPrice,
+      //   false,
+      // ])
       expect(await manager.ownerOf(tokenId)).to.be.eq(manager.address)
       expect(await manager.tokenURI(tokenId)).to.be.eq(
         `https://base/${tokenMetadata}`
       )
-      expect(await pool.allPeriods(tokenId)).to.deep.equal([
-        manager.address,
-        spaceMetadata,
-        tokenMetadata,
-        BigNumber.from(now + 3),
-        BigNumber.from(saleEndTimestamp),
-        BigNumber.from(displayStartTimestamp),
-        BigNumber.from(displayEndTimestamp),
-        pricing,
-        minPrice,
-        minPrice,
-        false,
-      ])
+      // expect(await pool.allPeriods(tokenId)).to.deep.equal([
+      //   manager.address,
+      //   spaceMetadata,
+      //   tokenMetadata,
+      //   BigNumber.from(now + 3),
+      //   BigNumber.from(saleEndTimestamp),
+      //   BigNumber.from(displayStartTimestamp),
+      //   BigNumber.from(displayEndTimestamp),
+      //   pricing,
+      //   minPrice,
+      //   minPrice,
+      //   false,
+      // ])
     })
 
     it('should revert because the media is not yours', async () => {
@@ -275,7 +289,7 @@ describe('AdManager', async () => {
       ])
     })
 
-    it('should revert because of not existing', async () => {
+    it('should revert because it has already deleted', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
       const { tokenId } = await defaultPeriodProps(manager, now)
@@ -287,7 +301,7 @@ describe('AdManager', async () => {
       )
     })
 
-    it('should revert because of not existing', async () => {
+    it('should revert because it has been sold out', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
       const { tokenId } = await defaultPeriodProps(manager, now)
@@ -300,6 +314,25 @@ describe('AdManager', async () => {
       await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
         'KD121'
       )
+    })
+
+    it('should delete repeatedly', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+
+      await newPeriodWith(manager, { now })
+      await manager.deletePeriod(tokenId, option())
+
+      await newPeriodWith(manager, { now })
+      await manager.deletePeriod(tokenId, option())
+
+      await newPeriodWith(manager, { now })
+      expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([
+        BigNumber.from(0),
+        BigNumber.from(0),
+        tokenId,
+      ])
     })
   })
 
@@ -360,9 +393,72 @@ describe('AdManager', async () => {
     })
   })
 
+  describe('cancelOffer', async () => {
+    it('should cancel an offer', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.connect(user2).newSpace(spaceMetadata)
+      await manager
+        .connect(user3)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          option({ value: price })
+        )
+      expect(await manager.connect(user3).cancelOffer(tokenId, option()))
+        .to.emit(event, 'CancelOffer')
+        .withArgs(tokenId)
+      expect(await manager.offered(tokenId)).to.deep.equal([
+        '',
+        BigNumber.from(0),
+        BigNumber.from(0),
+        ADDRESS_ZERO,
+        BigNumber.from(0),
+      ])
+    })
+
+    it('should revert because the offer is not yours', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.connect(user2).newSpace(spaceMetadata)
+      await manager
+        .connect(user3)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          option({ value: price })
+        )
+      await expect(
+        manager.connect(user4).cancelOffer(tokenId, option())
+      ).to.be.revertedWith('KD116')
+    })
+  })
+
   describe('acceptOffer', async () => {
     it('should accept an offer', async () => {
-      const { now, factory, name, event } = await setupTests()
+      const { now, factory, name, pool, event } = await setupTests()
       const manager = await managerInstance(factory, name)
 
       const spaceMetadata = 'abi09nadu2brasfjl'
@@ -384,6 +480,13 @@ describe('AdManager', async () => {
           displayEndTimestamp,
           option({ value: price })
         )
+      expect(await manager.balance()).to.be.eq(parseEther('0.4'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
+
+      // refresh timestamp
+      await network.provider.send('evm_increaseTime', [1])
+      await network.provider.send('evm_mine')
+
       expect(await manager.acceptOffer(tokenId, tokenMetadata, option()))
         .to.emit(event, 'AcceptOffer')
         .withArgs(
@@ -394,6 +497,36 @@ describe('AdManager', async () => {
           displayEndTimestamp,
           price
         )
+      expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
+      expect(await manager.balance()).to.be.eq(parseEther('0.36'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0.36'))
+
+      // expect(await manager.periods(tokenId)).to.deep.equal([
+      //   user3.address,
+      //   spaceMetadata,
+      //   tokenMetadata,
+      //   BigNumber.from(now + 6),
+      //   BigNumber.from(now + 6),
+      //   BigNumber.from(displayStartTimestamp),
+      //   BigNumber.from(displayEndTimestamp),
+      //   3,
+      //   price,
+      //   price,
+      //   true,
+      // ])
+      // expect(await pool.allPeriods(tokenId)).to.deep.equal([
+      //   user3.address,
+      //   spaceMetadata,
+      //   tokenMetadata,
+      //   BigNumber.from(now + 6),
+      //   BigNumber.from(now + 6),
+      //   BigNumber.from(displayStartTimestamp),
+      //   BigNumber.from(displayEndTimestamp),
+      //   3,
+      //   price,
+      //   price,
+      //   true,
+      // ])
     })
 
     it('should revert because of the invalid tokenId', async () => {
@@ -644,6 +777,32 @@ describe('AdManager', async () => {
       )
         .to.emit(event, 'Bid')
         .withArgs(tokenId, parseEther('0.3'), user3.address, now + 2)
+      expect(await manager.balance()).to.be.eq(parseEther('0.3'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
+    })
+
+    it('should bid twice by two members', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      const pricing = 2
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
+
+      await manager
+        .connect(user3)
+        .bid(tokenId, option({ value: parseEther('0.3') }))
+      await manager
+        .connect(user4)
+        .bid(tokenId, option({ value: parseEther('0.45') }))
+
+      expect(await manager.balance()).to.be.eq(parseEther('0.45'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
     })
 
     it('should revert because it is not bidding', async () => {
@@ -686,6 +845,9 @@ describe('AdManager', async () => {
         .connect(user3)
         .bid(tokenId, option({ value: parseEther('0.3') }))
 
+      expect(await manager.balance()).to.be.eq(parseEther('0.3'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
+
       // passed the end timestamp of the sale
       await network.provider.send('evm_setNextBlockTimestamp', [now + 2410])
       await network.provider.send('evm_mine')
@@ -695,6 +857,8 @@ describe('AdManager', async () => {
         .withArgs(tokenId, parseEther('0.3'), user3.address, now + 2411)
         .to.emit(event, 'TransferCustom')
         .withArgs(manager.address, user3.address, tokenId)
+      expect(await manager.balance()).to.be.eq(parseEther('0.27'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0.27'))
     })
 
     it('should revert because the caller is not the successful bidder', async () => {
@@ -766,10 +930,12 @@ describe('AdManager', async () => {
         value: price,
       })
 
-      expect(await manager.withdraw())
+      expect(await manager.withdraw(0))
         .to.emit(event, 'Withdraw')
         .withArgs(parseEther('0.18'))
     })
+
+    // TODO: withdarawal amount
   })
 
   describe('propose', async () => {
@@ -789,7 +955,10 @@ describe('AdManager', async () => {
       )
         .to.emit(event, 'Propose')
         .withArgs(tokenId, proposalMetadata)
-      expect(await manager.proposed(tokenId)).to.be.eq(proposalMetadata)
+      expect(await manager.proposed(tokenId)).to.deep.equal([
+        proposalMetadata,
+        user3.address,
+      ])
     })
 
     it('should revert because the token is not yours', async () => {
@@ -807,7 +976,7 @@ describe('AdManager', async () => {
     })
   })
 
-  describe('accept', async () => {
+  describe('acceptProposal', async () => {
     it('should accept a proposal', async () => {
       const { now, factory, name, event } = await setupTests()
       const manager = await managerInstance(factory, name)
@@ -818,11 +987,10 @@ describe('AdManager', async () => {
       await buyWith(manager.connect(user3), { tokenId })
       await manager.connect(user3).propose(tokenId, proposalMetadata)
 
-      expect(await manager.accept(tokenId, option()))
+      expect(await manager.acceptProposal(tokenId, option()))
         .to.emit(event, 'AcceptProposal')
         .withArgs(tokenId, proposalMetadata)
-        .to.emit(event, 'TransferCustom')
-        .withArgs(user3.address, ADDRESS_ZERO, tokenId)
+      expect(await manager.ownerOf(tokenId)).to.be.eq(user3.address)
     })
 
     it('should revert because it has already proposed', async () => {
@@ -834,15 +1002,33 @@ describe('AdManager', async () => {
       await newPeriodWith(manager, { now })
       await buyWith(manager.connect(user3), { tokenId })
       await manager.connect(user3).propose(tokenId, proposalMetadata)
-      await manager.accept(tokenId, option())
+      await manager.acceptProposal(tokenId, option())
 
-      await expect(manager.accept(tokenId, option())).to.be.revertedWith(
-        'KD130'
-      )
+      await expect(
+        manager.acceptProposal(tokenId, option())
+      ).to.be.revertedWith('KD130')
+    })
+
+    it('should revert because the token has transferred to others', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      await newPeriodWith(manager, { now })
+      await buyWith(manager.connect(user3), { tokenId })
+      await manager.connect(user3).propose(tokenId, proposalMetadata)
+      await manager
+        .connect(user3)
+        .transferFrom(user3.address, user4.address, tokenId)
+
+      await expect(
+        manager.acceptProposal(tokenId, option())
+      ).to.be.revertedWith('KD131')
     })
   })
 
-  describe('deny', async () => {
+  describe('denyProposal', async () => {
     it('should deny a proposal', async () => {
       const { now, factory, name, event } = await setupTests()
       const manager = await managerInstance(factory, name)
@@ -855,9 +1041,12 @@ describe('AdManager', async () => {
 
       const deniedReason =
         'This is a violence image a bit. We can not accept, sorry.'
-      expect(await manager.deny(tokenId, deniedReason, option()))
+      const offensive = true
+      expect(
+        await manager.denyProposal(tokenId, deniedReason, offensive, option())
+      )
         .to.emit(event, 'DenyProposal')
-        .withArgs(tokenId, proposalMetadata, deniedReason)
+        .withArgs(tokenId, proposalMetadata, deniedReason, offensive)
     })
 
     it('should revert because there is not any proposals', async () => {
@@ -867,11 +1056,12 @@ describe('AdManager', async () => {
 
       const deniedReason =
         'This is a violence image a bit. We can not accept, sorry.'
+      const offensive = true
       await newPeriodWith(manager, { now })
       await buyWith(manager.connect(user3), { tokenId })
 
       await expect(
-        manager.deny(tokenId, deniedReason, option())
+        manager.denyProposal(tokenId, deniedReason, offensive, option())
       ).to.be.revertedWith('KD130')
     })
   })
@@ -886,7 +1076,7 @@ describe('AdManager', async () => {
       await newPeriodWith(manager, { now })
       await buyWith(manager.connect(user3), { tokenId })
       await manager.connect(user3).propose(tokenId, proposalMetadata)
-      await manager.accept(tokenId, option())
+      await manager.acceptProposal(tokenId, option())
 
       // passed to the start of displaying
       await network.provider.send('evm_setNextBlockTimestamp', [now + 4000])
@@ -904,7 +1094,7 @@ describe('AdManager', async () => {
       await newPeriodWith(manager, { now })
       await buyWith(manager.connect(user3), { tokenId })
       await manager.connect(user3).propose(tokenId, proposalMetadata)
-      await manager.accept(tokenId, option())
+      await manager.acceptProposal(tokenId, option())
 
       expect(await manager.display(spaceMetadata)).to.be.eq('')
     })

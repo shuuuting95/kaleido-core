@@ -11,7 +11,8 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 	struct Account {
 		address proxy;
 		address mediaEOA;
-		string metadata;
+		string constantMetadata;
+		string updatableMetadata;
 	}
 	mapping(address => Account) public allAccounts;
 
@@ -28,14 +29,21 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 
 	/// @dev Adds media account.
 	/// @param proxy address of the proxy contract
-	/// @param metadata string of the account metadata
+	/// @param constantMetadata string of constant metadata for the defailts of the account
+	/// @param updatableMetadata string of constant metadata for the defailts of the account
 	/// @param mediaEOA address of the media account
 	function addMedia(
 		address proxy,
-		string memory metadata,
+		string memory constantMetadata,
+		string memory updatableMetadata,
 		address mediaEOA
 	) external onlyFactory {
-		allAccounts[proxy] = Account(proxy, mediaEOA, metadata);
+		allAccounts[proxy] = Account(
+			proxy,
+			mediaEOA,
+			constantMetadata,
+			updatableMetadata
+		);
 	}
 
 	/// @dev Updates media account.
@@ -45,7 +53,8 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 		external
 		onlyProxies
 	{
-		allAccounts[msg.sender] = Account(msg.sender, mediaEOA, metadata);
+		allAccounts[msg.sender].mediaEOA = mediaEOA;
+		allAccounts[msg.sender].updatableMetadata = metadata;
 	}
 
 	/// @dev Returns whether the account has created or not.

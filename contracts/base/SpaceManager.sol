@@ -13,8 +13,12 @@ abstract contract SpaceManager is NameAccessor {
 	mapping(string => bool) public spaced;
 
 	function _newSpace(string memory spaceMetadata) internal {
-		require(!spaced[spaceMetadata], "KD100");
+		require(
+			!spaced[spaceMetadata] && !_adPool().spaced(spaceMetadata),
+			"KD100"
+		);
 		spaced[spaceMetadata] = true;
+		_adPool().addSpace(spaceMetadata);
 		_eventEmitter().emitNewSpace(spaceMetadata);
 	}
 

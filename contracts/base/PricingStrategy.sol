@@ -25,10 +25,16 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 	/// @dev Maps tokenId with offer info
 	mapping(uint256 => Offer) public offered;
 
+	/// @dev The total bidding value
+	uint256 internal _biddingTotal;
+
+	/// @dev The total value offered by users
+	uint256 internal _offeredTotal;
+
 	/// @dev Returns the current price.
 	/// @param tokenId uint256 of the token ID
 	function currentPrice(uint256 tokenId) public view returns (uint256) {
-		Ad.Period memory period = allPeriods[tokenId];
+		Ad.Period memory period = periods[tokenId];
 		if (period.pricing == Ad.Pricing.RRP) {
 			return period.minPrice;
 		}
