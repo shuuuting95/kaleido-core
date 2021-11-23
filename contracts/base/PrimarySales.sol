@@ -24,12 +24,21 @@ abstract contract PrimarySales is PricingStrategy {
 		require(currentPrice(tokenId) < msg.value, "KD122");
 	}
 
-	function _refundLockedAmount(uint256 tokenId) internal returns (bool sent) {
+	function _refundBiddingAmount(uint256 tokenId) internal returns (bool sent) {
 		if (
 			periods[tokenId].pricing == Ad.Pricing.BIDDING &&
 			bidding[tokenId].bidder != address(0)
 		) {
 			sent = payable(bidding[tokenId].bidder).send(bidding[tokenId].price);
+		}
+	}
+
+	function _refundOfferedAmount(uint256 tokenId) internal returns (bool sent) {
+		if (
+			periods[tokenId].pricing == Ad.Pricing.OFFER &&
+			offered[tokenId].sender != address(0)
+		) {
+			sent = payable(offered[tokenId].sender).send(offered[tokenId].price);
 		}
 	}
 }

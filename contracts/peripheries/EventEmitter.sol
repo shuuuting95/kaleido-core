@@ -48,6 +48,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		address sender,
 		uint256 price
 	);
+	event CancelOffer(uint256 tokenId);
 	event AcceptOffer(
 		uint256 tokenId,
 		string spaceMetadata,
@@ -156,6 +157,10 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 			sender,
 			price
 		);
+	}
+
+	function emitCancelOffer(uint256 tokenId) external onlyProxies {
+		emit CancelOffer(tokenId);
 	}
 
 	function emitAcceptOffer(

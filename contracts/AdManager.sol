@@ -137,7 +137,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	function deletePeriod(uint256 tokenId) external onlyMedia {
 		require(periods[tokenId].mediaProxy != address(0), "KD114");
 		require(ownerOf(tokenId) == address(this), "KD121");
-		_refundLockedAmount(tokenId);
+		_refundBiddingAmount(tokenId);
 		_burnRight(tokenId);
 		_deletePeriod(tokenId, periods[tokenId]);
 		_eventEmitter().emitDeletePeriod(tokenId);
@@ -172,7 +172,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	function bid(uint256 tokenId) external payable exceptYourself nonReentrant {
 		_checkBeforeBid(tokenId);
-		_refundLockedAmount(tokenId);
+		_refundBiddingAmount(tokenId);
 		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
 		_eventEmitter().emitBid(tokenId, msg.value, msg.sender);
 	}
@@ -229,7 +229,14 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		);
 	}
 
-	// TODO: cancel function
+	/// @dev Cancels an offer.
+	/// @param tokenId uint256 of the token ID
+	function cancelOffer(uint256 tokenId) external payable exceptYourself {
+		require(offered[tokenId].sender == msg.sender, "KD116");
+		delete offered[tokenId];
+		_refundOfferedAmount(tokenId);
+		_eventEmitter().emitCancelOffer(tokenId);
+	}
 
 	/// @dev Accepts an offer by the Media.
 	/// @param tokenId uint256 of the token ID

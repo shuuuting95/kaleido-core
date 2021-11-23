@@ -393,6 +393,69 @@ describe('AdManager', async () => {
     })
   })
 
+  describe('cancelOffer', async () => {
+    it('should cancel an offer', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name)
+
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.connect(user2).newSpace(spaceMetadata)
+      await manager
+        .connect(user3)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          option({ value: price })
+        )
+      expect(await manager.connect(user3).cancelOffer(tokenId, option()))
+        .to.emit(event, 'CancelOffer')
+        .withArgs(tokenId)
+      expect(await manager.offered(tokenId)).to.deep.equal([
+        '',
+        BigNumber.from(0),
+        BigNumber.from(0),
+        ADDRESS_ZERO,
+        BigNumber.from(0),
+      ])
+    })
+
+    it('should revert because the offer is not yours', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.connect(user2).newSpace(spaceMetadata)
+      await manager
+        .connect(user3)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          option({ value: price })
+        )
+      await expect(
+        manager.connect(user4).cancelOffer(tokenId, option())
+      ).to.be.revertedWith('KD116')
+    })
+  })
+
   describe('acceptOffer', async () => {
     it('should accept an offer', async () => {
       const { now, factory, name, pool, event } = await setupTests()
