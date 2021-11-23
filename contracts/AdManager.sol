@@ -298,10 +298,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		require(bytes(metadata).length != 0, "KD130");
 		address currentOwner = ownerOf(tokenId);
 		// TODO: check if the current owner is the same as the proposer
-		// TODO: delete _burnRight(tokenId);
 		_acceptProposal(tokenId, metadata);
 		_eventEmitter().emitAcceptProposal(tokenId, metadata);
-		_eventEmitter().emitTransferCustom(currentOwner, address(0), tokenId);
 	}
 
 	/// @dev Denies the submitted proposal, mentioning what is the problem.

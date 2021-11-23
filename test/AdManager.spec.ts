@@ -886,8 +886,7 @@ describe('AdManager', async () => {
       expect(await manager.accept(tokenId, option()))
         .to.emit(event, 'AcceptProposal')
         .withArgs(tokenId, proposalMetadata)
-        .to.emit(event, 'TransferCustom')
-        .withArgs(user3.address, ADDRESS_ZERO, tokenId)
+      expect(await manager.ownerOf(tokenId)).to.be.eq(user3.address)
     })
 
     it('should revert because it has already proposed', async () => {
