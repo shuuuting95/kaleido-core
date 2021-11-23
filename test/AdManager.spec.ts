@@ -413,6 +413,20 @@ describe('AdManager', async () => {
           displayEndTimestamp,
           price
         )
+      expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
+      expect(await manager.periods(tokenId)).to.deep.equal([
+        user3.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now + 6),
+        BigNumber.from(now + 6),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        3,
+        price,
+        price,
+        true,
+      ])
       expect(await pool.allPeriods(tokenId)).to.deep.equal([
         user3.address,
         spaceMetadata,
