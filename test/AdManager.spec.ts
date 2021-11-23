@@ -289,7 +289,7 @@ describe('AdManager', async () => {
       ])
     })
 
-    it('should revert because of not existing', async () => {
+    it('should revert because it has already deleted', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
       const { tokenId } = await defaultPeriodProps(manager, now)
@@ -301,7 +301,7 @@ describe('AdManager', async () => {
       )
     })
 
-    it('should revert because of not existing', async () => {
+    it('should revert because it has been sold out', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name)
       const { tokenId } = await defaultPeriodProps(manager, now)
@@ -314,6 +314,25 @@ describe('AdManager', async () => {
       await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
         'KD121'
       )
+    })
+
+    it('should delete repeatedly', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+
+      await newPeriodWith(manager, { now })
+      await manager.deletePeriod(tokenId, option())
+
+      await newPeriodWith(manager, { now })
+      await manager.deletePeriod(tokenId, option())
+
+      await newPeriodWith(manager, { now })
+      expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([
+        BigNumber.from(0),
+        BigNumber.from(0),
+        tokenId,
+      ])
     })
   })
 

@@ -138,10 +138,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		require(periods[tokenId].mediaProxy != address(0), "KD114");
 		require(ownerOf(tokenId) == address(this), "KD121");
 		_refundLockedAmount(tokenId);
-		delete periods[tokenId];
-		// TODO: delete _periodKeys[spaceMetadata]
 		_burnRight(tokenId);
-		_adPool().deletePeriod(tokenId);
+		_deletePeriod(tokenId, periods[tokenId]);
 		_eventEmitter().emitDeletePeriod(tokenId);
 		_eventEmitter().emitTransferCustom(address(this), address(0), tokenId);
 	}

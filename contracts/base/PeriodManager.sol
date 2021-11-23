@@ -44,6 +44,20 @@ abstract contract PeriodManager is SpaceManager {
 				_isFuture(newFromTimestamp, currentToTimestamp));
 	}
 
+	function _deletePeriod(uint256 tokenId, Ad.Period memory period) internal {
+		string memory spaceMetadata = periods[tokenId].spaceMetadata;
+		uint256 index = 0;
+		for (uint256 i = 1; i < _periodKeys[spaceMetadata].length + 1; i++) {
+			if (_periodKeys[spaceMetadata][i - 1] == tokenId) {
+				index = i;
+			}
+		}
+		require(index != 0, "No deletable keys");
+		delete _periodKeys[spaceMetadata][index - 1];
+		delete periods[tokenId];
+		_adPool().deletePeriod(tokenId);
+	}
+
 	function _savePeriod(
 		string memory spaceMetadata,
 		uint256 tokenId,
