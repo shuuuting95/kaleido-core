@@ -174,6 +174,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_checkBeforeBid(tokenId);
 		_refundBiddingAmount(tokenId);
 		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
+		_biddingTotal += msg.value;
 		_eventEmitter().emitBid(tokenId, msg.value, msg.sender);
 	}
 
@@ -219,6 +220,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			msg.sender,
 			msg.value
 		);
+		_offeredTotal += msg.value;
 		_eventEmitter().emitOfferPeriod(
 			tokenId,
 			spaceMetadata,
@@ -233,8 +235,9 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	function cancelOffer(uint256 tokenId) external payable exceptYourself {
 		require(offered[tokenId].sender == msg.sender, "KD116");
-		delete offered[tokenId];
 		_refundOfferedAmount(tokenId);
+		_offeredTotal -= offered[tokenId].price;
+		delete offered[tokenId];
 		_eventEmitter().emitCancelOffer(tokenId);
 	}
 
@@ -269,6 +272,10 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_mintRight(offer.sender, tokenId, tokenMetadata);
 		_savePeriod(offer.spaceMetadata, tokenId, period);
 		_collectFees(); // TODO: modify
+
+		_offeredTotal -= offered[tokenId].price;
+		delete offered[tokenId];
+
 		_eventEmitter().emitAcceptOffer(
 			tokenId,
 			offer.spaceMetadata,
@@ -281,11 +288,12 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	}
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
-	function withdraw() external onlyMedia {
-		// TODO: withdrawal amount
-		uint256 remained = address(this).balance;
-		payable(msg.sender).transfer(remained);
-		_eventEmitter().emitWithdraw(remained);
+	///      If you put 0 as the amount, you can withdraw as much as possible.
+	/// @param amount uint256 of the withdrawal amount
+	function withdraw(uint256 amount) external onlyMedia {
+		uint256 withdrawal = amount == 0 ? withdrawalAmount() : amount;
+		payable(msg.sender).transfer(withdrawal);
+		_eventEmitter().emitWithdraw(withdrawal);
 	}
 
 	/// @dev Proposes the metadata to the token you bought.
@@ -359,6 +367,11 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Returns the balacne deposited on the proxy contract.
 	function balance() public view returns (uint256) {
 		return address(this).balance;
+	}
+
+	/// @dev Returns the withdrawal amount.
+	function withdrawalAmount() public onlyMedia returns (uint256) {
+		return address(this).balance - _biddingTotal - _offeredTotal;
 	}
 
 	/// @dev Displays the ad content that is approved by the media owner.
