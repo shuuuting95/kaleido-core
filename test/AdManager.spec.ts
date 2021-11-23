@@ -156,7 +156,7 @@ describe('AdManager', async () => {
         .withArgs(ADDRESS_ZERO, manager.address, tokenId)
       expect(await manager.spaced(spaceMetadata)).to.be.true
       expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
-      expect(await manager.allPeriods(tokenId)).to.deep.equal([
+      expect(await manager.periods(tokenId)).to.deep.equal([
         manager.address,
         spaceMetadata,
         tokenMetadata,
@@ -376,7 +376,7 @@ describe('AdManager', async () => {
 
   describe('acceptOffer', async () => {
     it('should accept an offer', async () => {
-      const { now, factory, name, event } = await setupTests()
+      const { now, factory, name, pool, event } = await setupTests()
       const manager = await managerInstance(factory, name)
 
       const spaceMetadata = 'abi09nadu2brasfjl'
@@ -398,6 +398,11 @@ describe('AdManager', async () => {
           displayEndTimestamp,
           option({ value: price })
         )
+
+      // refresh timestamp
+      await network.provider.send('evm_increaseTime', [1])
+      await network.provider.send('evm_mine')
+
       expect(await manager.acceptOffer(tokenId, tokenMetadata, option()))
         .to.emit(event, 'AcceptOffer')
         .withArgs(
@@ -408,6 +413,19 @@ describe('AdManager', async () => {
           displayEndTimestamp,
           price
         )
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
+        user3.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now + 6),
+        BigNumber.from(now + 6),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        3,
+        price,
+        price,
+        true,
+      ])
     })
 
     it('should revert because of the invalid tokenId', async () => {

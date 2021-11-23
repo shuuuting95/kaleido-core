@@ -17,8 +17,12 @@ contract DistributionRight is ERC721 {
 	mapping(uint256 => Denied[]) public deniedReasons;
 	mapping(uint256 => string) public accepted;
 
-	function _mintRight(uint256 tokenId, string memory metadata) internal {
-		_mint(address(this), tokenId);
+	function _mintRight(
+		address reciever,
+		uint256 tokenId,
+		string memory metadata
+	) internal {
+		_mint(reciever, tokenId);
 		_tokenURIs[tokenId] = metadata;
 	}
 

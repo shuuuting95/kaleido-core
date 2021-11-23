@@ -100,7 +100,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			displayStartTimestamp,
 			displayEndTimestamp
 		);
-		_periodKeys[spaceMetadata].push(tokenId);
 		Ad.Period memory period = Ad.Period(
 			address(this),
 			spaceMetadata,
@@ -115,9 +114,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			false
 		);
 		period.startPrice = _startPrice(period);
-		allPeriods[tokenId] = period;
-		_mintRight(tokenId, tokenMetadata);
-		_adPool().addPeriod(tokenId, period);
+		_savePeriod(spaceMetadata, tokenId, period);
+		_mintRight(address(this), tokenId, tokenMetadata);
 		_eventEmitter().emitNewPeriod(
 			tokenId,
 			spaceMetadata,
@@ -137,10 +135,10 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	///      to the user when deleting the period.
 	/// @param tokenId uint256 of the token ID
 	function deletePeriod(uint256 tokenId) external onlyMedia {
-		require(allPeriods[tokenId].mediaProxy != address(0), "KD114");
+		require(periods[tokenId].mediaProxy != address(0), "KD114");
 		require(ownerOf(tokenId) == address(this), "KD121");
 		_refundLockedAmount(tokenId);
-		delete allPeriods[tokenId];
+		delete periods[tokenId];
 		// TODO: delete _periodKeys[spaceMetadata]
 		_burnRight(tokenId);
 		_adPool().deletePeriod(tokenId);
@@ -153,7 +151,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	function buy(uint256 tokenId) external payable exceptYourself {
 		_checkBeforeBuy(tokenId);
-		allPeriods[tokenId].sold = true;
+		periods[tokenId].sold = true;
 		_dropRight(tokenId);
 		_collectFees();
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
@@ -165,7 +163,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	function buyBasedOnTime(uint256 tokenId) external payable exceptYourself {
 		_checkBeforeBuyBasedOnTime(tokenId);
-		allPeriods[tokenId].sold = true;
+		periods[tokenId].sold = true;
 		_dropRight(tokenId);
 		_collectFees();
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
@@ -189,7 +187,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		onlySuccessfulBidder(tokenId)
 	{
 		_checkBeforeReceiveToken(tokenId);
-		allPeriods[tokenId].sold = true;
+		periods[tokenId].sold = true;
 		_dropRight(tokenId);
 		_collectFees(); // TODO: modify
 		_eventEmitter().emitReceiveToken(
@@ -250,7 +248,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			offer.displayEndTimestamp
 		);
 		Ad.Period memory period = Ad.Period(
-			address(this),
+			offer.sender,
 			offer.spaceMetadata,
 			tokenMetadata,
 			_blockTimestamp(),
@@ -262,9 +260,9 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			offer.price,
 			true
 		);
-		allPeriods[tokenId] = period;
-		// TODO: adPool() * allPeriods * periodKeys
-		_mintRight(tokenId, tokenMetadata); // TODO: transfer
+
+		_mintRight(offer.sender, tokenId, tokenMetadata);
+		_savePeriod(offer.spaceMetadata, tokenId, period);
 		_collectFees(); // TODO: modify
 		_eventEmitter().emitAcceptOffer(
 			tokenId,
@@ -370,7 +368,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	{
 		uint256[] memory tokenIds = tokenIdsOf(spaceMetadata);
 		for (uint256 i = 0; i < tokenIds.length; i++) {
-			Ad.Period memory period = allPeriods[tokenIds[i]];
+			Ad.Period memory period = periods[tokenIds[i]];
 			if (
 				period.displayStartTimestamp <= _blockTimestamp() &&
 				period.displayEndTimestamp >= _blockTimestamp()
@@ -382,9 +380,9 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	}
 
 	function _checkBeforeReceiveToken(uint256 tokenId) internal view {
-		require(allPeriods[tokenId].pricing == Ad.Pricing.BIDDING, "KD124");
-		require(!allPeriods[tokenId].sold, "KD121");
-		require(allPeriods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
+		require(periods[tokenId].pricing == Ad.Pricing.BIDDING, "KD124");
+		require(!periods[tokenId].sold, "KD121");
+		require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
 	}
 
 	function _collectFees() internal {
