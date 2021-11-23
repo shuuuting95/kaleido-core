@@ -294,10 +294,9 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Accepts the proposal.
 	/// @param tokenId uint256 of the token ID
 	function acceptProposal(uint256 tokenId) external onlyMedia {
-		string memory metadata = proposed[tokenId];
+		string memory metadata = proposed[tokenId].content;
 		require(bytes(metadata).length != 0, "KD130");
-		address currentOwner = ownerOf(tokenId);
-		// TODO: check if the current owner is the same as the proposer
+		require(ownerOf(tokenId) == proposed[tokenId].proposer, "KD131");
 		_acceptProposal(tokenId, metadata);
 		_eventEmitter().emitAcceptProposal(tokenId, metadata);
 	}
@@ -311,7 +310,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		string memory reason,
 		bool offensive
 	) external onlyMedia {
-		string memory metadata = proposed[tokenId];
+		string memory metadata = proposed[tokenId].content;
 		require(bytes(metadata).length != 0, "KD130");
 		deniedReasons[tokenId].push(Denied(reason, offensive));
 		_eventEmitter().emitDenyProposal(tokenId, metadata, reason, offensive);

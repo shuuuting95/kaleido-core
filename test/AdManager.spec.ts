@@ -854,7 +854,10 @@ describe('AdManager', async () => {
       )
         .to.emit(event, 'Propose')
         .withArgs(tokenId, proposalMetadata)
-      expect(await manager.proposed(tokenId)).to.be.eq(proposalMetadata)
+      expect(await manager.proposed(tokenId)).to.deep.equal([
+        proposalMetadata,
+        user3.address,
+      ])
     })
 
     it('should revert because the token is not yours', async () => {
@@ -872,7 +875,7 @@ describe('AdManager', async () => {
     })
   })
 
-  describe('accept', async () => {
+  describe('acceptProposal', async () => {
     it('should accept a proposal', async () => {
       const { now, factory, name, event } = await setupTests()
       const manager = await managerInstance(factory, name)
@@ -904,9 +907,27 @@ describe('AdManager', async () => {
         manager.acceptProposal(tokenId, option())
       ).to.be.revertedWith('KD130')
     })
+
+    it('should revert because the token has transferred to others', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      await newPeriodWith(manager, { now })
+      await buyWith(manager.connect(user3), { tokenId })
+      await manager.connect(user3).propose(tokenId, proposalMetadata)
+      await manager
+        .connect(user3)
+        .transferFrom(user3.address, user4.address, tokenId)
+
+      await expect(
+        manager.acceptProposal(tokenId, option())
+      ).to.be.revertedWith('KD131')
+    })
   })
 
-  describe('deny', async () => {
+  describe('denyProposal', async () => {
     it('should deny a proposal', async () => {
       const { now, factory, name, event } = await setupTests()
       const manager = await managerInstance(factory, name)

@@ -40,6 +40,7 @@
 ## Proposal related
 
 - `KD130`: `Not proposed yet`
+- `KD131`: `Proposer does not have the token`
 
 ## Withdraw related
 

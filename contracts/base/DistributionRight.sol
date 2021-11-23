@@ -13,7 +13,11 @@ contract DistributionRight is ERC721 {
 		string reason;
 		bool offensive;
 	}
-	mapping(uint256 => string) public proposed;
+	struct Proposal {
+		string content;
+		address proposer;
+	}
+	mapping(uint256 => Proposal) public proposed;
 	mapping(uint256 => Denied[]) public deniedReasons;
 	mapping(uint256 => string) public accepted;
 
@@ -36,11 +40,11 @@ contract DistributionRight is ERC721 {
 	}
 
 	function _proposeToRight(uint256 tokenId, string memory metadata) internal {
-		proposed[tokenId] = metadata;
+		proposed[tokenId] = Proposal(metadata, msg.sender);
 	}
 
 	function _clearProposal(uint256 tokenId) internal {
-		proposed[tokenId] = "";
+		proposed[tokenId] = Proposal("", msg.sender);
 	}
 
 	function _acceptProposal(uint256 tokenId, string memory metadata) internal {
