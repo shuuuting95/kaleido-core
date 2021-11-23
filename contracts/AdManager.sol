@@ -270,7 +270,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 		_mintRight(offer.sender, tokenId, tokenMetadata);
 		_savePeriod(offer.spaceMetadata, tokenId, period);
-		_collectFees(offer.price); // TODO: modify
+		_collectFees(offer.price / 10);
 
 		_offeredTotal -= offer.price;
 		delete offered[tokenId];

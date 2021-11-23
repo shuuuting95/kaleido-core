@@ -480,6 +480,8 @@ describe('AdManager', async () => {
           displayEndTimestamp,
           option({ value: price })
         )
+      expect(await manager.balance()).to.be.eq(parseEther('0.4'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
 
       // refresh timestamp
       await network.provider.send('evm_increaseTime', [1])
@@ -496,6 +498,9 @@ describe('AdManager', async () => {
           price
         )
       expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
+      expect(await manager.balance()).to.be.eq(parseEther('0.36'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0.36'))
+
       // expect(await manager.periods(tokenId)).to.deep.equal([
       //   user3.address,
       //   spaceMetadata,
