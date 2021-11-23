@@ -151,7 +151,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_checkBeforeBuy(tokenId);
 		periods[tokenId].sold = true;
 		_dropRight(tokenId);
-		_collectFees();
+		_collectFees(msg.value / 10);
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
@@ -163,7 +163,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_checkBeforeBuyBasedOnTime(tokenId);
 		periods[tokenId].sold = true;
 		_dropRight(tokenId);
-		_collectFees();
+		_collectFees(msg.value / 10);
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
@@ -173,8 +173,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	function bid(uint256 tokenId) external payable exceptYourself nonReentrant {
 		_checkBeforeBid(tokenId);
 		_refundBiddingAmount(tokenId);
+		_biddingTotal += (msg.value - bidding[tokenId].price);
 		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
-		_biddingTotal += msg.value;
 		_eventEmitter().emitBid(tokenId, msg.value, msg.sender);
 	}
 
@@ -186,14 +186,13 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		onlySuccessfulBidder(tokenId)
 	{
 		_checkBeforeReceiveToken(tokenId);
+		uint256 price = bidding[tokenId].price;
 		periods[tokenId].sold = true;
+		_biddingTotal -= price;
 		_dropRight(tokenId);
-		_collectFees(); // TODO: modify
-		_eventEmitter().emitReceiveToken(
-			tokenId,
-			bidding[tokenId].price,
-			msg.sender
-		);
+		_collectFees(price / 10);
+		delete bidding[tokenId];
+		_eventEmitter().emitReceiveToken(tokenId, price, msg.sender);
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
@@ -271,9 +270,9 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 		_mintRight(offer.sender, tokenId, tokenMetadata);
 		_savePeriod(offer.spaceMetadata, tokenId, period);
-		_collectFees(); // TODO: modify
+		_collectFees(offer.price); // TODO: modify
 
-		_offeredTotal -= offered[tokenId].price;
+		_offeredTotal -= offer.price;
 		delete offered[tokenId];
 
 		_eventEmitter().emitAcceptOffer(
@@ -370,7 +369,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	}
 
 	/// @dev Returns the withdrawal amount.
-	function withdrawalAmount() public onlyMedia returns (uint256) {
+	function withdrawalAmount() public view returns (uint256) {
 		return address(this).balance - _biddingTotal - _offeredTotal;
 	}
 
@@ -400,7 +399,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
 	}
 
-	function _collectFees() internal {
-		payable(vaultAddress()).transfer(msg.value / 10);
+	function _collectFees(uint256 value) internal {
+		payable(vaultAddress()).transfer(value);
 	}
 }
