@@ -59,6 +59,10 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_eventEmitter().emitUpdateMedia(address(this), newMediaEOA, newMetadata);
 	}
 
+	// TODO: can withdraw by bidder to failure txs
+
+	// TODO: update application metadata
+
 	/// @dev Creates a new space for the media account.
 	/// @param spaceMetadata string of the space metadata
 	function newSpace(string memory spaceMetadata) external onlyMedia {
@@ -136,7 +140,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	function deletePeriod(uint256 tokenId) external onlyMedia {
 		require(periods[tokenId].mediaProxy != address(0), "KD114");
-		require(ownerOf(tokenId) == address(this), "KD121");
+		require(ownerOf(tokenId) == address(this), "KD121"); // TODO: prevent if there is any user bidding to the period
 		_refundBiddingAmount(tokenId);
 		_burnRight(tokenId);
 		_deletePeriod(tokenId, periods[tokenId]);
@@ -195,6 +199,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_eventEmitter().emitReceiveToken(tokenId, price, msg.sender);
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
+
+	// TODO: enable media to push token
 
 	/// @dev Offers to buy a period that the sender requests.
 	/// @param spaceMetadata string of the space metadata
@@ -288,9 +294,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
 	///      If you put 0 as the amount, you can withdraw as much as possible.
-	/// @param amount uint256 of the withdrawal amount
-	function withdraw(uint256 amount) external onlyMedia {
-		uint256 withdrawal = amount == 0 ? withdrawalAmount() : amount;
+	function withdraw() external onlyMedia {
+		uint256 withdrawal = withdrawalAmount();
 		payable(msg.sender).transfer(withdrawal);
 		_eventEmitter().emitWithdraw(withdrawal);
 	}
