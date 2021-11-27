@@ -215,6 +215,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 		_mintRight(appeal.sender, tokenId, tokenMetadata);
 		_collectFees(appeal.price / 10);
+		// TODO: distribute return payments
 		delete appealed[tokenId];
 		_eventEmitter().emitSelectProposal(tokenId, appeal.sender);
 		_eventEmitter().emitTransferCustom(address(this), appeal.sender, tokenId);

@@ -10,6 +10,7 @@ import "../libraries/Substrings.sol";
 import "../AdManager.sol";
 import "hardhat/console.sol";
 
+// TODO: needed to be updated for production
 /// @title Bundler - makes some NFTs be one to easily .
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract Bundler is ERC721, NameAccessor {
