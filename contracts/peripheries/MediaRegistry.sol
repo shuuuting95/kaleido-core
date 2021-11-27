@@ -11,7 +11,7 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 	struct Account {
 		address proxy;
 		address mediaEOA;
-		string constantMetadata;
+		string applicationMetadata;
 		string updatableMetadata;
 	}
 	mapping(address => Account) public allAccounts;
@@ -29,19 +29,19 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 
 	/// @dev Adds media account.
 	/// @param proxy address of the proxy contract
-	/// @param constantMetadata string of constant metadata for the defailts of the account
+	/// @param applicationMetadata string of constant metadata for the defailts of the account
 	/// @param updatableMetadata string of constant metadata for the defailts of the account
 	/// @param mediaEOA address of the media account
 	function addMedia(
 		address proxy,
-		string memory constantMetadata,
+		string memory applicationMetadata,
 		string memory updatableMetadata,
 		address mediaEOA
 	) external onlyFactory {
 		allAccounts[proxy] = Account(
 			proxy,
 			mediaEOA,
-			constantMetadata,
+			applicationMetadata,
 			updatableMetadata
 		);
 	}

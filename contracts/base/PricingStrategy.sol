@@ -19,11 +19,20 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 		address sender;
 		uint256 price;
 	}
+	struct Appeal {
+		uint256 tokenId;
+		address sender;
+		uint256 price;
+		string metadata;
+	}
 	/// @dev Maps tokenId with bidding info
 	mapping(uint256 => Bidding) public bidding;
 
 	/// @dev Maps tokenId with offer info
 	mapping(uint256 => Offer) public offered;
+
+	/// @dev Maps tokenId with appeal info
+	mapping(uint256 => Appeal[]) public appealed;
 
 	/// @dev The total bidding value
 	uint256 internal _biddingTotal;
@@ -51,6 +60,9 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 		if (period.pricing == Ad.Pricing.OFFER) {
 			return offered[tokenId].price;
 		}
+		if (period.pricing == Ad.Pricing.APPEAL) {
+			return 0;
+		}
 		revert("not exist");
 	}
 
@@ -66,6 +78,8 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 		} else if (period.pricing == Ad.Pricing.BIDDING) {
 			return period.minPrice;
 		} else if (period.pricing == Ad.Pricing.OFFER) {
+			return period.minPrice;
+		} else if (period.pricing == Ad.Pricing.APPEAL) {
 			return period.minPrice;
 		} else {
 			return 0;

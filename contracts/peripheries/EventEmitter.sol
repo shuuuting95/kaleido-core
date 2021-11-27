@@ -13,7 +13,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	event NewMedia(
 		address proxy,
 		address mediaEOA,
-		string constantMetadata,
+		string applicationMetadata,
 		string updatableMetadata,
 		uint256 saltNonce
 	);
@@ -219,14 +219,14 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	function emitNewMedia(
 		address proxy,
 		address mediaEOA,
-		string memory constantMetadata,
+		string memory applicationMetadata,
 		string memory updatableMetadata,
 		uint256 saltNonce
 	) external onlyFactory {
 		emit NewMedia(
 			proxy,
 			mediaEOA,
-			constantMetadata,
+			applicationMetadata,
 			updatableMetadata,
 			saltNonce
 		);

@@ -10,4 +10,6 @@ contract EtherPaymentFallback {
 	receive() external payable {
 		emit Received(msg.sender, msg.value);
 	}
+
+	// TODO: inherit for proxies and test them
 }
