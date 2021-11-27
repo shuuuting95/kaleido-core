@@ -930,7 +930,7 @@ describe('AdManager', async () => {
         value: price,
       })
 
-      expect(await manager.withdraw(0))
+      expect(await manager.withdraw())
         .to.emit(event, 'Withdraw')
         .withArgs(parseEther('0.18'))
     })

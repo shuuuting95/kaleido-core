@@ -30,17 +30,17 @@ describe('MediaFactory', async () => {
     it('should new a account of media', async () => {
       const { now, factory, manager, name, registry } = await setupTests()
 
-      const constantMetadata = 'xxdsfjakjajijraksldfjak'
+      const applicationMetadata = 'xxdsfjakjajijraksldfjak'
       const updatableMetadata = 'kykesrjisjklwjeidfhsjfa'
       const { proxy } = await newMediaWith(user2, factory, name, {
-        constantMetadata: constantMetadata,
+        applicationMetadata: applicationMetadata,
         updatableMetadata: updatableMetadata,
       })
       expect(proxy).is.not.null
       expect(await registry.allAccounts(proxy)).to.deep.equal([
         proxy,
         user2.address,
-        constantMetadata,
+        applicationMetadata,
         updatableMetadata,
       ])
     })
@@ -66,7 +66,7 @@ describe('MediaFactory', async () => {
 
 export type NewMediaProps = {
   initializer?: string
-  constantMetadata?: string
+  applicationMetadata?: string
   updatableMetadata?: string
   saltNonce?: number
 }
@@ -80,7 +80,9 @@ export const newMediaWith = async (
   const initializer = defaultInitializer(name.address)
   const tx = await factory.newMedia(
     user.address,
-    props?.constantMetadata ? props?.constantMetadata : 'abi09nadu2brasfjl',
+    props?.applicationMetadata
+      ? props?.applicationMetadata
+      : 'abi09nadu2brasfjl',
     props?.updatableMetadata ? props?.updatableMetadata : '1eqe23kerfkamfka',
     props?.initializer ? props.initializer : initializer,
     props?.saltNonce ? props.saltNonce : 1
