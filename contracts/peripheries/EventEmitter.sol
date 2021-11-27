@@ -34,6 +34,14 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	event DeletePeriod(uint256 tokenId);
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
+	event BidWithProposal(
+		uint256 tokenId,
+		uint256 price,
+		address sender,
+		string metadata,
+		uint256 timestamp
+	);
+	event SelectProposal(uint256 tokenId, address successfulBidder);
 	event ReceiveToken(
 		uint256 tokenId,
 		uint256 price,
@@ -131,6 +139,28 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		address msgSender
 	) external onlyProxies {
 		emit Bid(tokenId, msgValue, msgSender, _blockTimestamp());
+	}
+
+	function emitBidWithProposal(
+		uint256 tokenId,
+		uint256 msgValue,
+		address msgSender,
+		string memory metadata
+	) external onlyProxies {
+		emit BidWithProposal(
+			tokenId,
+			msgValue,
+			msgSender,
+			metadata,
+			_blockTimestamp()
+		);
+	}
+
+	function emitSelectProposal(uint256 tokenId, address successfulBidder)
+		external
+		onlyProxies
+	{
+		emit SelectProposal(tokenId, successfulBidder);
 	}
 
 	function emitReceiveToken(

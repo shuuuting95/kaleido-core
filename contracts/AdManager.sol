@@ -182,6 +182,44 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_eventEmitter().emitBid(tokenId, msg.value, msg.sender);
 	}
 
+	function bidWithProposal(uint256 tokenId, string memory proposalMetadata)
+		external
+		payable
+		exceptYourself
+		nonReentrant
+	{
+		_checkBeforeBidWithProposal(tokenId);
+		_biddingTotal += msg.value;
+		appealed[tokenId].push(
+			Appeal(tokenId, msg.sender, msg.value, proposalMetadata)
+		);
+		_eventEmitter().emitBidWithProposal(
+			tokenId,
+			msg.value,
+			msg.sender,
+			proposalMetadata
+		);
+	}
+
+	/// @dev Selects the best proposal bidded with.
+	/// @param tokenId uint256 of the token ID
+	/// @param index uint256 of the index number
+	/// @param tokenMetadata string of the token metadata
+	function selectProposal(
+		uint256 tokenId,
+		uint256 index,
+		string memory tokenMetadata
+	) external onlyMedia {
+		Appeal memory appeal = appealed[tokenId][index];
+		require(appeal.sender != address(0), "KD114");
+
+		_mintRight(appeal.sender, tokenId, tokenMetadata);
+		_collectFees(appeal.price / 10);
+		delete appealed[tokenId];
+		_eventEmitter().emitSelectProposal(tokenId, appeal.sender);
+		_eventEmitter().emitTransferCustom(address(this), appeal.sender, tokenId);
+	}
+
 	/// @dev Receives the token you bidded if you are the successful bidder.
 	/// @param tokenId uint256 of the token ID
 	function receiveToken(uint256 tokenId)

@@ -24,6 +24,12 @@ abstract contract PrimarySales is PricingStrategy {
 		require(currentPrice(tokenId) < msg.value, "KD122");
 	}
 
+	function _checkBeforeBidWithProposal(uint256 tokenId) internal {
+		require(periods[tokenId].pricing == Ad.Pricing.APPEAL, "KD127");
+		require(!periods[tokenId].sold, "KD121");
+		require(periods[tokenId].minPrice <= msg.value, "KD122");
+	}
+
 	function _refundBiddingAmount(uint256 tokenId) internal returns (bool sent) {
 		if (
 			periods[tokenId].pricing == Ad.Pricing.BIDDING &&

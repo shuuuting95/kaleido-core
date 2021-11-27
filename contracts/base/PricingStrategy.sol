@@ -23,7 +23,7 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 		uint256 tokenId;
 		address sender;
 		uint256 price;
-		string metadata;
+		string content;
 	}
 	/// @dev Maps tokenId with bidding info
 	mapping(uint256 => Bidding) public bidding;
