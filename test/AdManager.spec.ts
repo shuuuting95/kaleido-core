@@ -2,12 +2,14 @@ import { parseEther } from '@ethersproject/units'
 import { expect } from 'chai'
 import { BigNumber, ethers } from 'ethers'
 import { deployments, network, waffle } from 'hardhat'
-import { getAdManagerABI } from '../scripts/common/file'
+import {
+  getAdManagerABI,
+  getMockTimeAdManagerABI,
+} from '../scripts/common/file'
 import { option } from '../scripts/common/wallet'
 import { newMediaWith } from './MediaFactory.spec'
 import { ADDRESS_ZERO } from './utils/address'
 import {
-  getAdManagerContract,
   getAdPoolContract,
   getEventEmitterContract,
   getMediaFactoryContract,
@@ -28,10 +30,10 @@ describe('AdManager', async () => {
     const now = Date.now()
     await network.provider.send('evm_setNextBlockTimestamp', [now])
     await network.provider.send('evm_mine')
+
     return {
       now: now,
       factory: await getMediaFactoryContract(),
-      manager: await getAdManagerContract(),
       name: await getNameRegistryContract(),
       registry: await getMediaRegistryContract(),
       pool: await getAdPoolContract(),
@@ -39,20 +41,23 @@ describe('AdManager', async () => {
     }
   })
   const _manager = (proxy: string) =>
-    new ethers.Contract(proxy, getAdManagerABI(), user2)
+    new ethers.Contract(proxy, getMockTimeAdManagerABI(), user2)
 
   const managerInstance = async (
     factory: ethers.Contract,
-    name: ethers.Contract
+    name: ethers.Contract,
+    now: number
   ) => {
     const { proxy } = await newMediaWith(user2, factory, name)
-    return _manager(proxy)
+    const manager = _manager(proxy)
+    await manager.setTime(now)
+    return manager
   }
 
   describe('updateMedia', async () => {
     it('should update a media', async () => {
-      const { factory, registry, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const { now, factory, registry, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
       const newMetadata = 'sfjjrtjwjtkljwlejr;tfjk'
 
       expect(
@@ -63,8 +68,8 @@ describe('AdManager', async () => {
     })
 
     it('should revert because the sender is not the media EOA', async () => {
-      const { factory, registry, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const { now, factory, registry, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
       const newMetadata = 'sfjjrtjwjtkljwlejr;tfjk'
 
       await expect(
@@ -75,8 +80,8 @@ describe('AdManager', async () => {
 
   describe('newSpace', async () => {
     it('should new an ad space', async () => {
-      const { factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
       const spaceMetadata = 'asfafkjksjfkajf'
 
       expect(await manager.newSpace(spaceMetadata))
@@ -86,8 +91,8 @@ describe('AdManager', async () => {
     })
 
     it('should revert because the space has already created', async () => {
-      const { factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
       const spaceMetadata = 'asfafkjksjfkajf'
       await manager.newSpace(spaceMetadata)
 
@@ -95,8 +100,8 @@ describe('AdManager', async () => {
     })
 
     it('should revert because the space has already created by another media', async () => {
-      const { factory, name } = await setupTests()
-      const manager2 = await managerInstance(factory, name)
+      const { now, factory, name } = await setupTests()
+      const manager2 = await managerInstance(factory, name, now)
       const { proxy } = await newMediaWith(user5, factory, name, {
         saltNonce: 100,
       })
@@ -111,7 +116,7 @@ describe('AdManager', async () => {
   describe('newPeirod', async () => {
     it('should new an ad period', async () => {
       const { now, factory, name, event, pool } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const spaceMetadata = 'asfafkjksjfkajf'
       const tokenMetadata = 'poiknfknajnjaer'
       const saleEndTimestamp = now + 2400
@@ -124,10 +129,6 @@ describe('AdManager', async () => {
         displayStartTimestamp,
         displayEndTimestamp
       )
-
-      // refresh timestamp
-      await network.provider.send('evm_increaseTime', [1])
-      await network.provider.send('evm_mine')
 
       expect(
         await newPeriodWith(manager, {
@@ -145,7 +146,7 @@ describe('AdManager', async () => {
           tokenId,
           spaceMetadata,
           tokenMetadata,
-          now + 3,
+          now,
           saleEndTimestamp,
           displayStartTimestamp,
           displayEndTimestamp,
@@ -156,41 +157,41 @@ describe('AdManager', async () => {
         .withArgs(ADDRESS_ZERO, manager.address, tokenId)
       expect(await manager.spaced(spaceMetadata)).to.be.true
       expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
-      // expect(await manager.periods(tokenId)).to.deep.equal([
-      //   manager.address,
-      //   spaceMetadata,
-      //   tokenMetadata,
-      //   BigNumber.from(now + 3),
-      //   BigNumber.from(saleEndTimestamp),
-      //   BigNumber.from(displayStartTimestamp),
-      //   BigNumber.from(displayEndTimestamp),
-      //   pricing,
-      //   minPrice,
-      //   minPrice,
-      //   false,
-      // ])
+      expect(await manager.periods(tokenId)).to.deep.equal([
+        manager.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now),
+        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        pricing,
+        minPrice,
+        minPrice,
+        false,
+      ])
       expect(await manager.ownerOf(tokenId)).to.be.eq(manager.address)
       expect(await manager.tokenURI(tokenId)).to.be.eq(
         `https://base/${tokenMetadata}`
       )
-      // expect(await pool.allPeriods(tokenId)).to.deep.equal([
-      //   manager.address,
-      //   spaceMetadata,
-      //   tokenMetadata,
-      //   BigNumber.from(now + 3),
-      //   BigNumber.from(saleEndTimestamp),
-      //   BigNumber.from(displayStartTimestamp),
-      //   BigNumber.from(displayEndTimestamp),
-      //   pricing,
-      //   minPrice,
-      //   minPrice,
-      //   false,
-      // ])
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
+        manager.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now),
+        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        pricing,
+        minPrice,
+        minPrice,
+        false,
+      ])
     })
 
     it('should revert because the media is not yours', async () => {
-      const { factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
 
       await expect(newPeriodWith(manager.connect(user4))).to.be.revertedWith(
         'KD012'
@@ -199,7 +200,7 @@ describe('AdManager', async () => {
 
     it('should revert because of overlapped period', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const saleEndTimestamp = now + 2400
       const displayStartTimestamp = now + 3600
       const displayEndTimestamp = now + 7200
@@ -220,7 +221,7 @@ describe('AdManager', async () => {
 
     it('should revert because the sale end time is the past', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const saleEndTimestamp = now - 1000
 
       await expect(
@@ -232,7 +233,7 @@ describe('AdManager', async () => {
 
     it('should revert because the display start time is before the end of the sale', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const saleEndTimestamp = now + 3600
       const displayStartTimestamp = now + 2400
       const displayEndTimestamp = now + 7200
@@ -248,7 +249,7 @@ describe('AdManager', async () => {
 
     it('should revert because the display end time is before the start of the display', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const displayStartTimestamp = now + 7200
       const displayEndTimestamp = now + 3600
 
@@ -264,7 +265,7 @@ describe('AdManager', async () => {
   describe('deletePeriod', async () => {
     it('should delete a period', async () => {
       const { now, factory, name, event, pool } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
       await newPeriodWith(manager, { now })
 
@@ -291,7 +292,7 @@ describe('AdManager', async () => {
 
     it('should revert because it has already deleted', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       await newPeriodWith(manager, { now })
@@ -303,7 +304,7 @@ describe('AdManager', async () => {
 
     it('should revert because it has been sold out', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       await newPeriodWith(manager.connect(user2), { now })
@@ -318,7 +319,7 @@ describe('AdManager', async () => {
 
     it('should delete repeatedly', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
 
       await newPeriodWith(manager, { now })
@@ -339,7 +340,7 @@ describe('AdManager', async () => {
   describe('offerPeriod', async () => {
     it('should offer', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
 
       const spaceMetadata = 'asfafkjksjfkajf'
       const displayStartTimestamp = now + 3600
@@ -374,7 +375,7 @@ describe('AdManager', async () => {
 
     it('should revert because of missing the space', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
 
       const wrongSpaceMetadata = 'asdfadfaweferhertheaeerwerafadfa'
       const displayStartTimestamp = now + 3600
@@ -396,7 +397,7 @@ describe('AdManager', async () => {
   describe('cancelOffer', async () => {
     it('should cancel an offer', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
 
       const spaceMetadata = 'asfafkjksjfkajf'
       const displayStartTimestamp = now + 3600
@@ -430,7 +431,7 @@ describe('AdManager', async () => {
 
     it('should revert because the offer is not yours', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
 
       const spaceMetadata = 'asfafkjksjfkajf'
       const displayStartTimestamp = now + 3600
@@ -459,7 +460,7 @@ describe('AdManager', async () => {
   describe('acceptOffer', async () => {
     it('should accept an offer', async () => {
       const { now, factory, name, pool, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
 
       const spaceMetadata = 'abi09nadu2brasfjl'
       const tokenMetadata = 'poiknfknajnjaer'
@@ -531,7 +532,7 @@ describe('AdManager', async () => {
 
     it('should revert because of the invalid tokenId', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
 
       const spaceMetadata = 'abi09nadu2brasfjl'
       const tokenMetadata = 'poiknfknajnjaer'
@@ -559,7 +560,7 @@ describe('AdManager', async () => {
 
     it('should revert because the period has already bought and overlapped', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const spaceMetadata = 'asfafkjksjfkajf'
       const tokenMetadata = 'poiknfknajnjaer'
       const saleEndTimestamp = now + 2400
@@ -601,7 +602,7 @@ describe('AdManager', async () => {
   describe('buy', async () => {
     it('should buy a period', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const pricing = 0
@@ -626,7 +627,7 @@ describe('AdManager', async () => {
 
     it('should revert because the pricing is not RRP', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
       const pricing = 1
       await newPeriodWith(manager, {
@@ -643,7 +644,7 @@ describe('AdManager', async () => {
 
     it('should revert because it has already sold', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
       const pricing = 0
 
@@ -663,7 +664,7 @@ describe('AdManager', async () => {
 
     it('should revert because it has already sold', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
       const pricing = 0
       const price = parseEther('0.3')
@@ -683,7 +684,7 @@ describe('AdManager', async () => {
 
     it('should revert because the sender is the media EOA', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
       const pricing = 0
       const price = parseEther('0.3')
@@ -705,7 +706,7 @@ describe('AdManager', async () => {
   describe('buyBasedOnTime', async () => {
     it('should buy a period', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const pricing = 1
@@ -739,7 +740,7 @@ describe('AdManager', async () => {
 
     it('should revert because the pricing is not DPBT', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
       const pricing = 2
       await newPeriodWith(manager, {
@@ -759,7 +760,7 @@ describe('AdManager', async () => {
   describe('bid', async () => {
     it('should bid', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const pricing = 2
@@ -783,7 +784,7 @@ describe('AdManager', async () => {
 
     it('should bid twice by two members', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const pricing = 2
@@ -807,7 +808,7 @@ describe('AdManager', async () => {
 
     it('should revert because it is not bidding', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const pricing = 0
@@ -829,7 +830,7 @@ describe('AdManager', async () => {
   describe('receiveToken', async () => {
     it('should receive token by the successful bidder', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const saleEndTimestamp = now + 2400
@@ -863,7 +864,7 @@ describe('AdManager', async () => {
 
     it('should revert because the caller is not the successful bidder', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const saleEndTimestamp = now + 2400
@@ -890,7 +891,7 @@ describe('AdManager', async () => {
 
     it('should revert because the auction has not ended yet', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const saleEndTimestamp = now + 2400
@@ -915,7 +916,7 @@ describe('AdManager', async () => {
   describe('withdraw', async () => {
     it('should withdraw the fund after a user bought', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const pricing = 0
@@ -941,7 +942,7 @@ describe('AdManager', async () => {
   describe('propose', async () => {
     it('should propose to the right you bought', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
@@ -963,7 +964,7 @@ describe('AdManager', async () => {
 
     it('should revert because the token is not yours', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
@@ -979,7 +980,7 @@ describe('AdManager', async () => {
   describe('acceptProposal', async () => {
     it('should accept a proposal', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
@@ -995,7 +996,7 @@ describe('AdManager', async () => {
 
     it('should revert because it has already proposed', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
@@ -1011,7 +1012,7 @@ describe('AdManager', async () => {
 
     it('should revert because the token has transferred to others', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
@@ -1031,7 +1032,7 @@ describe('AdManager', async () => {
   describe('denyProposal', async () => {
     it('should deny a proposal', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
@@ -1051,7 +1052,7 @@ describe('AdManager', async () => {
 
     it('should revert because there is not any proposals', async () => {
       const { now, factory, name } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
       const deniedReason =
@@ -1069,7 +1070,7 @@ describe('AdManager', async () => {
   describe('display', async () => {
     it('should display', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
@@ -1087,7 +1088,7 @@ describe('AdManager', async () => {
 
     it('should not display before it starts', async () => {
       const { now, factory, name, event } = await setupTests()
-      const manager = await managerInstance(factory, name)
+      const manager = await managerInstance(factory, name, now)
       const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
 
       const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'

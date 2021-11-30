@@ -10,7 +10,10 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const name = await findNameRegistry(hre)
   const Ad = await deployments.get('Ad')
 
-  const AdManager = await deploy('AdManager', {
+  const target =
+    hre.network.name === 'hardhat' ? 'MockTimeAdManager' : 'AdManager'
+
+  const AdManager = await deploy(target, {
     from: deployer,
     args: [],
     log: true,
@@ -27,7 +30,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       gasLimit: 4500000,
     })
     await txReceipt.wait()
-    console.log('AdManager: ', await name.get(key))
+    console.log(`${target}: `, await name.get(key))
   }
 }
 
