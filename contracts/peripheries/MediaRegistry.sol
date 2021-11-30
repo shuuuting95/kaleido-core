@@ -57,6 +57,13 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 		allAccounts[msg.sender].updatableMetadata = metadata;
 	}
 
+	function updateApplicationMetadata(address proxy, string memory metadata)
+		external
+		onlyOwner
+	{
+		allAccounts[proxy].applicationMetadata = metadata;
+	}
+
 	/// @dev Returns whether the account has created or not.
 	/// @param proxy address of the proxy contract that represents an account.
 	function created(address proxy) public view returns (bool) {
