@@ -349,6 +349,8 @@ describe('AdManager', async () => {
         'KD128'
       )
     })
+
+    // TODO: already apeal
   })
 
   describe('offerPeriod', async () => {
@@ -832,6 +834,76 @@ describe('AdManager', async () => {
           .connect(user3)
           .bid(tokenId, option({ value: parseEther('0.3') }))
       ).to.be.revertedWith('KD124')
+    })
+  })
+
+  describe('bidWithProposal', async () => {
+    it('should bid with proposal', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
+      const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
+
+      const pricing = 4
+      const minPrice = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing,
+        minPrice,
+      })
+
+      expect(
+        await manager
+          .connect(user3)
+          .bidWithProposal(
+            tokenId,
+            proposalMetadata,
+            option({ value: parseEther('0.3') })
+          )
+      )
+        .to.emit(event, 'BidWithProposal')
+        .withArgs(
+          tokenId,
+          parseEther('0.3'),
+          user3.address,
+          proposalMetadata,
+          now
+        )
+      await manager
+        .connect(user4)
+        .bidWithProposal(
+          tokenId,
+          proposalMetadata2,
+          option({ value: parseEther('0.25') })
+        )
+      expect(await manager.balance()).to.be.eq(parseEther('0.55'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
+    })
+
+    it('should revert because it is not bidding with proposal', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
+
+      const wrongPricing = 2
+      const minPrice = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: wrongPricing,
+        minPrice,
+      })
+
+      await expect(
+        manager
+          .connect(user3)
+          .bidWithProposal(
+            tokenId,
+            proposalMetadata,
+            option({ value: parseEther('0.3') })
+          )
+      ).to.be.revertedWith('KD127')
     })
   })
 
