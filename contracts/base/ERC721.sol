@@ -12,8 +12,6 @@ contract ERC721 is Context, IERC721Enumerable, IERC721Metadata {
 	using Address for address;
 	using Strings for uint256;
 
-	string internal dummy; // TODO: delete
-
 	// Token name
 	string internal _name;
 
