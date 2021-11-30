@@ -484,10 +484,6 @@ describe('AdManager', async () => {
       expect(await manager.balance()).to.be.eq(parseEther('0.4'))
       expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
 
-      // refresh timestamp
-      await network.provider.send('evm_increaseTime', [1])
-      await network.provider.send('evm_mine')
-
       expect(await manager.acceptOffer(tokenId, tokenMetadata, option()))
         .to.emit(event, 'AcceptOffer')
         .withArgs(
@@ -502,32 +498,32 @@ describe('AdManager', async () => {
       expect(await manager.balance()).to.be.eq(parseEther('0.36'))
       expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0.36'))
 
-      // expect(await manager.periods(tokenId)).to.deep.equal([
-      //   user3.address,
-      //   spaceMetadata,
-      //   tokenMetadata,
-      //   BigNumber.from(now + 6),
-      //   BigNumber.from(now + 6),
-      //   BigNumber.from(displayStartTimestamp),
-      //   BigNumber.from(displayEndTimestamp),
-      //   3,
-      //   price,
-      //   price,
-      //   true,
-      // ])
-      // expect(await pool.allPeriods(tokenId)).to.deep.equal([
-      //   user3.address,
-      //   spaceMetadata,
-      //   tokenMetadata,
-      //   BigNumber.from(now + 6),
-      //   BigNumber.from(now + 6),
-      //   BigNumber.from(displayStartTimestamp),
-      //   BigNumber.from(displayEndTimestamp),
-      //   3,
-      //   price,
-      //   price,
-      //   true,
-      // ])
+      expect(await manager.periods(tokenId)).to.deep.equal([
+        user3.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now),
+        BigNumber.from(now),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        3,
+        price,
+        price,
+        true,
+      ])
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
+        user3.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now),
+        BigNumber.from(now),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        3,
+        price,
+        price,
+        true,
+      ])
     })
 
     it('should revert because of the invalid tokenId', async () => {
@@ -620,7 +616,7 @@ describe('AdManager', async () => {
         })
       )
         .to.emit(event, 'Buy')
-        .withArgs(tokenId, price, user3.address, now + 3)
+        .withArgs(tokenId, price, user3.address, now)
         .to.emit(event, 'TransferCustom')
         .withArgs(manager.address, user3.address, tokenId)
     })
@@ -718,14 +714,12 @@ describe('AdManager', async () => {
       })
 
       // 2400/3600 -> 66% passed
-      await network.provider.send('evm_setNextBlockTimestamp', [now + 2400])
-      await network.provider.send('evm_mine')
+      await manager.setTime(now + 2400)
 
       const currentPrice = await manager.currentPrice(tokenId)
 
       // slightly passed for its operation
-      await network.provider.send('evm_setNextBlockTimestamp', [now + 2460])
-      await network.provider.send('evm_mine')
+      await manager.setTime(now + 2460)
 
       expect(
         await manager
@@ -733,7 +727,7 @@ describe('AdManager', async () => {
           .buyBasedOnTime(tokenId, option({ value: currentPrice }))
       )
         .to.emit(event, 'Buy')
-        .withArgs(tokenId, currentPrice, user3.address, now + 2461)
+        .withArgs(tokenId, currentPrice, user3.address, now + 2460)
         .to.emit(event, 'TransferCustom')
         .withArgs(manager.address, user3.address, tokenId)
     })
@@ -777,7 +771,7 @@ describe('AdManager', async () => {
           .bid(tokenId, option({ value: parseEther('0.3') }))
       )
         .to.emit(event, 'Bid')
-        .withArgs(tokenId, parseEther('0.3'), user3.address, now + 2)
+        .withArgs(tokenId, parseEther('0.3'), user3.address, now)
       expect(await manager.balance()).to.be.eq(parseEther('0.3'))
       expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
     })
@@ -850,12 +844,11 @@ describe('AdManager', async () => {
       expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
 
       // passed the end timestamp of the sale
-      await network.provider.send('evm_setNextBlockTimestamp', [now + 2410])
-      await network.provider.send('evm_mine')
+      await manager.setTime(now + 2410)
 
       expect(await manager.connect(user3).receiveToken(tokenId, option()))
         .to.emit(event, 'ReceiveToken')
-        .withArgs(tokenId, parseEther('0.3'), user3.address, now + 2411)
+        .withArgs(tokenId, parseEther('0.3'), user3.address, now + 2410)
         .to.emit(event, 'TransferCustom')
         .withArgs(manager.address, user3.address, tokenId)
       expect(await manager.balance()).to.be.eq(parseEther('0.27'))
@@ -881,8 +874,7 @@ describe('AdManager', async () => {
         .bid(tokenId, option({ value: parseEther('0.3') }))
 
       // passed the end timestamp of the sale
-      await network.provider.send('evm_setNextBlockTimestamp', [now + 2410])
-      await network.provider.send('evm_mine')
+      await manager.setTime(now + 2410)
 
       await expect(
         manager.connect(user4).receiveToken(tokenId, option())
@@ -1080,8 +1072,7 @@ describe('AdManager', async () => {
       await manager.acceptProposal(tokenId, option())
 
       // passed to the start of displaying
-      await network.provider.send('evm_setNextBlockTimestamp', [now + 4000])
-      await network.provider.send('evm_mine')
+      await manager.setTime(now + 4000)
 
       expect(await manager.display(spaceMetadata)).to.be.eq(proposalMetadata)
     })

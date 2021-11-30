@@ -156,7 +156,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		periods[tokenId].sold = true;
 		_dropRight(tokenId);
 		_collectFees(msg.value / 10);
-		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
+		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
@@ -168,7 +168,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		periods[tokenId].sold = true;
 		_dropRight(tokenId);
 		_collectFees(msg.value / 10);
-		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender);
+		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
@@ -179,7 +179,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_refundBiddingAmount(tokenId);
 		_biddingTotal += (msg.value - bidding[tokenId].price);
 		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
-		_eventEmitter().emitBid(tokenId, msg.value, msg.sender);
+		_eventEmitter().emitBid(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
 	function bidWithProposal(uint256 tokenId, string memory proposalMetadata)
@@ -197,7 +197,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			tokenId,
 			msg.value,
 			msg.sender,
-			proposalMetadata
+			proposalMetadata,
+			_blockTimestamp()
 		);
 	}
 
@@ -235,7 +236,12 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_dropRight(tokenId);
 		_collectFees(price / 10);
 		delete bidding[tokenId];
-		_eventEmitter().emitReceiveToken(tokenId, price, msg.sender);
+		_eventEmitter().emitReceiveToken(
+			tokenId,
+			price,
+			msg.sender,
+			_blockTimestamp()
+		);
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 

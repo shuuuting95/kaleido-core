@@ -128,31 +128,34 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	function emitBuy(
 		uint256 tokenId,
 		uint256 msgValue,
-		address msgSender
+		address msgSender,
+		uint256 blockTimestamp
 	) external onlyProxies {
-		emit Buy(tokenId, msgValue, msgSender, _blockTimestamp());
+		emit Buy(tokenId, msgValue, msgSender, blockTimestamp);
 	}
 
 	function emitBid(
 		uint256 tokenId,
 		uint256 msgValue,
-		address msgSender
+		address msgSender,
+		uint256 blockTimestamp
 	) external onlyProxies {
-		emit Bid(tokenId, msgValue, msgSender, _blockTimestamp());
+		emit Bid(tokenId, msgValue, msgSender, blockTimestamp);
 	}
 
 	function emitBidWithProposal(
 		uint256 tokenId,
 		uint256 msgValue,
 		address msgSender,
-		string memory metadata
+		string memory metadata,
+		uint256 blockTimestamp
 	) external onlyProxies {
 		emit BidWithProposal(
 			tokenId,
 			msgValue,
 			msgSender,
 			metadata,
-			_blockTimestamp()
+			blockTimestamp
 		);
 	}
 
@@ -166,9 +169,10 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	function emitReceiveToken(
 		uint256 tokenId,
 		uint256 price,
-		address buyer
+		address buyer,
+		uint256 blockTimestamp
 	) external onlyProxies {
-		emit ReceiveToken(tokenId, price, buyer, _blockTimestamp());
+		emit ReceiveToken(tokenId, price, buyer, blockTimestamp);
 	}
 
 	function emitOfferPeriod(
