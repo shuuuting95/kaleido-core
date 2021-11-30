@@ -3,6 +3,7 @@ pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./base/PrimarySales.sol";
+import "./base/ProposalManager.sol";
 import "./base/DistributionRight.sol";
 import "./common/EtherPaymentFallback.sol";
 import "hardhat/console.sol";
@@ -12,6 +13,7 @@ import "hardhat/console.sol";
 contract AdManager is
 	DistributionRight,
 	PrimarySales,
+	ProposalManager,
 	EtherPaymentFallback,
 	ReentrancyGuard
 {
