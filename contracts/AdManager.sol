@@ -197,7 +197,7 @@ contract AdManager is
 		_checkBeforeBidWithProposal(tokenId);
 		_biddingTotal += msg.value;
 		appealed[tokenId].push(
-			Appeal(tokenId, msg.sender, msg.value, proposalMetadata)
+			Sale.Appeal(tokenId, msg.sender, msg.value, proposalMetadata)
 		);
 		_eventEmitter().emitBidWithProposal(
 			tokenId,
@@ -217,7 +217,7 @@ contract AdManager is
 		uint256 index,
 		string memory tokenMetadata
 	) external onlyMedia {
-		Appeal memory appeal = appealed[tokenId][index];
+		Sale.Appeal memory appeal = appealed[tokenId][index];
 		require(appeal.sender != address(0), "KD114");
 
 		_mintRight(appeal.sender, tokenId, tokenMetadata);
@@ -269,7 +269,7 @@ contract AdManager is
 			displayStartTimestamp,
 			displayEndTimestamp
 		);
-		offered[tokenId] = Offer(
+		offered[tokenId] = Sale.Offer(
 			spaceMetadata,
 			displayStartTimestamp,
 			displayEndTimestamp,
@@ -304,7 +304,7 @@ contract AdManager is
 		external
 		onlyMedia
 	{
-		Offer memory offer = offered[tokenId];
+		Sale.Offer memory offer = offered[tokenId];
 		require(offer.sender != address(0), "KD115");
 		_checkOverlapping(
 			offer.spaceMetadata,

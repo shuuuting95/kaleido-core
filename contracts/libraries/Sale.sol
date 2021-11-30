@@ -9,6 +9,19 @@ library Sale {
 		address bidder;
 		uint256 price;
 	}
+	struct Offer {
+		string spaceMetadata;
+		uint256 displayStartTimestamp;
+		uint256 displayEndTimestamp;
+		address sender;
+		uint256 price;
+	}
+	struct Appeal {
+		uint256 tokenId;
+		address sender;
+		uint256 price;
+		string content;
+	}
 
 	function _startPrice(Ad.Period memory period)
 		internal
