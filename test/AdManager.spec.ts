@@ -905,6 +905,31 @@ describe('AdManager', async () => {
           )
       ).to.be.revertedWith('KD127')
     })
+
+    it('should revert because it is under the minimum price', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
+
+      const pricing = 4
+      const minPrice = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing,
+        minPrice,
+      })
+
+      await expect(
+        manager
+          .connect(user3)
+          .bidWithProposal(
+            tokenId,
+            proposalMetadata,
+            option({ value: parseEther('0.19') })
+          )
+      ).to.be.revertedWith('KD122')
+    })
   })
 
   describe('receiveToken', async () => {
