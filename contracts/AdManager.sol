@@ -123,7 +123,7 @@ contract AdManager is
 			0,
 			false
 		);
-		period.startPrice = _startPrice(period);
+		period.startPrice = Sale._startPrice(period);
 		_savePeriod(spaceMetadata, tokenId, period);
 		_mintRight(address(this), tokenId, tokenMetadata);
 		_eventEmitter().emitNewPeriod(
@@ -184,7 +184,7 @@ contract AdManager is
 		_checkBeforeBid(tokenId);
 		_refundBiddingAmount(tokenId);
 		_biddingTotal += (msg.value - bidding[tokenId].price);
-		bidding[tokenId] = Bidding(tokenId, msg.sender, msg.value);
+		bidding[tokenId] = Sale.Bidding(tokenId, msg.sender, msg.value);
 		_eventEmitter().emitBid(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 

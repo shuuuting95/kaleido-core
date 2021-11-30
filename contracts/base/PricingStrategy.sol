@@ -3,15 +3,11 @@ pragma solidity 0.8.9;
 
 import "./PeriodManager.sol";
 import "../common/BlockTimestamp.sol";
+import "../libraries/Sale.sol";
 
 /// @title PricingStrategy - manages how to sell them out.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
-	struct Bidding {
-		uint256 tokenId;
-		address bidder;
-		uint256 price;
-	}
 	struct Offer {
 		string spaceMetadata;
 		uint256 displayStartTimestamp;
@@ -26,7 +22,7 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 		string content;
 	}
 	/// @dev Maps tokenId with bidding info
-	mapping(uint256 => Bidding) public bidding;
+	mapping(uint256 => Sale.Bidding) public bidding;
 
 	/// @dev Maps tokenId with offer info
 	mapping(uint256 => Offer) public offered;
@@ -64,25 +60,5 @@ abstract contract PricingStrategy is PeriodManager, BlockTimestamp {
 			return 0;
 		}
 		revert("not exist");
-	}
-
-	function _startPrice(Ad.Period memory period)
-		internal
-		pure
-		returns (uint256)
-	{
-		if (period.pricing == Ad.Pricing.RRP) {
-			return period.minPrice;
-		} else if (period.pricing == Ad.Pricing.DPBT) {
-			return period.minPrice * 10;
-		} else if (period.pricing == Ad.Pricing.BIDDING) {
-			return period.minPrice;
-		} else if (period.pricing == Ad.Pricing.OFFER) {
-			return period.minPrice;
-		} else if (period.pricing == Ad.Pricing.APPEAL) {
-			return period.minPrice;
-		} else {
-			return 0;
-		}
 	}
 }

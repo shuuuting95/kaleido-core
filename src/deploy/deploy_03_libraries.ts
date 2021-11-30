@@ -26,40 +26,56 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   {
-    const Integers = await deploy('Integers', {
+    const Sale = await deploy('Sale', {
       from: deployer,
       args: [],
       log: true,
       deterministicDeployment: false,
     })
-    const key = utils.solidityKeccak256(['string'], ['Integers'])
+    const key = utils.solidityKeccak256(['string'], ['Sale'])
     const value = await name.get(key)
-    if (value !== Integers.address) {
-      const txReceipt = await name.set(key, Integers.address, {
-        gasLimit: 4500000,
-      })
+    if (value !== Sale.address) {
+      const txReceipt = await name.set(key, Sale.address, { gasLimit: 4500000 })
       await txReceipt.wait()
-      console.log('Integers: ', await name.get(key))
+      console.log('Sale: ', await name.get(key))
     }
   }
 
-  {
-    const Substrings = await deploy('Substrings', {
-      from: deployer,
-      args: [],
-      log: true,
-      deterministicDeployment: false,
-    })
-    const key = utils.solidityKeccak256(['string'], ['Substrings'])
-    const value = await name.get(key)
-    if (value !== Substrings.address) {
-      const txReceipt = await name.set(key, Substrings.address, {
-        gasLimit: 4500000,
-      })
-      await txReceipt.wait()
-      console.log('Substrings: ', await name.get(key))
-    }
-  }
+  // {
+  //   const Integers = await deploy('Integers', {
+  //     from: deployer,
+  //     args: [],
+  //     log: true,
+  //     deterministicDeployment: false,
+  //   })
+  //   const key = utils.solidityKeccak256(['string'], ['Integers'])
+  //   const value = await name.get(key)
+  //   if (value !== Integers.address) {
+  //     const txReceipt = await name.set(key, Integers.address, {
+  //       gasLimit: 4500000,
+  //     })
+  //     await txReceipt.wait()
+  //     console.log('Integers: ', await name.get(key))
+  //   }
+  // }
+
+  // {
+  //   const Substrings = await deploy('Substrings', {
+  //     from: deployer,
+  //     args: [],
+  //     log: true,
+  //     deterministicDeployment: false,
+  //   })
+  //   const key = utils.solidityKeccak256(['string'], ['Substrings'])
+  //   const value = await name.get(key)
+  //   if (value !== Substrings.address) {
+  //     const txReceipt = await name.set(key, Substrings.address, {
+  //       gasLimit: 4500000,
+  //     })
+  //     await txReceipt.wait()
+  //     console.log('Substrings: ', await name.get(key))
+  //   }
+  // }
 }
 
 export default deploy
