@@ -335,6 +335,20 @@ describe('AdManager', async () => {
         tokenId,
       ])
     })
+
+    it('should not delete because someone has already bid', async () => {
+      const { now, factory, name, event, pool } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      await newPeriodWith(manager, { now, pricing: 2 })
+      await manager
+        .connect(user3)
+        .bid(tokenId, option({ value: parseEther('0.3') }))
+
+      await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
+        'KD128'
+      )
+    })
   })
 
   describe('offerPeriod', async () => {

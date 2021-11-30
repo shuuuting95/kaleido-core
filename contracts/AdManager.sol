@@ -69,8 +69,6 @@ contract AdManager is
 
 	// TODO: can withdraw by bidder to failure txs
 
-	// TODO: update application metadata
-
 	/// @dev Creates a new space for the media account.
 	/// @param spaceMetadata string of the space metadata
 	function newSpace(string memory spaceMetadata) external onlyMedia {
@@ -148,8 +146,8 @@ contract AdManager is
 	/// @param tokenId uint256 of the token ID
 	function deletePeriod(uint256 tokenId) external onlyMedia {
 		require(periods[tokenId].mediaProxy != address(0), "KD114");
-		require(ownerOf(tokenId) == address(this), "KD121"); // TODO: prevent if there is any user bidding to the period
-		_refundBiddingAmount(tokenId);
+		require(ownerOf(tokenId) == address(this), "KD121");
+		require(!_alreadyBid(tokenId), "KD128");
 		_burnRight(tokenId);
 		_deletePeriod(tokenId, periods[tokenId]);
 		_eventEmitter().emitDeletePeriod(tokenId);

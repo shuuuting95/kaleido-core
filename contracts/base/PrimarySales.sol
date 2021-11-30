@@ -73,6 +73,11 @@ abstract contract PrimarySales is PeriodManager, BlockTimestamp {
 		require(periods[tokenId].minPrice <= msg.value, "KD122");
 	}
 
+	function _alreadyBid(uint256 tokenId) internal view returns (bool) {
+		return
+			bidding[tokenId].bidder != address(0) || appealed[tokenId].length != 0;
+	}
+
 	function _refundBiddingAmount(uint256 tokenId) internal returns (bool sent) {
 		if (
 			periods[tokenId].pricing == Ad.Pricing.BIDDING &&
