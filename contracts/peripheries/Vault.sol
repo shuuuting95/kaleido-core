@@ -18,6 +18,7 @@ contract Vault is Ownable, EtherPaymentFallback {
 	function withdraw(uint256 amount) public onlyOwner {
 		require(amount <= balance(), "KD140");
 		payable(msg.sender).transfer(amount);
+		// (bool success, ) = payable(msg.sender).call{ value: amount }("");
 		emit Withdraw(msg.sender, amount);
 	}
 }

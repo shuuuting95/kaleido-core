@@ -160,7 +160,7 @@ contract AdManager is
 	function buy(uint256 tokenId) external payable exceptYourself {
 		_checkBeforeBuy(tokenId);
 		periods[tokenId].sold = true;
-		_dropRight(tokenId);
+		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
@@ -172,7 +172,7 @@ contract AdManager is
 	function buyBasedOnTime(uint256 tokenId) external payable exceptYourself {
 		_checkBeforeBuyBasedOnTime(tokenId);
 		periods[tokenId].sold = true;
-		_dropRight(tokenId);
+		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
 		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
@@ -211,16 +211,12 @@ contract AdManager is
 	/// @dev Selects the best proposal bidded with.
 	/// @param tokenId uint256 of the token ID
 	/// @param index uint256 of the index number
-	/// @param tokenMetadata string of the token metadata
-	function selectProposal(
-		uint256 tokenId,
-		uint256 index,
-		string memory tokenMetadata
-	) external onlyMedia {
+	function selectProposal(uint256 tokenId, uint256 index) external onlyMedia {
 		Sale.Appeal memory appeal = appealed[tokenId][index];
 		require(appeal.sender != address(0), "KD114");
+		require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD129");
 
-		_mintRight(appeal.sender, tokenId, tokenMetadata);
+		_dropRight(appeal.sender, tokenId);
 		_collectFees(appeal.price / 10);
 		// TODO: distribute return payments
 		delete appealed[tokenId];
@@ -239,7 +235,7 @@ contract AdManager is
 		uint256 price = bidding[tokenId].price;
 		periods[tokenId].sold = true;
 		_biddingTotal -= price;
-		_dropRight(tokenId);
+		_dropRight(msg.sender, tokenId);
 		_collectFees(price / 10);
 		delete bidding[tokenId];
 		_eventEmitter().emitReceiveToken(
@@ -348,7 +344,8 @@ contract AdManager is
 	function withdraw() external onlyMedia {
 		uint256 withdrawal = withdrawalAmount();
 		payable(msg.sender).transfer(withdrawal);
-		_eventEmitter().emitWithdraw(withdrawal);
+		// (bool success, ) = payable(msg.sender).call{ value: withdrawal }("");
+		_eventEmitter().emitWithdraw(withdrawal, true);
 	}
 
 	/// @dev Proposes the metadata to the token you bought.

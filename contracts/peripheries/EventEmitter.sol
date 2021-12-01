@@ -65,7 +65,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		uint256 displayEndTimestamp,
 		uint256 price
 	);
-	event Withdraw(uint256 amount);
+	event Withdraw(uint256 amount, bool success);
 	event Propose(uint256 tokenId, string metadata);
 	event AcceptProposal(uint256 tokenId, string metadata);
 	event DenyProposal(
@@ -215,8 +215,8 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		);
 	}
 
-	function emitWithdraw(uint256 amount) external onlyProxies {
-		emit Withdraw(amount);
+	function emitWithdraw(uint256 amount, bool success) external onlyProxies {
+		emit Withdraw(amount, success);
 	}
 
 	function emitPropose(uint256 tokenId, string memory metadata)

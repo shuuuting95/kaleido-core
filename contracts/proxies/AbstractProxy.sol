@@ -59,6 +59,7 @@ abstract contract AbstractProxy is IProxy {
 			keccak256(abi.encodePacked("Vault"))
 		);
 		payable(vault).transfer(msg.value / 2);
+		// (bool success, ) = payable(msg.sender).call{ value: msg.value / 2 }("");
 	}
 
 	/**
