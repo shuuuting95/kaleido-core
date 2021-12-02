@@ -58,6 +58,7 @@ abstract contract PeriodManager is SpaceManager {
 		_adPool().addPeriod(tokenId, period);
 	}
 
+	// TODO:
 	function _checkNowOnSale(string memory spaceMetadata) internal view {
 		for (uint256 i = 0; i < _periodKeys[spaceMetadata].length; i++) {
 			if (!periods[_periodKeys[spaceMetadata][i]].sold) {

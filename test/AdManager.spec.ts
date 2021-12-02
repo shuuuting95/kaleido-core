@@ -1217,6 +1217,7 @@ describe('AdManager', async () => {
       expect(await manager.acceptProposal(tokenId, option()))
         .to.emit(event, 'AcceptProposal')
         .withArgs(tokenId, proposalMetadata)
+      expect(await manager.proposed(tokenId)).to.deep.equal(['', user3.address])
       expect(await manager.ownerOf(tokenId)).to.be.eq(user3.address)
     })
 

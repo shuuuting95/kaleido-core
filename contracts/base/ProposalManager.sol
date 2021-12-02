@@ -21,7 +21,7 @@ abstract contract ProposalManager {
 	}
 
 	function _clearProposal(uint256 tokenId) internal {
-		proposed[tokenId] = Proposal("", msg.sender);
+		proposed[tokenId] = Proposal("", proposed[tokenId].proposer);
 	}
 
 	function _acceptProposal(uint256 tokenId, string memory metadata) internal {
