@@ -1308,7 +1308,10 @@ describe('AdManager', async () => {
       // passed to the start of displaying
       await manager.setTime(now + 4000)
 
-      expect(await manager.display(spaceMetadata)).to.be.eq(proposalMetadata)
+      expect(await manager.display(spaceMetadata)).to.deep.equal([
+        proposalMetadata,
+        tokenId,
+      ])
     })
 
     it('should not display before it starts', async () => {
@@ -1322,7 +1325,10 @@ describe('AdManager', async () => {
       await manager.connect(user3).propose(tokenId, proposalMetadata)
       await manager.acceptProposal(tokenId, option())
 
-      expect(await manager.display(spaceMetadata)).to.be.eq('')
+      expect(await manager.display(spaceMetadata)).to.deep.equal([
+        '',
+        BigNumber.from(0),
+      ])
     })
   })
 })

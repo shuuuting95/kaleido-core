@@ -460,7 +460,7 @@ contract AdManager is
 	function display(string memory spaceMetadata)
 		external
 		view
-		returns (string memory)
+		returns (string memory, uint256)
 	{
 		uint256[] memory tokenIds = tokenIdsOf(spaceMetadata);
 		for (uint256 i = 0; i < tokenIds.length; i++) {
@@ -469,10 +469,10 @@ contract AdManager is
 				period.displayStartTimestamp <= _blockTimestamp() &&
 				period.displayEndTimestamp >= _blockTimestamp()
 			) {
-				return accepted[tokenIds[i]];
+				return (accepted[tokenIds[i]], tokenIds[i]);
 			}
 		}
-		return "";
+		return ("", 0);
 	}
 
 	function _checkBeforeReceiveToken(uint256 tokenId) internal view {
