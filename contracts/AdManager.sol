@@ -212,16 +212,36 @@ contract AdManager is
 	/// @param tokenId uint256 of the token ID
 	/// @param index uint256 of the index number
 	function selectProposal(uint256 tokenId, uint256 index) external onlyMedia {
-		Sale.Appeal memory appeal = appealed[tokenId][index];
-		require(appeal.sender != address(0), "KD114");
+		require(
+			appealed[tokenId].length >= index &&
+				appealed[tokenId][index].sender != address(0),
+			"KD114"
+		);
 		require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD129");
 
+		Sale.Appeal memory appeal = appealed[tokenId][index];
 		_dropRight(appeal.sender, tokenId);
-		_collectFees(appeal.price / 10);
-		// TODO: distribute return payments
+		_retundToProposer(tokenId, index);
 		delete appealed[tokenId];
 		_eventEmitter().emitSelectProposal(tokenId, appeal.sender);
 		_eventEmitter().emitTransferCustom(address(this), appeal.sender, tokenId);
+	}
+
+	function _retundToProposer(uint256 tokenId, uint256 successfulBidderNo)
+		internal
+	{
+		for (uint256 i = 0; i < appealed[tokenId].length; i++) {
+			Sale.Appeal memory appeal = appealed[tokenId][i];
+			_biddingTotal -= appeal.price;
+			if (i == successfulBidderNo) {
+				_collectFees(appeal.price / 10);
+			} else {
+				(bool success, ) = payable(appeal.sender).call{
+					value: appeal.price,
+					gas: 10000
+				}("");
+			}
+		}
 	}
 
 	/// @dev Receives the token you bidded if you are the successful bidder.
