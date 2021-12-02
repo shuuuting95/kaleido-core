@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./base/PrimarySales.sol";
 import "./base/ProposalManager.sol";
 import "./base/DistributionRight.sol";
-import "./common/EtherPaymentFallback.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
@@ -14,7 +13,6 @@ contract AdManager is
 	DistributionRight,
 	PrimarySales,
 	ProposalManager,
-	EtherPaymentFallback,
 	ReentrancyGuard
 {
 	/// @dev Can call it by only the media
