@@ -65,7 +65,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		uint256 displayEndTimestamp,
 		uint256 price
 	);
-	event Withdraw(uint256 amount, bool success);
+	event Withdraw(uint256 amount);
 	event Propose(uint256 tokenId, string metadata);
 	event AcceptProposal(uint256 tokenId, string metadata);
 	event DenyProposal(
@@ -79,6 +79,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		address indexed to,
 		uint256 indexed tokenId
 	);
+	event PaymentFailure(address receiver, uint256 price);
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
@@ -215,8 +216,8 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		);
 	}
 
-	function emitWithdraw(uint256 amount, bool success) external onlyProxies {
-		emit Withdraw(amount, success);
+	function emitWithdraw(uint256 amount) external onlyProxies {
+		emit Withdraw(amount);
 	}
 
 	function emitPropose(uint256 tokenId, string memory metadata)
@@ -272,6 +273,13 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		string memory accountMetadata
 	) external onlyProxies {
 		emit UpdateMedia(proxy, mediaEOA, accountMetadata);
+	}
+
+	function emitPaymentFailure(address receiver, uint256 price)
+		external
+		onlyProxies
+	{
+		emit PaymentFailure(receiver, price);
 	}
 
 	/**

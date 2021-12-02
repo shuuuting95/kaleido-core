@@ -7,7 +7,7 @@ contract EtherPaymentFallback {
 	event Received(address, uint256);
 
 	/// @dev Fallback function accepts Ether transactions.
-	receive() external payable {
+	receive() external payable virtual {
 		emit Received(msg.sender, msg.value);
 	}
 }

@@ -240,6 +240,9 @@ contract AdManager is
 					value: appeal.price,
 					gas: 10000
 				}("");
+				if (!success) {
+					_eventEmitter().emitPaymentFailure(appeal.sender, appeal.price);
+				}
 			}
 		}
 	}
@@ -363,9 +366,15 @@ contract AdManager is
 	///      If you put 0 as the amount, you can withdraw as much as possible.
 	function withdraw() external onlyMedia {
 		uint256 withdrawal = withdrawalAmount();
-		payable(msg.sender).transfer(withdrawal);
-		// (bool success, ) = payable(msg.sender).call{ value: withdrawal }("");
-		_eventEmitter().emitWithdraw(withdrawal, true);
+		(bool success, ) = payable(msg.sender).call{
+			value: withdrawal,
+			gas: 10000
+		}("");
+		if (success) {
+			_eventEmitter().emitWithdraw(withdrawal);
+		} else {
+			_eventEmitter().emitPaymentFailure(msg.sender, withdrawal);
+		}
 	}
 
 	/// @dev Proposes the metadata to the token you bought.
@@ -473,6 +482,11 @@ contract AdManager is
 	}
 
 	function _collectFees(uint256 value) internal {
-		payable(vaultAddress()).transfer(value);
+		(bool success, ) = payable(vaultAddress()).call{ value: value, gas: 10000 }(
+			""
+		);
+		if (!success) {
+			_eventEmitter().emitPaymentFailure(vaultAddress(), value);
+		}
 	}
 }

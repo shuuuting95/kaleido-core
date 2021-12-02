@@ -8,6 +8,7 @@ import "../common/EtherPaymentFallback.sol";
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract Vault is Ownable, EtherPaymentFallback {
 	event Withdraw(address sender, uint256 value);
+	event PaymentFailure(address receiver, uint256 price);
 
 	function balance() public view returns (uint256) {
 		return address(this).balance;
@@ -17,8 +18,13 @@ contract Vault is Ownable, EtherPaymentFallback {
 	/// @param amount uint256 of the amount the owner wants to withdraw
 	function withdraw(uint256 amount) public onlyOwner {
 		require(amount <= balance(), "KD140");
-		payable(msg.sender).transfer(amount);
-		// (bool success, ) = payable(msg.sender).call{ value: amount }("");
-		emit Withdraw(msg.sender, amount);
+		(bool success, ) = payable(msg.sender).call{ value: amount, gas: 10000 }(
+			""
+		);
+		if (success) {
+			emit Withdraw(msg.sender, amount);
+		} else {
+			emit PaymentFailure(msg.sender, amount);
+		}
 	}
 }
