@@ -66,6 +66,7 @@ abstract contract AbstractProxy is IProxy, EtherPaymentFallback {
 			""
 		);
 		if (!success) {
+			// TODO: eventEmitter
 			emit PaymentFailure(vault, msg.value / 2);
 		}
 	}

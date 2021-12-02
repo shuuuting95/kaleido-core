@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "./NameRegistry.sol";
+import "../interfaces/INameRegistry.sol";
 
 /// @title NameAccessor - manages the endpoints.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract NameAccessor {
-	NameRegistry internal _nameRegistry;
+	INameRegistry internal _nameRegistry;
 
 	/// @dev Sets the address of NameRegistry.
 	/// @param nameRegistry address of the NameRegistry
 	function initialize(address nameRegistry) internal {
-		_nameRegistry = NameRegistry(nameRegistry);
+		_nameRegistry = INameRegistry(nameRegistry);
 	}
 
 	/// @dev Prevents calling a function from anyone except the accepted contract.
@@ -63,6 +63,6 @@ contract NameAccessor {
 
 	/// @dev Gets the owner address.
 	function owner() public view returns (address) {
-		return _nameRegistry.owner();
+		return _nameRegistry.deployer();
 	}
 }

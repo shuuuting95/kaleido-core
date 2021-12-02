@@ -221,13 +221,13 @@ contract AdManager is
 
 		Sale.Appeal memory appeal = appealed[tokenId][index];
 		_dropRight(appeal.sender, tokenId);
-		_retundToProposer(tokenId, index);
+		_refundToProposers(tokenId, index);
 		delete appealed[tokenId];
 		_eventEmitter().emitSelectProposal(tokenId, appeal.sender);
 		_eventEmitter().emitTransferCustom(address(this), appeal.sender, tokenId);
 	}
 
-	function _retundToProposer(uint256 tokenId, uint256 successfulBidderNo)
+	function _refundToProposers(uint256 tokenId, uint256 successfulBidderNo)
 		internal
 	{
 		for (uint256 i = 0; i < appealed[tokenId].length; i++) {
@@ -270,7 +270,7 @@ contract AdManager is
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
-	// TODO: enable media to push token
+	// TODO: enable media to push the token
 
 	/// @dev Offers to buy a period that the sender requests.
 	/// @param spaceMetadata string of the space metadata
