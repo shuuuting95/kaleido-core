@@ -49,26 +49,26 @@ abstract contract PrimarySales is PeriodManager, BlockTimestamp {
 		revert("not exist");
 	}
 
-	function _checkBeforeBuy(uint256 tokenId) internal {
+	function _checkBeforeBuy(uint256 tokenId) internal view {
 		require(periods[tokenId].pricing == Ad.Pricing.RRP, "KD120");
 		require(!periods[tokenId].sold, "KD121");
 		require(periods[tokenId].minPrice == msg.value, "KD122");
 	}
 
-	function _checkBeforeBuyBasedOnTime(uint256 tokenId) internal {
+	function _checkBeforeBuyBasedOnTime(uint256 tokenId) internal view {
 		require(periods[tokenId].pricing == Ad.Pricing.DPBT, "KD123");
 		require(!periods[tokenId].sold, "KD121");
 		require(currentPrice(tokenId) <= msg.value, "KD122");
 	}
 
-	function _checkBeforeBid(uint256 tokenId) internal {
+	function _checkBeforeBid(uint256 tokenId) internal view {
 		require(periods[tokenId].pricing == Ad.Pricing.BIDDING, "KD124");
 		require(!periods[tokenId].sold, "KD121");
 		require(currentPrice(tokenId) < msg.value, "KD122");
 		require(periods[tokenId].saleEndTimestamp >= _blockTimestamp(), "KD129");
 	}
 
-	function _checkBeforeBidWithProposal(uint256 tokenId) internal {
+	function _checkBeforeBidWithProposal(uint256 tokenId) internal view {
 		require(periods[tokenId].pricing == Ad.Pricing.APPEAL, "KD127");
 		require(!periods[tokenId].sold, "KD121");
 		require(periods[tokenId].minPrice <= msg.value, "KD122");

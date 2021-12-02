@@ -147,7 +147,7 @@ contract AdManager is
 		require(ownerOf(tokenId) == address(this), "KD121");
 		require(!_alreadyBid(tokenId), "KD128");
 		_burnRight(tokenId);
-		_deletePeriod(tokenId, periods[tokenId]);
+		_deletePeriod(tokenId);
 		_eventEmitter().emitDeletePeriod(tokenId);
 		_eventEmitter().emitTransferCustom(address(this), address(0), tokenId);
 	}
