@@ -4,7 +4,7 @@ pragma solidity 0.8.9;
 import "../accessors/NameAccessor.sol";
 import "../common/BlockTimestamp.sol";
 import "../interfaces/IAdPool.sol";
-import "./MediaRegistry.sol";
+import "../interfaces/IMediaRegistry.sol";
 
 /// @title AdPool - stores all ads accorss every space.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
@@ -49,7 +49,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 	/**
 	 * Accessors
 	 */
-	function _mediaRegistry() internal view returns (MediaRegistry) {
-		return MediaRegistry(mediaRegistryAddress());
+	function _mediaRegistry() internal view returns (IMediaRegistry) {
+		return IMediaRegistry(mediaRegistryAddress());
 	}
 }

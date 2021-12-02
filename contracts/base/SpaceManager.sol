@@ -2,7 +2,7 @@
 pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
-import "../peripheries/MediaRegistry.sol";
+import "../interfaces/IMediaRegistry.sol";
 import "../interfaces/IAdPool.sol";
 import "../peripheries/EventEmitter.sol";
 

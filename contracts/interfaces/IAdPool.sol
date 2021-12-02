@@ -6,7 +6,7 @@ import "../libraries/Ad.sol";
 /// @title IAdPool - stores all ads accorss every space.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 interface IAdPool {
-	function spaced(string memory spaceMetadata) external returns (bool);
+	function spaced(string memory spaceMetadata) external view returns (bool);
 
 	function addSpace(string memory spaceMetadata) external;
 

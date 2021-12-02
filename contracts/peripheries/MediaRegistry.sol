@@ -3,18 +3,13 @@ pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
 import "../common/BlockTimestamp.sol";
+import "../interfaces/IMediaRegistry.sol";
 import "hardhat/console.sol";
 
 /// @title MediaRegistry - registers a list of media accounts.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract MediaRegistry is BlockTimestamp, NameAccessor {
-	struct Account {
-		address proxy;
-		address mediaEOA;
-		string applicationMetadata;
-		string updatableMetadata;
-	}
-	mapping(address => Account) public allAccounts;
+contract MediaRegistry is IMediaRegistry, BlockTimestamp, NameAccessor {
+	mapping(address => Account) public override allAccounts;
 
 	modifier onlyProxies() {
 		require(ownerOf(msg.sender) != address(0), "KD011");
