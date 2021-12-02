@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "../interfaces/INameRegistry.sol";
-
 /// @title INameRegistry - saves a set of addresses used in the system.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 interface INameRegistry {

@@ -3,12 +3,12 @@ pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
 import "../common/BlockTimestamp.sol";
-import "../libraries/Ad.sol";
+import "../interfaces/IAdPool.sol";
 import "./MediaRegistry.sol";
 
 /// @title AdPool - stores all ads accorss every space.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdPool is BlockTimestamp, NameAccessor {
+contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
 	mapping(uint256 => Ad.Period) public allPeriods;
 	/// @dev Returns spaceId that is tied with space metadata.
@@ -23,10 +23,12 @@ contract AdPool is BlockTimestamp, NameAccessor {
 		initialize(_nameRegistry);
 	}
 
+	/// @inheritdoc IAdPool
 	function addSpace(string memory spaceMetadata) external onlyProxies {
 		spaced[spaceMetadata] = true;
 	}
 
+	/// @inheritdoc IAdPool
 	function addPeriod(uint256 tokenId, Ad.Period memory period)
 		external
 		onlyProxies
@@ -34,10 +36,12 @@ contract AdPool is BlockTimestamp, NameAccessor {
 		allPeriods[tokenId] = period;
 	}
 
+	/// @inheritdoc IAdPool
 	function deletePeriod(uint256 tokenId) external onlyProxies {
 		delete allPeriods[tokenId];
 	}
 
+	/// @inheritdoc IAdPool
 	function mediaProxyOf(uint256 tokenId) public view returns (address) {
 		return allPeriods[tokenId].mediaProxy;
 	}
