@@ -3,8 +3,8 @@ pragma solidity 0.8.9;
 
 import "../proxies/MediaProxy.sol";
 import "../accessors/NameAccessor.sol";
-import "../peripheries/EventEmitter.sol";
-import "../peripheries/MediaRegistry.sol";
+import "../interfaces/IEventEmitter.sol";
+import "../interfaces/IMediaRegistry.sol";
 import "hardhat/console.sol";
 
 /// @title MediaFactory - creates proxy contracts for media accounts.
@@ -113,11 +113,11 @@ contract MediaFactory is NameAccessor {
 	/**
 	 * Accessors
 	 */
-	function _registry() internal view returns (MediaRegistry) {
-		return MediaRegistry(mediaRegistryAddress());
+	function _registry() internal view returns (IMediaRegistry) {
+		return IMediaRegistry(mediaRegistryAddress());
 	}
 
-	function _event() internal view returns (EventEmitter) {
-		return EventEmitter(eventEmitterAddress());
+	function _event() internal view returns (IEventEmitter) {
+		return IEventEmitter(eventEmitterAddress());
 	}
 }

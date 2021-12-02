@@ -3,12 +3,12 @@ pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
 import "../common/BlockTimestamp.sol";
-import "../peripheries/MediaRegistry.sol";
-import "../libraries/Ad.sol";
+import "../interfaces/IMediaRegistry.sol";
+import "../interfaces/IEventEmitter.sol";
 
 /// @title EventEmitter - emits events on behalf of each proxy.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract EventEmitter is NameAccessor, BlockTimestamp {
+contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 	/// @dev Emitted when a new media is created.
 	event NewMedia(
 		address proxy,
@@ -285,7 +285,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	/**
 	 * Accessors
 	 */
-	function _mediaRegistry() internal view returns (MediaRegistry) {
-		return MediaRegistry(mediaRegistryAddress());
+	function _mediaRegistry() internal view returns (IMediaRegistry) {
+		return IMediaRegistry(mediaRegistryAddress());
 	}
 }

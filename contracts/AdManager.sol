@@ -480,11 +480,10 @@ contract AdManager is
 	}
 
 	function _collectFees(uint256 value) internal {
-		(bool success, ) = payable(vaultAddress()).call{ value: value, gas: 10000 }(
-			""
-		);
+		address vault = vaultAddress();
+		(bool success, ) = payable(vault).call{ value: value, gas: 10000 }("");
 		if (!success) {
-			_eventEmitter().emitPaymentFailure(vaultAddress(), value);
+			_eventEmitter().emitPaymentFailure(vault, value);
 		}
 	}
 }
