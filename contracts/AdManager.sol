@@ -3,18 +3,12 @@ pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./base/PrimarySales.sol";
-import "./base/ProposalManager.sol";
 import "./base/DistributionRight.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is
-	DistributionRight,
-	PrimarySales,
-	ProposalManager,
-	ReentrancyGuard
-{
+contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Can call it by only the media
 	modifier onlyMedia() {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");

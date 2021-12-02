@@ -5,13 +5,11 @@ import "../accessors/NameAccessor.sol";
 import "../interfaces/IMediaRegistry.sol";
 import "../interfaces/IAdPool.sol";
 import "../interfaces/IEventEmitter.sol";
+import "./Storage.sol";
 
 /// @title SpaceManager - manages ad spaces.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-abstract contract SpaceManager is NameAccessor {
-	/// @dev Returns spaceId that is tied with space metadata.
-	mapping(string => bool) public spaced;
-
+abstract contract SpaceManager is NameAccessor, Storage {
 	function _newSpace(string memory spaceMetadata) internal {
 		require(
 			!spaced[spaceMetadata] && !_adPool().spaced(spaceMetadata),

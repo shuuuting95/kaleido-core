@@ -1,28 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "./PeriodManager.sol";
+import "./ProposalManager.sol";
 import "../common/BlockTimestamp.sol";
-import "../libraries/Sale.sol";
 
 /// @title PrimarySales - manages how to sell them out.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-abstract contract PrimarySales is PeriodManager, BlockTimestamp {
-	/// @dev Maps tokenId with bidding info
-	mapping(uint256 => Sale.Bidding) public bidding;
-
-	/// @dev Maps tokenId with offer info
-	mapping(uint256 => Sale.Offer) public offered;
-
-	/// @dev Maps tokenId with appeal info
-	mapping(uint256 => Sale.Appeal[]) public appealed;
-
-	/// @dev The total bidding value
-	uint256 internal _biddingTotal;
-
-	/// @dev The total value offered by users
-	uint256 internal _offeredTotal;
-
+abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 	/// @dev Returns the current price.
 	/// @param tokenId uint256 of the token ID
 	function currentPrice(uint256 tokenId) public view returns (uint256) {

@@ -2,18 +2,11 @@
 pragma solidity 0.8.9;
 
 import "./SpaceManager.sol";
-import "../libraries/Ad.sol";
 import "../libraries/Schedule.sol";
 
 /// @title PeriodManager - manages ad periods.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 abstract contract PeriodManager is SpaceManager {
-	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
-	mapping(uint256 => Ad.Period) public periods;
-
-	/// @dev Maps the space metadata with tokenIds of ad periods.
-	mapping(string => uint256[]) internal _periodKeys;
-
 	function _checkOverlapping(
 		string memory metadata,
 		uint256 displayStartTimestamp,
