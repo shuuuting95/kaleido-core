@@ -3,7 +3,7 @@ pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
 import "../peripheries/MediaRegistry.sol";
-import "../peripheries/AdPool.sol";
+import "../interfaces/IAdPool.sol";
 import "../peripheries/EventEmitter.sol";
 
 /// @title SpaceManager - manages ad spaces.
@@ -29,8 +29,8 @@ abstract contract SpaceManager is NameAccessor {
 		return MediaRegistry(mediaRegistryAddress());
 	}
 
-	function _adPool() internal view returns (AdPool) {
-		return AdPool(adPoolAddress());
+	function _adPool() internal view returns (IAdPool) {
+		return IAdPool(adPoolAddress());
 	}
 
 	function _eventEmitter() internal view returns (EventEmitter) {

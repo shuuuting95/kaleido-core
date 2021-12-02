@@ -406,7 +406,7 @@ contract AdManager is
 	) external onlyMedia {
 		string memory metadata = proposed[tokenId].content;
 		require(bytes(metadata).length != 0, "KD130");
-		deniedReasons[tokenId].push(Denied(reason, offensive));
+		deniedReasons[tokenId].push(Draft.Denied(reason, offensive));
 		_eventEmitter().emitDenyProposal(tokenId, metadata, reason, offensive);
 	}
 
