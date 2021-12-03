@@ -64,21 +64,39 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 			bidding[tokenId].bidder != address(0) || appealed[tokenId].length != 0;
 	}
 
-	function _refundBiddingAmount(uint256 tokenId) internal returns (bool sent) {
+	function _refundBiddingAmount(uint256 tokenId) internal {
 		if (
 			periods[tokenId].pricing == Ad.Pricing.ENGLISH &&
 			bidding[tokenId].bidder != address(0)
 		) {
-			sent = payable(bidding[tokenId].bidder).send(bidding[tokenId].price);
+			(bool success, ) = payable(bidding[tokenId].bidder).call{
+				value: bidding[tokenId].price,
+				gas: 10000
+			}("");
+			if (!success) {
+				_eventEmitter().emitPaymentFailure(
+					bidding[tokenId].bidder,
+					bidding[tokenId].price
+				);
+			}
 		}
 	}
 
-	function _refundOfferedAmount(uint256 tokenId) internal returns (bool sent) {
+	function _refundOfferedAmount(uint256 tokenId) internal {
 		if (
 			periods[tokenId].pricing == Ad.Pricing.OFFER &&
 			offered[tokenId].sender != address(0)
 		) {
-			sent = payable(offered[tokenId].sender).send(offered[tokenId].price);
+			(bool success, ) = payable(offered[tokenId].sender).call{
+				value: offered[tokenId].price,
+				gas: 10000
+			}("");
+			if (!success) {
+				_eventEmitter().emitPaymentFailure(
+					offered[tokenId].sender,
+					offered[tokenId].price
+				);
+			}
 		}
 	}
 }
