@@ -10,7 +10,7 @@ import "./Storage.sol";
 /// @title SpaceManager - manages ad spaces.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 abstract contract SpaceManager is NameAccessor, Storage {
-	function _newSpace(string memory spaceMetadata) internal {
+	function _newSpace(string memory spaceMetadata) internal virtual {
 		require(
 			!spaced[spaceMetadata] && !_adPool().spaced(spaceMetadata),
 			"KD100"
@@ -23,15 +23,15 @@ abstract contract SpaceManager is NameAccessor, Storage {
 	/**
 	 * Accessors
 	 */
-	function _mediaRegistry() internal view returns (IMediaRegistry) {
+	function _mediaRegistry() internal view virtual returns (IMediaRegistry) {
 		return IMediaRegistry(mediaRegistryAddress());
 	}
 
-	function _adPool() internal view returns (IAdPool) {
+	function _adPool() internal view virtual returns (IAdPool) {
 		return IAdPool(adPoolAddress());
 	}
 
-	function _eventEmitter() internal view returns (IEventEmitter) {
+	function _eventEmitter() internal view virtual returns (IEventEmitter) {
 		return IEventEmitter(eventEmitterAddress());
 	}
 }

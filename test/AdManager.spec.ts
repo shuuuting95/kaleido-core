@@ -361,7 +361,24 @@ describe('AdManager', async () => {
       )
     })
 
-    // TODO: already apeal
+    it('should not delete because someone has already bid with a proposal', async () => {
+      const { now, factory, name, event, pool } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const metadata = '3wijisdkfj;alkjda'
+      await newPeriodWith(manager, { now, pricing: 4 })
+      await manager
+        .connect(user3)
+        .bidWithProposal(
+          tokenId,
+          metadata,
+          option({ value: parseEther('0.3') })
+        )
+
+      await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
+        'KD128'
+      )
+    })
   })
 
   describe('offerPeriod', async () => {
