@@ -14,8 +14,8 @@ const adminWallet = getWallet(0)
 const main = async () => {
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
   const initializer = ifaceAdManager.encodeFunctionData('initialize', [
-    'Kaleido',
-    'ipfs://jkasjkfajkjakjskjfa;k/',
+    'Claime.io',
+    'ipfs://',
     getNameRegistryAddress(network),
   ])
 
@@ -23,10 +23,11 @@ const main = async () => {
   const mediaFactory = getMediaFactoryInstance(factoryAddress, adminWallet)
 
   const tx = await mediaFactory.newMedia(
-    '0xf19fb9fe1725bc6e3615e5ad656d3b8fc3b12176',
-    '_ojROEcQk1EJTEwYAovVBT0uh6t-X7YTDzHjxYLvCfY',
+    '0xCdfc500F7f0FCe1278aECb0340b523cD55b3EBbb',
+    '',
+    'Qme81dBfEP94hH6UKPrkvnaHbKDK4dRek7bbT7a8aCF3Zr',
     initializer,
-    3,
+    0,
     option()
   )
   const rc = await tx.wait()
