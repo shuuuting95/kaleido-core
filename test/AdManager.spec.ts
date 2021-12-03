@@ -261,11 +261,13 @@ describe('AdManager', async () => {
     it('should revert because the display end time is before the start of the display', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name, now)
+      const saleEndTimestamp = now + 2400
       const displayStartTimestamp = now + 7200
       const displayEndTimestamp = now + 3600
 
       await expect(
         newPeriodWith(manager, {
+          saleEndTimestamp: saleEndTimestamp,
           displayStartTimestamp: displayStartTimestamp,
           displayEndTimestamp: displayEndTimestamp,
         })
