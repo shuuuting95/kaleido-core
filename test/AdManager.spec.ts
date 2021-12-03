@@ -1139,6 +1139,44 @@ describe('AdManager', async () => {
     })
   })
 
+  describe('pushToSuccessfulBidder', async () => {
+    it('should push a token to the successful bidder', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+
+      const saleEndTimestamp = now + 2400
+      const pricing = 2
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        saleEndTimestamp: saleEndTimestamp,
+        pricing: pricing,
+        minPrice: price,
+      })
+      await manager
+        .connect(user3)
+        .bid(tokenId, option({ value: parseEther('0.3') }))
+
+      expect(await manager.balance()).to.be.eq(parseEther('0.3'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
+
+      // passed the end timestamp of the sale
+      await manager.setTime(now + 2410)
+
+      expect(
+        await manager.connect(user2).pushToSuccessfulBidder(tokenId, option())
+      )
+        .to.emit(event, 'ReceiveToken')
+        .withArgs(tokenId, parseEther('0.3'), user3.address, now + 2410)
+        .to.emit(event, 'TransferCustom')
+        .withArgs(manager.address, user3.address, tokenId)
+      expect(await manager.balance()).to.be.eq(parseEther('0.27'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0.27'))
+      expect(await manager.ownerOf(tokenId)).to.be.eq(user3.address)
+    })
+  })
+
   describe('withdraw', async () => {
     it('should withdraw the fund after a user bought', async () => {
       const { now, factory, name, event } = await setupTests()

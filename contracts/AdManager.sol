@@ -224,50 +224,20 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_eventEmitter().emitTransferCustom(address(this), appeal.sender, tokenId);
 	}
 
-	function _refundToProposers(uint256 tokenId, uint256 successfulBidderNo)
-		internal
-	{
-		for (uint256 i = 0; i < appealed[tokenId].length; i++) {
-			Sale.Appeal memory appeal = appealed[tokenId][i];
-			_biddingTotal -= appeal.price;
-			if (i == successfulBidderNo) {
-				_collectFees(appeal.price / 10);
-			} else {
-				(bool success, ) = payable(appeal.sender).call{
-					value: appeal.price,
-					gas: 10000
-				}("");
-				if (!success) {
-					_eventEmitter().emitPaymentFailure(appeal.sender, appeal.price);
-				}
-			}
-		}
-	}
-
 	/// @dev Receives the token you bidded if you are the successful bidder.
 	/// @param tokenId uint256 of the token ID
 	function receiveToken(uint256 tokenId)
 		external
-		payable
 		onlySuccessfulBidder(tokenId)
 	{
-		_checkBeforeReceiveToken(tokenId);
-		uint256 price = bidding[tokenId].price;
-		periods[tokenId].sold = true;
-		_biddingTotal -= price;
-		_dropRight(msg.sender, tokenId);
-		_collectFees(price / 10);
-		delete bidding[tokenId];
-		_eventEmitter().emitReceiveToken(
-			tokenId,
-			price,
-			msg.sender,
-			_blockTimestamp()
-		);
-		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
+		_toSuccessfulBidder(tokenId, msg.sender);
 	}
 
-	// TODO: enable media to push the token
+	/// @dev Receives the token you bidded if you are the successful bidder.
+	/// @param tokenId uint256 of the token ID
+	function pushToSuccessfulBidder(uint256 tokenId) external onlyMedia {
+		_toSuccessfulBidder(tokenId, bidding[tokenId].bidder);
+	}
 
 	/// @dev Offers to buy a period that the sender requests.
 	/// @param spaceMetadata string of the space metadata
@@ -476,6 +446,43 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		require(periods[tokenId].pricing == Ad.Pricing.ENGLISH, "KD124");
 		require(!periods[tokenId].sold, "KD121");
 		require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
+	}
+
+	function _refundToProposers(uint256 tokenId, uint256 successfulBidderNo)
+		internal
+	{
+		for (uint256 i = 0; i < appealed[tokenId].length; i++) {
+			Sale.Appeal memory appeal = appealed[tokenId][i];
+			_biddingTotal -= appeal.price;
+			if (i == successfulBidderNo) {
+				_collectFees(appeal.price / 10);
+			} else {
+				(bool success, ) = payable(appeal.sender).call{
+					value: appeal.price,
+					gas: 10000
+				}("");
+				if (!success) {
+					_eventEmitter().emitPaymentFailure(appeal.sender, appeal.price);
+				}
+			}
+		}
+	}
+
+	function _toSuccessfulBidder(uint256 tokenId, address receiver) internal {
+		_checkBeforeReceiveToken(tokenId);
+		uint256 price = bidding[tokenId].price;
+		periods[tokenId].sold = true;
+		_biddingTotal -= price;
+		_dropRight(receiver, tokenId);
+		_collectFees(price / 10);
+		delete bidding[tokenId];
+		_eventEmitter().emitReceiveToken(
+			tokenId,
+			price,
+			receiver,
+			_blockTimestamp()
+		);
+		_eventEmitter().emitTransferCustom(address(this), receiver, tokenId);
 	}
 
 	function _collectFees(uint256 value) internal {
