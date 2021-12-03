@@ -1,8 +1,8 @@
 import hre, { deployments } from 'hardhat'
 
 export const getAdManagerContract = async () => {
-  const Deployment = await deployments.get('AdManager')
-  const contract = await hre.ethers.getContractFactory('AdManager', {
+  const Deployment = await deployments.get('MockTimeAdManager')
+  const contract = await hre.ethers.getContractFactory('MockTimeAdManager', {
     libraries: {
       Ad: (await deployments.get('Ad')).address,
     },

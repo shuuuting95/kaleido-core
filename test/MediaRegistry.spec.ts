@@ -27,8 +27,8 @@ describe('MediaFactory', async () => {
   })
 
   describe('newMedia', async () => {
-    it('should new a account of media', async () => {
-      const { now, factory, manager, name, registry } = await setupTests()
+    it('should update application metadata', async () => {
+      const { factory, name, registry } = await setupTests()
 
       const applicationMetadata = 'xxdsfjakjajijraksldfjak'
       const updatableMetadata = 'kykesrjisjklwjeidfhsjfa'
@@ -43,22 +43,30 @@ describe('MediaFactory', async () => {
         applicationMetadata,
         updatableMetadata,
       ])
+
+      const modifiedData = '24jikerjkjjfijwoiejeiajfalj'
+      await registry.updateApplicationMetadata(proxy, modifiedData)
+      expect(await registry.allAccounts(proxy)).to.deep.equal([
+        proxy,
+        user2.address,
+        modifiedData,
+        updatableMetadata,
+      ])
     })
 
-    it('should revert because the sender is not the owner', async () => {
-      const { factory, name } = await setupTests()
+    it('should revert because the sender is not the deployer', async () => {
+      const { registry, factory, name } = await setupTests()
 
-      const initializer = defaultInitializer(name.address)
+      const applicationMetadata = 'xxdsfjakjajijraksldfjak'
+      const updatableMetadata = 'kykesrjisjklwjeidfhsjfa'
+      const { proxy } = await newMediaWith(user2, factory, name, {
+        applicationMetadata: applicationMetadata,
+        updatableMetadata: updatableMetadata,
+      })
+      const modifiedData = '24jikerjkjjfijwoiejeiajfalj'
+
       await expect(
-        factory
-          .connect(user2)
-          .newMedia(
-            user2.address,
-            'dfajkajdjadafk',
-            'kykesrjisjklwjeidfhsjfa',
-            initializer,
-            1
-          )
+        registry.connect(user2).updateApplicationMetadata(proxy, modifiedData)
       ).to.be.revertedWith('KD012')
     })
   })
@@ -95,9 +103,16 @@ export const newMediaWith = async (
 const defaultInitializer = (name: string) => {
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
   const initializer = ifaceAdManager.encodeFunctionData('initialize', [
-    'BridgesMedia',
-    'ipfs://',
+    'NameA',
+    'https://base/',
     name,
   ])
   return initializer
+}
+function managerInstance(
+  factory: ethers.Contract,
+  name: ethers.Contract,
+  now: number
+) {
+  throw new Error('Function not implemented.')
 }

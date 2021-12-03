@@ -1,25 +1,26 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "./NameRegistry.sol";
+import "../interfaces/INameRegistry.sol";
 
 /// @title NameAccessor - manages the endpoints.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract NameAccessor {
-	NameRegistry internal _nameRegistry;
+	INameRegistry internal _nameRegistry;
 
 	/// @dev Sets the address of NameRegistry.
 	/// @param nameRegistry address of the NameRegistry
 	function initialize(address nameRegistry) internal {
-		_nameRegistry = NameRegistry(nameRegistry);
+		_nameRegistry = INameRegistry(nameRegistry);
 	}
 
-	/// @dev Prevents calling a function from anyone except the accepted contract.
+	/// @dev Prevents calling a function from anyone except the accepted contracts.
 	modifier onlyAllowedContract() {
 		require(_nameRegistry.allowedContracts(msg.sender), "KD013");
 		_;
 	}
 
+	/// @dev Throws if not called by MediaFactory.
 	modifier onlyFactory() {
 		require(msg.sender == mediaFactoryAddress(), "KD010");
 		_;
@@ -63,6 +64,6 @@ contract NameAccessor {
 
 	/// @dev Gets the owner address.
 	function owner() public view returns (address) {
-		return _nameRegistry.owner();
+		return _nameRegistry.deployer();
 	}
 }

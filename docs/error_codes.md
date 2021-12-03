@@ -37,6 +37,9 @@
 - `KD124`: `Not Bidding`
 - `KD125`: `Auction continues`
 - `KD126`: `Not the successful bidder`
+- `KD127`: `Not Bidding with Proposal`
+- `KD128`: `Already bid`
+- `KD129`: `Auction ended`
 
 ## Proposal related
 

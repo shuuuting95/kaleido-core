@@ -3,17 +3,17 @@ pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
 import "../common/BlockTimestamp.sol";
-import "../peripheries/MediaRegistry.sol";
-import "../libraries/Ad.sol";
+import "../interfaces/IMediaRegistry.sol";
+import "../interfaces/IEventEmitter.sol";
 
 /// @title EventEmitter - emits events on behalf of each proxy.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract EventEmitter is NameAccessor, BlockTimestamp {
+contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 	/// @dev Emitted when a new media is created.
 	event NewMedia(
 		address proxy,
 		address mediaEOA,
-		string constantMetadata,
+		string applicationMetadata,
 		string updatableMetadata,
 		uint256 saltNonce
 	);
@@ -34,6 +34,14 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	event DeletePeriod(uint256 tokenId);
 	event Buy(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
 	event Bid(uint256 tokenId, uint256 price, address buyer, uint256 timestamp);
+	event BidWithProposal(
+		uint256 tokenId,
+		uint256 price,
+		address sender,
+		string metadata,
+		uint256 timestamp
+	);
+	event SelectProposal(uint256 tokenId, address successfulBidder);
 	event ReceiveToken(
 		uint256 tokenId,
 		uint256 price,
@@ -71,6 +79,7 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		address indexed to,
 		uint256 indexed tokenId
 	);
+	event PaymentFailure(address receiver, uint256 price);
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
@@ -120,25 +129,51 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	function emitBuy(
 		uint256 tokenId,
 		uint256 msgValue,
-		address msgSender
+		address msgSender,
+		uint256 blockTimestamp
 	) external onlyProxies {
-		emit Buy(tokenId, msgValue, msgSender, _blockTimestamp());
+		emit Buy(tokenId, msgValue, msgSender, blockTimestamp);
 	}
 
 	function emitBid(
 		uint256 tokenId,
 		uint256 msgValue,
-		address msgSender
+		address msgSender,
+		uint256 blockTimestamp
 	) external onlyProxies {
-		emit Bid(tokenId, msgValue, msgSender, _blockTimestamp());
+		emit Bid(tokenId, msgValue, msgSender, blockTimestamp);
+	}
+
+	function emitBidWithProposal(
+		uint256 tokenId,
+		uint256 msgValue,
+		address msgSender,
+		string memory metadata,
+		uint256 blockTimestamp
+	) external onlyProxies {
+		emit BidWithProposal(
+			tokenId,
+			msgValue,
+			msgSender,
+			metadata,
+			blockTimestamp
+		);
+	}
+
+	function emitSelectProposal(uint256 tokenId, address successfulBidder)
+		external
+		onlyProxies
+	{
+		emit SelectProposal(tokenId, successfulBidder);
 	}
 
 	function emitReceiveToken(
 		uint256 tokenId,
 		uint256 price,
-		address buyer
+		address buyer,
+		uint256 blockTimestamp
 	) external onlyProxies {
-		emit ReceiveToken(tokenId, price, buyer, _blockTimestamp());
+		emit ReceiveToken(tokenId, price, buyer, blockTimestamp);
 	}
 
 	function emitOfferPeriod(
@@ -219,14 +254,14 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 	function emitNewMedia(
 		address proxy,
 		address mediaEOA,
-		string memory constantMetadata,
+		string memory applicationMetadata,
 		string memory updatableMetadata,
 		uint256 saltNonce
 	) external onlyFactory {
 		emit NewMedia(
 			proxy,
 			mediaEOA,
-			constantMetadata,
+			applicationMetadata,
 			updatableMetadata,
 			saltNonce
 		);
@@ -240,10 +275,17 @@ contract EventEmitter is NameAccessor, BlockTimestamp {
 		emit UpdateMedia(proxy, mediaEOA, accountMetadata);
 	}
 
+	function emitPaymentFailure(address receiver, uint256 price)
+		external
+		onlyProxies
+	{
+		emit PaymentFailure(receiver, price);
+	}
+
 	/**
 	 * Accessors
 	 */
-	function _mediaRegistry() internal view returns (MediaRegistry) {
-		return MediaRegistry(mediaRegistryAddress());
+	function _mediaRegistry() internal view returns (IMediaRegistry) {
+		return IMediaRegistry(mediaRegistryAddress());
 	}
 }

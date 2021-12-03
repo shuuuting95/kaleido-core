@@ -3,18 +3,13 @@ pragma solidity 0.8.9;
 
 import "../accessors/NameAccessor.sol";
 import "../common/BlockTimestamp.sol";
+import "../interfaces/IMediaRegistry.sol";
 import "hardhat/console.sol";
 
 /// @title MediaRegistry - registers a list of media accounts.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract MediaRegistry is BlockTimestamp, NameAccessor {
-	struct Account {
-		address proxy;
-		address mediaEOA;
-		string constantMetadata;
-		string updatableMetadata;
-	}
-	mapping(address => Account) public allAccounts;
+contract MediaRegistry is IMediaRegistry, BlockTimestamp, NameAccessor {
+	mapping(address => Account) public override allAccounts;
 
 	modifier onlyProxies() {
 		require(ownerOf(msg.sender) != address(0), "KD011");
@@ -29,19 +24,19 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 
 	/// @dev Adds media account.
 	/// @param proxy address of the proxy contract
-	/// @param constantMetadata string of constant metadata for the defailts of the account
+	/// @param applicationMetadata string of constant metadata for the defailts of the account
 	/// @param updatableMetadata string of constant metadata for the defailts of the account
 	/// @param mediaEOA address of the media account
 	function addMedia(
 		address proxy,
-		string memory constantMetadata,
+		string memory applicationMetadata,
 		string memory updatableMetadata,
 		address mediaEOA
 	) external onlyFactory {
 		allAccounts[proxy] = Account(
 			proxy,
 			mediaEOA,
-			constantMetadata,
+			applicationMetadata,
 			updatableMetadata
 		);
 	}
@@ -55,6 +50,13 @@ contract MediaRegistry is BlockTimestamp, NameAccessor {
 	{
 		allAccounts[msg.sender].mediaEOA = mediaEOA;
 		allAccounts[msg.sender].updatableMetadata = metadata;
+	}
+
+	function updateApplicationMetadata(address proxy, string memory metadata)
+		external
+		onlyOwner
+	{
+		allAccounts[proxy].applicationMetadata = metadata;
 	}
 
 	/// @dev Returns whether the account has created or not.

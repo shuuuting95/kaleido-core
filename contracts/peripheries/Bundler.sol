@@ -10,6 +10,7 @@ import "../libraries/Substrings.sol";
 import "../AdManager.sol";
 import "hardhat/console.sol";
 
+// TODO: needed to be updated for production
 /// @title Bundler - makes some NFTs be one to easily .
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract Bundler is ERC721, NameAccessor {
@@ -35,7 +36,7 @@ contract Bundler is ERC721, NameAccessor {
 				int256(i * 32)
 			);
 			uint256 tokenId = Integers.parseInt(sliced);
-			address proxy = _adPool().mediaProxyOf(tokenId);
+			address payable proxy = payable(_adPool().mediaProxyOf(tokenId));
 			AdManager manager = AdManager(proxy);
 			// manager.transferToBundle(msg.sender, address(this), tokenId);
 		}

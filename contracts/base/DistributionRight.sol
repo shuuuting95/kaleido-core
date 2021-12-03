@@ -3,52 +3,27 @@ pragma solidity 0.8.9;
 
 import "./ERC721.sol";
 import "../accessors/NameAccessor.sol";
-
 import "hardhat/console.sol";
 
-/// @title DistributionRight - represents NFTs based on ad spaces and periods.
+/// @title DistributionRight - represents an NFT based on ad an space
+///        created by a media and its period.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract DistributionRight is ERC721 {
-	struct Denied {
-		string reason;
-		bool offensive;
-	}
-	struct Proposal {
-		string content;
-		address proposer;
-	}
-	mapping(uint256 => Proposal) public proposed;
-	mapping(uint256 => Denied[]) public deniedReasons;
-	mapping(uint256 => string) public accepted;
-
 	function _mintRight(
 		address reciever,
 		uint256 tokenId,
 		string memory metadata
-	) internal {
+	) internal virtual {
 		_mint(reciever, tokenId);
 		_tokenURIs[tokenId] = metadata;
 	}
 
-	function _burnRight(uint256 tokenId) internal {
+	function _burnRight(uint256 tokenId) internal virtual {
 		_burn(tokenId);
 		_tokenURIs[tokenId] = "";
 	}
 
-	function _dropRight(uint256 tokenId) internal {
-		_transfer(address(this), msg.sender, tokenId);
-	}
-
-	function _proposeToRight(uint256 tokenId, string memory metadata) internal {
-		proposed[tokenId] = Proposal(metadata, msg.sender);
-	}
-
-	function _clearProposal(uint256 tokenId) internal {
-		proposed[tokenId] = Proposal("", msg.sender);
-	}
-
-	function _acceptProposal(uint256 tokenId, string memory metadata) internal {
-		accepted[tokenId] = metadata;
-		_clearProposal(tokenId);
+	function _dropRight(address receiver, uint256 tokenId) internal virtual {
+		_transfer(address(this), receiver, tokenId);
 	}
 }

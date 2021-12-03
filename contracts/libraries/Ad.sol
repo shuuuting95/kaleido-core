@@ -3,15 +3,17 @@ pragma solidity 0.8.9;
 
 library Ad {
 	uint256 private constant _ID_LENGTH = 100000000000000000000000000000000;
-	// RBP : Recommended Retail Price
-	// DPBT: Dynamic Pricing Based on Time
-	// BIDDING : Auction, Bidding Price
-	// OFFER: Offered by others
+	// 0.RRP     : Recommended Retail Price
+	// 1.DUTCH   : Dutch Auction
+	// 2.ENGLISH : English Acction
+	// 3.OFFER   : Offered by Others
+	// 4.OPEN    : Open Bid by revealing the content
 	enum Pricing {
 		RRP,
-		DPBT,
-		BIDDING,
-		OFFER
+		DUTCH,
+		ENGLISH,
+		OFFER,
+		OPEN
 	}
 	struct Period {
 		address mediaProxy;
