@@ -63,7 +63,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Creates a new space for the media account.
 	/// @param spaceMetadata string of the space metadata
-	function newSpace(string memory spaceMetadata) external onlyMedia {
+	function newSpace(string memory spaceMetadata) external virtual onlyMedia {
 		_newSpace(spaceMetadata);
 	}
 

@@ -22,6 +22,13 @@ export const getMockTimeAdManagerABI = () => {
   return compiled.abi
 }
 
+export const getAdManagerV2ABI = () => {
+  const compiled = JSON.parse(
+    fs.readFileSync(getCompiledAdManagerV2Path()).toString()
+  )
+  return compiled.abi
+}
+
 // export const getVoucherABI = () => {
 //   const compiled = JSON.parse(
 //     fs.readFileSync(getCompiledVoucherPath()).toString()
@@ -93,6 +100,19 @@ export const getCompiledMockTimeAdManagerPath = () =>
     'test',
     'MockTimeAdManager.sol',
     'MockTimeAdManager.json'
+  )
+
+export const getCompiledAdManagerV2Path = () =>
+  path.join(
+    __dirname,
+    '..',
+    '..',
+    'build',
+    'artifacts',
+    'contracts',
+    'test',
+    'AdManagerV2.sol',
+    'AdManagerV2.json'
   )
 
 // export const getCompiledVoucherPath = () =>
