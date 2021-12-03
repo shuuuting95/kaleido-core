@@ -41,7 +41,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		string memory title,
 		string memory baseURI,
 		address nameRegistry
-	) external {
+	) external virtual {
 		_name = title;
 		_symbol = string(abi.encodePacked("Kaleido_", title));
 		_baseURI = baseURI;
@@ -53,6 +53,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param newMetadata string of a new metadata
 	function updateMedia(address newMediaEOA, string memory newMetadata)
 		external
+		virtual
 		onlyMedia
 	{
 		_mediaRegistry().updateMedia(newMediaEOA, newMetadata);
@@ -84,7 +85,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		uint256 displayEndTimestamp,
 		Ad.Pricing pricing,
 		uint256 minPrice
-	) external onlyMedia {
+	) external virtual onlyMedia {
 		require(saleEndTimestamp > _blockTimestamp(), "KD111");
 		require(saleEndTimestamp < displayStartTimestamp, "KD112");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
@@ -136,7 +137,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	///      If there is any users locking the fund for the sale, the amount would be transfered
 	///      to the user when deleting the period.
 	/// @param tokenId uint256 of the token ID
-	function deletePeriod(uint256 tokenId) external onlyMedia {
+	function deletePeriod(uint256 tokenId) external virtual onlyMedia {
 		require(periods[tokenId].mediaProxy != address(0), "KD114");
 		require(ownerOf(tokenId) == address(this), "KD121");
 		require(!_alreadyBid(tokenId), "KD128");
@@ -149,7 +150,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Buys the token that is defined as the specific period on an ad space.
 	///      The price of the token is fixed.
 	/// @param tokenId uint256 of the token ID
-	function buy(uint256 tokenId) external payable exceptYourself {
+	function buy(uint256 tokenId) external payable virtual exceptYourself {
 		_checkBeforeBuy(tokenId);
 		periods[tokenId].sold = true;
 		_dropRight(msg.sender, tokenId);
@@ -161,7 +162,12 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Buys the token that is defined as the specific period on an ad space.
 	///      The price is decreasing as time goes by, that is defined as an Dutch Auction.
 	/// @param tokenId uint256 of the token ID
-	function buyBasedOnTime(uint256 tokenId) external payable exceptYourself {
+	function buyBasedOnTime(uint256 tokenId)
+		external
+		payable
+		virtual
+		exceptYourself
+	{
 		_checkBeforeBuyBasedOnTime(tokenId);
 		periods[tokenId].sold = true;
 		_dropRight(msg.sender, tokenId);
@@ -173,7 +179,13 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Bids to participate in an auction.
 	///      It is defined as an English Auction.
 	/// @param tokenId uint256 of the token ID
-	function bid(uint256 tokenId) external payable exceptYourself nonReentrant {
+	function bid(uint256 tokenId)
+		external
+		payable
+		virtual
+		exceptYourself
+		nonReentrant
+	{
 		_checkBeforeBid(tokenId);
 		_refundBiddingAmount(tokenId);
 		_biddingTotal += (msg.value - bidding[tokenId].price);
@@ -188,6 +200,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	function bidWithProposal(uint256 tokenId, string memory proposalMetadata)
 		external
 		payable
+		virtual
 		exceptYourself
 		nonReentrant
 	{
@@ -208,7 +221,11 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Selects the best proposal bidded with.
 	/// @param tokenId uint256 of the token ID
 	/// @param index uint256 of the index number
-	function selectProposal(uint256 tokenId, uint256 index) external onlyMedia {
+	function selectProposal(uint256 tokenId, uint256 index)
+		external
+		virtual
+		onlyMedia
+	{
 		require(
 			appealed[tokenId].length >= index &&
 				appealed[tokenId][index].sender != address(0),
@@ -228,6 +245,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenId uint256 of the token ID
 	function receiveToken(uint256 tokenId)
 		external
+		virtual
 		onlySuccessfulBidder(tokenId)
 	{
 		_toSuccessfulBidder(tokenId, msg.sender);
@@ -235,7 +253,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Receives the token you bidded if you are the successful bidder.
 	/// @param tokenId uint256 of the token ID
-	function pushToSuccessfulBidder(uint256 tokenId) external onlyMedia {
+	function pushToSuccessfulBidder(uint256 tokenId) external virtual onlyMedia {
 		_toSuccessfulBidder(tokenId, bidding[tokenId].bidder);
 	}
 
@@ -247,7 +265,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		string memory spaceMetadata,
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp
-	) external payable exceptYourself {
+	) external payable virtual exceptYourself {
 		require(spaced[spaceMetadata], "KD101");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
 		uint256 tokenId = Ad.id(
@@ -275,7 +293,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Cancels an offer.
 	/// @param tokenId uint256 of the token ID
-	function cancelOffer(uint256 tokenId) external payable exceptYourself {
+	function cancelOffer(uint256 tokenId) external virtual exceptYourself {
 		require(offered[tokenId].sender == msg.sender, "KD116");
 		_refundOfferedAmount(tokenId);
 		_offeredTotal -= offered[tokenId].price;
@@ -288,6 +306,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param tokenMetadata string of the NFT token metadata
 	function acceptOffer(uint256 tokenId, string memory tokenMetadata)
 		external
+		virtual
 		onlyMedia
 	{
 		Sale.Offer memory offer = offered[tokenId];
@@ -331,7 +350,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
 	///      If you put 0 as the amount, you can withdraw as much as possible.
-	function withdraw() external onlyMedia {
+	function withdraw() external virtual onlyMedia {
 		uint256 withdrawal = withdrawalAmount();
 		(bool success, ) = payable(msg.sender).call{
 			value: withdrawal,
@@ -348,7 +367,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	///      Users can propose many times as long as it is accepted.
 	/// @param tokenId uint256 of the token ID
 	/// @param metadata string of the proposal metadata
-	function propose(uint256 tokenId, string memory metadata) external {
+	function propose(uint256 tokenId, string memory metadata) external virtual {
 		require(ownerOf(tokenId) == msg.sender, "KD012");
 		_proposeToRight(tokenId, metadata);
 		_eventEmitter().emitPropose(tokenId, metadata);
@@ -356,7 +375,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Accepts the proposal.
 	/// @param tokenId uint256 of the token ID
-	function acceptProposal(uint256 tokenId) external onlyMedia {
+	function acceptProposal(uint256 tokenId) external virtual onlyMedia {
 		string memory metadata = proposed[tokenId].content;
 		require(bytes(metadata).length != 0, "KD130");
 		require(ownerOf(tokenId) == proposed[tokenId].proposer, "KD131");
@@ -372,7 +391,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		uint256 tokenId,
 		string memory reason,
 		bool offensive
-	) external onlyMedia {
+	) external virtual onlyMedia {
 		string memory metadata = proposed[tokenId].content;
 		require(bytes(metadata).length != 0, "KD130");
 		deniedReasons[tokenId].push(Draft.Denied(reason, offensive));
@@ -384,7 +403,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		address from,
 		address to,
 		uint256 tokenId
-	) public override {
+	) public virtual override {
 		super.transferFrom(from, to, tokenId);
 		_eventEmitter().emitTransferCustom(from, to, tokenId);
 	}
@@ -394,7 +413,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		address from,
 		address to,
 		uint256 tokenId
-	) public override {
+	) public virtual override {
 		super.safeTransferFrom(from, to, tokenId);
 		_eventEmitter().emitTransferCustom(from, to, tokenId);
 	}
@@ -408,17 +427,17 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		string memory spaceMetadata,
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp
-	) public pure returns (uint256) {
+	) public pure virtual returns (uint256) {
 		return Ad.id(spaceMetadata, displayStartTimestamp, displayEndTimestamp);
 	}
 
 	/// @dev Returns the balacne deposited on the proxy contract.
-	function balance() public view returns (uint256) {
+	function balance() public view virtual returns (uint256) {
 		return address(this).balance;
 	}
 
 	/// @dev Returns the withdrawal amount.
-	function withdrawalAmount() public view returns (uint256) {
+	function withdrawalAmount() public view virtual returns (uint256) {
 		return address(this).balance - _biddingTotal - _offeredTotal;
 	}
 
@@ -427,6 +446,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	function display(string memory spaceMetadata)
 		external
 		view
+		virtual
 		returns (string memory, uint256)
 	{
 		uint256[] memory tokenIds = tokenIdsOf(spaceMetadata);
@@ -442,7 +462,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		return ("", 0);
 	}
 
-	function _checkBeforeReceiveToken(uint256 tokenId) internal view {
+	function _checkBeforeReceiveToken(uint256 tokenId) internal view virtual {
 		require(periods[tokenId].pricing == Ad.Pricing.ENGLISH, "KD124");
 		require(!periods[tokenId].sold, "KD121");
 		require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
@@ -450,6 +470,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	function _refundToProposers(uint256 tokenId, uint256 successfulBidderNo)
 		internal
+		virtual
 	{
 		for (uint256 i = 0; i < appealed[tokenId].length; i++) {
 			Sale.Appeal memory appeal = appealed[tokenId][i];
@@ -468,7 +489,10 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		}
 	}
 
-	function _toSuccessfulBidder(uint256 tokenId, address receiver) internal {
+	function _toSuccessfulBidder(uint256 tokenId, address receiver)
+		internal
+		virtual
+	{
 		_checkBeforeReceiveToken(tokenId);
 		uint256 price = bidding[tokenId].price;
 		periods[tokenId].sold = true;
@@ -485,7 +509,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_eventEmitter().emitTransferCustom(address(this), receiver, tokenId);
 	}
 
-	function _collectFees(uint256 value) internal {
+	function _collectFees(uint256 value) internal virtual {
 		address vault = vaultAddress();
 		(bool success, ) = payable(vault).call{ value: value, gas: 10000 }("");
 		if (!success) {

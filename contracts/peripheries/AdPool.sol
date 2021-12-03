@@ -42,7 +42,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 	}
 
 	/// @inheritdoc IAdPool
-	function mediaProxyOf(uint256 tokenId) public view returns (address) {
+	function mediaProxyOf(uint256 tokenId) external view returns (address) {
 		return allPeriods[tokenId].mediaProxy;
 	}
 
