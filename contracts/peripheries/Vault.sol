@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "../accessors/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../common/EtherPaymentFallback.sol";
 
 /// @title Vault - collects fees as the system usage.

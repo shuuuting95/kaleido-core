@@ -95,8 +95,8 @@ export const newMediaWith = async (
 const defaultInitializer = (name: string) => {
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
   const initializer = ifaceAdManager.encodeFunctionData('initialize', [
-    'NameA',
-    'https://base/',
+    'BridgesMedia',
+    'ipfs://',
     name,
   ])
   return initializer

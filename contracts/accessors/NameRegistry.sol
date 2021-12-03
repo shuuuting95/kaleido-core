@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "./Ownable.sol";
-import "../interfaces/INameRegistry.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "../interfaces/INameRegistry.sol";
 
 /// @title NameRegistry - saves a set of addresses.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>

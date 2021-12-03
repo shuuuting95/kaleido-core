@@ -54,6 +54,17 @@ describe('AdManager', async () => {
     return manager
   }
 
+  describe('initialize', async () => {
+    it('should initialize', async () => {
+      const { now, factory, registry, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+
+      expect(await manager.name()).to.be.eq('BridgesMedia')
+      expect(await manager.symbol()).to.be.eq('Kaleido_BridgesMedia')
+      expect(await manager.nameRegistryAddress()).to.be.eq(name.address)
+    })
+  })
+
   describe('updateMedia', async () => {
     it('should update a media', async () => {
       const { now, factory, registry, name, event } = await setupTests()
@@ -172,7 +183,7 @@ describe('AdManager', async () => {
       ])
       expect(await manager.ownerOf(tokenId)).to.be.eq(manager.address)
       expect(await manager.tokenURI(tokenId)).to.be.eq(
-        `https://base/${tokenMetadata}`
+        `ipfs://${tokenMetadata}`
       )
       expect(await pool.allPeriods(tokenId)).to.deep.equal([
         manager.address,

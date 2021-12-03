@@ -14,12 +14,13 @@ contract NameAccessor {
 		_nameRegistry = INameRegistry(nameRegistry);
 	}
 
-	/// @dev Prevents calling a function from anyone except the accepted contract.
+	/// @dev Prevents calling a function from anyone except the accepted contracts.
 	modifier onlyAllowedContract() {
 		require(_nameRegistry.allowedContracts(msg.sender), "KD013");
 		_;
 	}
 
+	/// @dev Throws if not called by MediaFactory.
 	modifier onlyFactory() {
 		require(msg.sender == mediaFactoryAddress(), "KD010");
 		_;
