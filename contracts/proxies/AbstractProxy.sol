@@ -2,6 +2,7 @@
 pragma solidity 0.8.9;
 
 import "./IProxy.sol";
+import "../interfaces/IEventEmitter.sol";
 import "../accessors/NameRegistry.sol";
 import "../common/EtherPaymentFallback.sol";
 import "hardhat/console.sol";
@@ -9,8 +10,6 @@ import "hardhat/console.sol";
 /// @title MediaProxy - do delegatecalls to the destination contract.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 abstract contract AbstractProxy is IProxy, EtherPaymentFallback {
-	event PaymentFailure(address receiver, uint256 price);
-
 	/// @dev Initializer
 	/// @param nameRegistry address of NameRegistry
 	constructor(address nameRegistry) {
@@ -66,8 +65,10 @@ abstract contract AbstractProxy is IProxy, EtherPaymentFallback {
 			""
 		);
 		if (!success) {
-			// TODO: eventEmitter
-			emit PaymentFailure(vault, msg.value / 2);
+			address _event = NameRegistry(masterCopy()).get(
+				keccak256(abi.encodePacked("EventEmitter"))
+			);
+			IEventEmitter(_event).emitPaymentFailure(vault, msg.value / 2);
 		}
 	}
 
