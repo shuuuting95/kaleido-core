@@ -159,7 +159,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
-	///      The price is decreasing as time goes by.
+	///      The price is decreasing as time goes by, that is defined as an Dutch Auction.
 	/// @param tokenId uint256 of the token ID
 	function buyBasedOnTime(uint256 tokenId) external payable exceptYourself {
 		_checkBeforeBuyBasedOnTime(tokenId);
@@ -171,6 +171,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	}
 
 	/// @dev Bids to participate in an auction.
+	///      It is defined as an English Auction.
 	/// @param tokenId uint256 of the token ID
 	function bid(uint256 tokenId) external payable exceptYourself nonReentrant {
 		_checkBeforeBid(tokenId);
@@ -180,6 +181,10 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_eventEmitter().emitBid(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
+	/// @dev Bids to participate in an auction.
+	///      It is defined as an Open Bid.
+	/// @param tokenId uint256 of the token ID
+	/// @param proposalMetadata string of the metadata hash
 	function bidWithProposal(uint256 tokenId, string memory proposalMetadata)
 		external
 		payable
@@ -468,7 +473,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	}
 
 	function _checkBeforeReceiveToken(uint256 tokenId) internal view {
-		require(periods[tokenId].pricing == Ad.Pricing.BIDDING, "KD124");
+		require(periods[tokenId].pricing == Ad.Pricing.ENGLISH, "KD124");
 		require(!periods[tokenId].sold, "KD121");
 		require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
 	}

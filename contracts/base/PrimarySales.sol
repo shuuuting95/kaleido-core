@@ -14,20 +14,20 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 		if (period.pricing == Ad.Pricing.RRP) {
 			return period.minPrice;
 		}
-		if (period.pricing == Ad.Pricing.DPBT) {
+		if (period.pricing == Ad.Pricing.DUTCH) {
 			return
 				period.startPrice -
 				((period.startPrice - period.minPrice) *
 					(_blockTimestamp() - period.saleStartTimestamp)) /
 				(period.saleEndTimestamp - period.saleStartTimestamp);
 		}
-		if (period.pricing == Ad.Pricing.BIDDING) {
+		if (period.pricing == Ad.Pricing.ENGLISH) {
 			return bidding[tokenId].price;
 		}
 		if (period.pricing == Ad.Pricing.OFFER) {
 			return offered[tokenId].price;
 		}
-		if (period.pricing == Ad.Pricing.APPEAL) {
+		if (period.pricing == Ad.Pricing.OPEN) {
 			return 0;
 		}
 		revert("not exist");
@@ -40,20 +40,20 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 	}
 
 	function _checkBeforeBuyBasedOnTime(uint256 tokenId) internal view {
-		require(periods[tokenId].pricing == Ad.Pricing.DPBT, "KD123");
+		require(periods[tokenId].pricing == Ad.Pricing.DUTCH, "KD123");
 		require(!periods[tokenId].sold, "KD121");
 		require(currentPrice(tokenId) <= msg.value, "KD122");
 	}
 
 	function _checkBeforeBid(uint256 tokenId) internal view {
-		require(periods[tokenId].pricing == Ad.Pricing.BIDDING, "KD124");
+		require(periods[tokenId].pricing == Ad.Pricing.ENGLISH, "KD124");
 		require(!periods[tokenId].sold, "KD121");
 		require(currentPrice(tokenId) < msg.value, "KD122");
 		require(periods[tokenId].saleEndTimestamp >= _blockTimestamp(), "KD129");
 	}
 
 	function _checkBeforeBidWithProposal(uint256 tokenId) internal view {
-		require(periods[tokenId].pricing == Ad.Pricing.APPEAL, "KD127");
+		require(periods[tokenId].pricing == Ad.Pricing.OPEN, "KD127");
 		require(!periods[tokenId].sold, "KD121");
 		require(periods[tokenId].minPrice <= msg.value, "KD122");
 		require(periods[tokenId].saleEndTimestamp >= _blockTimestamp(), "KD129");
@@ -66,7 +66,7 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 
 	function _refundBiddingAmount(uint256 tokenId) internal returns (bool sent) {
 		if (
-			periods[tokenId].pricing == Ad.Pricing.BIDDING &&
+			periods[tokenId].pricing == Ad.Pricing.ENGLISH &&
 			bidding[tokenId].bidder != address(0)
 		) {
 			sent = payable(bidding[tokenId].bidder).send(bidding[tokenId].price);

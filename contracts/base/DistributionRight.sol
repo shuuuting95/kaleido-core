@@ -3,7 +3,6 @@ pragma solidity 0.8.9;
 
 import "./ERC721.sol";
 import "../accessors/NameAccessor.sol";
-
 import "hardhat/console.sol";
 
 /// @title DistributionRight - represents NFTs based on ad spaces and periods.

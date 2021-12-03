@@ -30,13 +30,13 @@ library Sale {
 	{
 		if (period.pricing == Ad.Pricing.RRP) {
 			return period.minPrice;
-		} else if (period.pricing == Ad.Pricing.DPBT) {
+		} else if (period.pricing == Ad.Pricing.DUTCH) {
 			return period.minPrice * 10;
-		} else if (period.pricing == Ad.Pricing.BIDDING) {
+		} else if (period.pricing == Ad.Pricing.ENGLISH) {
 			return period.minPrice;
 		} else if (period.pricing == Ad.Pricing.OFFER) {
 			return period.minPrice;
-		} else if (period.pricing == Ad.Pricing.APPEAL) {
+		} else if (period.pricing == Ad.Pricing.OPEN) {
 			return period.minPrice;
 		} else {
 			return 0;

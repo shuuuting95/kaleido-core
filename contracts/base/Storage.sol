@@ -18,13 +18,13 @@ abstract contract Storage {
 	/// @dev Maps the space metadata with tokenIds of ad periods.
 	mapping(string => uint256[]) internal _periodKeys;
 
-	/// @dev Maps tokenId with bidding info
+	/// @dev Maps a tokenId with bidding info
 	mapping(uint256 => Sale.Bidding) public bidding;
 
-	/// @dev Maps tokenId with offer info
+	/// @dev Maps a tokenId with offer info
 	mapping(uint256 => Sale.Offer) public offered;
 
-	/// @dev Maps tokenId with appeal info
+	/// @dev Maps a tokenId with appeal info
 	mapping(uint256 => Sale.Appeal[]) public appealed;
 
 	/// @dev The total bidding value
@@ -33,7 +33,12 @@ abstract contract Storage {
 	/// @dev The total value offered by users
 	uint256 internal _offeredTotal;
 
+	/// @dev Maps a tokenId with the proposal content.
 	mapping(uint256 => Draft.Proposal) public proposed;
+
+	/// @dev Maps a tokenId with denied reasons.
 	mapping(uint256 => Draft.Denied[]) public deniedReasons;
+
+	/// @dev Maps a tokenId with the content metadata.
 	mapping(uint256 => string) public accepted;
 }
