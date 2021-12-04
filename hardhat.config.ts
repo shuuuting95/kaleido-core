@@ -1,10 +1,12 @@
 import '@nomiclabs/hardhat-waffle'
 import 'hardhat-abi-exporter'
+import 'hardhat-contract-sizer'
 import 'hardhat-deploy'
 import 'hardhat-deploy-ethers'
 import 'hardhat-gas-reporter'
 import { HardhatUserConfig } from 'hardhat/types/config'
 import './src/tasks/deploy_contracts'
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
 
@@ -54,7 +56,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 1000,
+            runs: 1,
           },
         },
       },
@@ -84,6 +86,12 @@ const config: HardhatUserConfig = {
     currency: 'JPY',
     gasPrice: 20,
     coinmarketcap: COINMARKETCAP,
+  },
+  contractSizer: {
+    alphaSort: true,
+    disambiguatePaths: false,
+    runOnCompile: true,
+    strict: true,
   },
 }
 export default config
