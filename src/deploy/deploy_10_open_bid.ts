@@ -8,31 +8,22 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts()
   const { deploy } = deployments
   const name = await findNameRegistry(hre)
-  const Ad = await deployments.get('Ad')
-  const Parchase = await deployments.get('Parchase')
 
-  const target =
-    hre.network.name === 'hardhat' ? 'MockTimeAdManager' : 'AdManager'
-
-  const AdManager = await deploy(target, {
+  const OpenBid = await deploy('OpenBid', {
     from: deployer,
-    args: [],
+    args: [name.address],
     log: true,
     deterministicDeployment: false,
-    libraries: {
-      Ad: Ad.address,
-      Parchase: Parchase.address,
-    },
   })
 
-  const key = utils.solidityKeccak256(['string'], ['AdManager'])
+  const key = utils.solidityKeccak256(['string'], ['OpenBid'])
   const value = await name.get(key)
-  if (value !== AdManager.address) {
-    const txReceipt = await name.set(key, AdManager.address, {
+  if (value !== OpenBid.address) {
+    const txReceipt = await name.set(key, OpenBid.address, {
       gasLimit: 4500000,
     })
     await txReceipt.wait()
-    console.log(`${target}: `, await name.get(key))
+    console.log('OpenBid: ', await name.get(key))
   }
 }
 

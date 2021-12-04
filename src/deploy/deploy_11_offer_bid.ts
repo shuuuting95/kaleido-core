@@ -11,12 +11,9 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const Ad = await deployments.get('Ad')
   const Parchase = await deployments.get('Parchase')
 
-  const target =
-    hre.network.name === 'hardhat' ? 'MockTimeAdManager' : 'AdManager'
-
-  const AdManager = await deploy(target, {
+  const OfferBid = await deploy('OfferBid', {
     from: deployer,
-    args: [],
+    args: [name.address],
     log: true,
     deterministicDeployment: false,
     libraries: {
@@ -25,14 +22,14 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     },
   })
 
-  const key = utils.solidityKeccak256(['string'], ['AdManager'])
+  const key = utils.solidityKeccak256(['string'], ['OfferBid'])
   const value = await name.get(key)
-  if (value !== AdManager.address) {
-    const txReceipt = await name.set(key, AdManager.address, {
+  if (value !== OfferBid.address) {
+    const txReceipt = await name.set(key, OfferBid.address, {
       gasLimit: 4500000,
     })
     await txReceipt.wait()
-    console.log(`${target}: `, await name.get(key))
+    console.log('OfferBid: ', await name.get(key))
   }
 }
 

@@ -9,12 +9,16 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts()
   const { deploy } = deployments
   const name = await findNameRegistry(hre)
+  const Ad = await deployments.get('Ad')
 
   const AdPool = await deploy('AdPool', {
     from: deployer,
     args: [name.address],
     log: true,
     deterministicDeployment: false,
+    libraries: {
+      Ad: Ad.address,
+    },
   })
 
   const key = utils.solidityKeccak256(['string'], ['AdPool'])
