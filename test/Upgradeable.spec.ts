@@ -8,6 +8,7 @@ import {
 import { option } from '../scripts/common/wallet'
 import { newMediaWith } from './MediaFactory.spec'
 import {
+  getAdPoolContract,
   getMediaFactoryContract,
   getMediaRegistryContract,
   getNameRegistryContract,
@@ -22,12 +23,15 @@ describe('Upgradeable AdManager', async () => {
     const now = Date.now()
     await network.provider.send('evm_setNextBlockTimestamp', [now])
     await network.provider.send('evm_mine')
+    const pool = await getAdPoolContract()
+    await pool.setTime(now)
     return {
       now: now,
       factory: await getMediaFactoryContract(),
       name: await getNameRegistryContract(),
       registry: await getMediaRegistryContract(),
       vault: await getVaultContract(),
+      pool: pool,
     }
   })
   const _manager = (proxy: string) =>
@@ -35,19 +39,20 @@ describe('Upgradeable AdManager', async () => {
 
   describe('AdManager V2', async () => {
     it('should update newSpace', async () => {
-      const { factory, name, vault } = await setupTests()
+      const { factory, name, pool, vault } = await setupTests()
       const { proxy } = await newMediaWith(user2, factory, name)
       const manager = _manager(proxy)
 
       const spaceMetadata = '43ijtejafjal;j32iajef;dlkajd'
       const spaceMetadata2 = '4tirejsjrkwj4twijgej;sfklajdkajkfj'
       await manager.connect(user2).newSpace(spaceMetadata, option())
-      expect(await manager.spaced(spaceMetadata)).to.be.true
-      expect(await manager.spaced(spaceMetadata2)).to.be.false
+      expect(await pool.spaced(spaceMetadata)).to.be.true
+      expect(await pool.spaced(spaceMetadata2)).to.be.false
 
       const AdManagerV2 = await ethers.getContractFactory('AdManagerV2', {
         libraries: {
           Ad: (await deployments.get('Ad')).address,
+          Purchase: (await deployments.get('Purchase')).address,
         },
       })
       const v2 = await AdManagerV2.deploy()
@@ -56,11 +61,11 @@ describe('Upgradeable AdManager', async () => {
         v2.address
       )
       const managerV2 = new ethers.Contract(proxy, getAdManagerV2ABI(), user1)
-      expect(await managerV2.spaced(spaceMetadata)).to.be.true
+      expect(await pool.spaced(spaceMetadata)).to.be.true
 
       const spaceMetadata3 = 't34ijri3wjrfkjdsfasjf;l'
       await managerV2.connect(user2).newSpace(spaceMetadata3, option())
-      expect(await managerV2.spaced(spaceMetadata3)).to.be.true
+      expect(await pool.spaced(spaceMetadata3)).to.be.true
       expect(await managerV2.getAdditional()).to.be.eq('additional state')
     })
   })

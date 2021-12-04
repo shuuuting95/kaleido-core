@@ -5,6 +5,7 @@ export const getAdManagerContract = async () => {
   const contract = await hre.ethers.getContractFactory('MockTimeAdManager', {
     libraries: {
       Ad: (await deployments.get('Ad')).address,
+      Purchase: (await deployments.get('Purchase')).address,
     },
   })
   return contract.attach(Deployment.address)
@@ -46,8 +47,35 @@ export const getMediaRegistryContract = async () => {
 }
 
 export const getAdPoolContract = async () => {
-  const Deployment = await deployments.get('AdPool')
-  const contract = await hre.ethers.getContractFactory('AdPool')
+  const Deployment = await deployments.get('MockTimeAdPool')
+  const contract = await hre.ethers.getContractFactory('MockTimeAdPool', {
+    libraries: {
+      Ad: (await deployments.get('Ad')).address,
+    },
+  })
+  return contract.attach(Deployment.address)
+}
+
+export const getEnglishAuctionContract = async () => {
+  const Deployment = await deployments.get('MockTimeEnglishAuction')
+  const contract = await hre.ethers.getContractFactory('MockTimeEnglishAuction')
+  return contract.attach(Deployment.address)
+}
+
+export const getOpenBidContract = async () => {
+  const Deployment = await deployments.get('MockTimeOpenBid')
+  const contract = await hre.ethers.getContractFactory('MockTimeOpenBid')
+  return contract.attach(Deployment.address)
+}
+
+export const getOfferBidContract = async () => {
+  const Deployment = await deployments.get('OfferBid')
+  const contract = await hre.ethers.getContractFactory('OfferBid', {
+    libraries: {
+      Ad: (await deployments.get('Ad')).address,
+      // Purchase: (await deployments.get('Purchase')).address,
+    },
+  })
   return contract.attach(Deployment.address)
 }
 

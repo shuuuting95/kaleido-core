@@ -19,7 +19,6 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 	);
 	event UpdateMedia(address proxy, address mediaEOA, string accountMetadata);
 	event NewSpace(string metadata);
-	event DeleteSpace(string metadata);
 	event NewPeriod(
 		uint256 tokenId,
 		string spaceMetadata,
@@ -80,6 +79,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 indexed tokenId
 	);
 	event PaymentFailure(address receiver, uint256 price);
+	event Received(address, uint256);
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
@@ -90,12 +90,8 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		_;
 	}
 
-	function emitNewSpace(string memory metadata) external onlyProxies {
+	function emitNewSpace(string memory metadata) external onlyAllowedContract {
 		emit NewSpace(metadata);
-	}
-
-	function emitDeleteSpace(string memory metadata) external onlyProxies {
-		emit DeleteSpace(metadata);
 	}
 
 	function emitNewPeriod(
@@ -108,7 +104,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 displayEndTimestamp,
 		Ad.Pricing pricing,
 		uint256 minPrice
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit NewPeriod(
 			tokenId,
 			spaceMetadata,
@@ -122,7 +118,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		);
 	}
 
-	function emitDeletePeriod(uint256 tokenId) external onlyProxies {
+	function emitDeletePeriod(uint256 tokenId) external onlyAllowedContract {
 		emit DeletePeriod(tokenId);
 	}
 
@@ -140,7 +136,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 msgValue,
 		address msgSender,
 		uint256 blockTimestamp
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit Bid(tokenId, msgValue, msgSender, blockTimestamp);
 	}
 
@@ -150,7 +146,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		address msgSender,
 		string memory metadata,
 		uint256 blockTimestamp
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit BidWithProposal(
 			tokenId,
 			msgValue,
@@ -162,7 +158,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 
 	function emitSelectProposal(uint256 tokenId, address successfulBidder)
 		external
-		onlyProxies
+		onlyAllowedContract
 	{
 		emit SelectProposal(tokenId, successfulBidder);
 	}
@@ -172,7 +168,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 price,
 		address buyer,
 		uint256 blockTimestamp
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit ReceiveToken(tokenId, price, buyer, blockTimestamp);
 	}
 
@@ -183,7 +179,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 displayEndTimestamp,
 		address sender,
 		uint256 price
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit OfferPeriod(
 			tokenId,
 			spaceMetadata,
@@ -194,7 +190,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		);
 	}
 
-	function emitCancelOffer(uint256 tokenId) external onlyProxies {
+	function emitCancelOffer(uint256 tokenId) external onlyAllowedContract {
 		emit CancelOffer(tokenId);
 	}
 
@@ -205,7 +201,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp,
 		uint256 price
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit AcceptOffer(
 			tokenId,
 			spaceMetadata,
@@ -277,9 +273,13 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 
 	function emitPaymentFailure(address receiver, uint256 price)
 		external
-		onlyProxies
+		onlyAllowedContract
 	{
 		emit PaymentFailure(receiver, price);
+	}
+
+	function emitReceived(address receiver, uint256 price) external onlyProxies {
+		emit Received(receiver, price);
 	}
 
 	/**

@@ -13,7 +13,7 @@ contract AdManagerV2 is AdManager {
 		override
 		onlyMedia
 	{
-		_newSpace(spaceMetadata);
+		_adPool().addSpace(spaceMetadata);
 		spaceDataV2 = "additional state";
 	}
 

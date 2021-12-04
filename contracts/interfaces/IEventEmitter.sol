@@ -8,8 +8,6 @@ import "../libraries/Ad.sol";
 interface IEventEmitter {
 	function emitNewSpace(string memory metadata) external;
 
-	function emitDeleteSpace(string memory metadata) external;
-
 	function emitNewPeriod(
 		uint256 tokenId,
 		string memory spaceMetadata,
@@ -110,4 +108,6 @@ interface IEventEmitter {
 	) external;
 
 	function emitPaymentFailure(address receiver, uint256 price) external;
+
+	function emitReceived(address receiver, uint256 price) external;
 }

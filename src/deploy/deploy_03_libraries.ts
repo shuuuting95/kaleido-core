@@ -1,4 +1,3 @@
-import { utils } from 'ethers'
 import { DeployFunction } from 'hardhat-deploy/types'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { findNameRegistry } from '../common/nameRegistry'
@@ -16,13 +15,13 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       log: true,
       deterministicDeployment: false,
     })
-    const key = utils.solidityKeccak256(['string'], ['Ad'])
-    const value = await name.get(key)
-    if (value !== Ad.address) {
-      const txReceipt = await name.set(key, Ad.address, { gasLimit: 4500000 })
-      await txReceipt.wait()
-      console.log('Ad: ', await name.get(key))
-    }
+    // const key = utils.solidityKeccak256(['string'], ['Ad'])
+    // const value = await name.get(key)
+    // if (value !== Ad.address) {
+    //   const txReceipt = await name.set(key, Ad.address, { gasLimit: 4500000 })
+    //   await txReceipt.wait()
+    //   console.log('Ad: ', await name.get(key))
+    // }
   }
 
   {
@@ -32,13 +31,67 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       log: true,
       deterministicDeployment: false,
     })
-    const key = utils.solidityKeccak256(['string'], ['Sale'])
-    const value = await name.get(key)
-    if (value !== Sale.address) {
-      const txReceipt = await name.set(key, Sale.address, { gasLimit: 4500000 })
-      await txReceipt.wait()
-      console.log('Sale: ', await name.get(key))
-    }
+    // const key = utils.solidityKeccak256(['string'], ['Sale'])
+    // const value = await name.get(key)
+    // if (value !== Sale.address) {
+    //   const txReceipt = await name.set(key, Sale.address, { gasLimit: 4500000 })
+    //   await txReceipt.wait()
+    //   console.log('Sale: ', await name.get(key))
+    // }
+  }
+
+  {
+    const Draft = await deploy('Draft', {
+      from: deployer,
+      args: [],
+      log: true,
+      deterministicDeployment: false,
+    })
+    // const key = utils.solidityKeccak256(['string'], ['Draft'])
+    // const value = await name.get(key)
+    // if (value !== Draft.address) {
+    //   const txReceipt = await name.set(key, Draft.address, {
+    //     gasLimit: 4500000,
+    //   })
+    //   await txReceipt.wait()
+    //   console.log('Draft: ', await name.get(key))
+    // }
+  }
+
+  {
+    const Purchase = await deploy('Purchase', {
+      from: deployer,
+      args: [],
+      log: true,
+      deterministicDeployment: false,
+    })
+    // const key = utils.solidityKeccak256(['string'], ['Draft'])
+    // const value = await name.get(key)
+    // if (value !== Draft.address) {
+    //   const txReceipt = await name.set(key, Draft.address, {
+    //     gasLimit: 4500000,
+    //   })
+    //   await txReceipt.wait()
+    //   console.log('Draft: ', await name.get(key))
+    // }
+  }
+
+  {
+    const Schedule = await deploy('Schedule', {
+      from: deployer,
+      args: [],
+      log: true,
+      deterministicDeployment: false,
+    })
+    // const key = utils.solidityKeccak256(['string'], ['Draft'])
+    // const value = await name.get(key)
+    // if (value !== Draft.address) {
+    //   const txReceipt = await name.set(key, Draft.address, {
+    //     gasLimit: 4500000,
+    //   })
+    //   await txReceipt.wait()
+    //   console.log('Draft: ', await name.get(key))
+    // }
   }
 
   // {

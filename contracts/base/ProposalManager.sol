@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "./PeriodManager.sol";
+import "./SpaceManager.sol";
 
 /// @title ProposalManager - manages proposals.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-abstract contract ProposalManager is PeriodManager {
+abstract contract ProposalManager is SpaceManager {
 	function _proposeToRight(uint256 tokenId, string memory metadata)
 		internal
 		virtual

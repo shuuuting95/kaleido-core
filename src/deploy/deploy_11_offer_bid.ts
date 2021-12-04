@@ -1,7 +1,6 @@
 import { utils } from 'ethers'
 import { DeployFunction } from 'hardhat-deploy/types'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
-import { option } from '../../scripts/common/wallet'
 import { findNameRegistry } from '../common/nameRegistry'
 
 const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -10,24 +9,27 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments
   const name = await findNameRegistry(hre)
   const Ad = await deployments.get('Ad')
-  const target = hre.network.name === 'hardhat' ? 'MockTimeAdPool' : 'AdPool'
+  const Purchase = await deployments.get('Purchase')
 
-  const AdPool = await deploy(target, {
+  const OfferBid = await deploy('OfferBid', {
     from: deployer,
     args: [name.address],
     log: true,
     deterministicDeployment: false,
     libraries: {
       Ad: Ad.address,
+      Purchase: Purchase.address,
     },
   })
 
-  const key = utils.solidityKeccak256(['string'], ['AdPool'])
+  const key = utils.solidityKeccak256(['string'], ['OfferBid'])
   const value = await name.get(key)
-  if (value !== AdPool.address) {
-    const txReceipt = await name.set(key, AdPool.address, option())
+  if (value !== OfferBid.address) {
+    const txReceipt = await name.set(key, OfferBid.address, {
+      gasLimit: 4500000,
+    })
     await txReceipt.wait()
-    console.log('AdPool: ', await name.get(key))
+    console.log('OfferBid: ', await name.get(key))
   }
 }
 
