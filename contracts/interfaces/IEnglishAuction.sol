@@ -12,6 +12,8 @@ interface IEnglishAuction {
 		uint256 amount
 	) external;
 
+	function receiveToken(uint256 tokenId) external returns (address, uint256);
+
 	function bidding(uint256 tokenId) external view returns (Sale.Bidding memory);
 
 	function currentPrice(uint256 tokenId) external view returns (uint256);

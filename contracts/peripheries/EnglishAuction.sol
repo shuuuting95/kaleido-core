@@ -28,30 +28,27 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		_eventEmitter().emitBid(tokenId, value, sender, _blockTimestamp());
 	}
 
-	// function _refundBiddingAmount(uint256 tokenId)
-	// 	internal
-	// 	virtual
-	// 	returns (uint256 refunded)
-	// {
-	// 	Ad.Period memory period = _adPool().allPeriods(tokenId);
-	// 	if (
-	// 		period.pricing == Ad.Pricing.ENGLISH &&
-	// 		_bidding[tokenId].bidder != address(0)
-	// 	) {
-	// 		console.log("_bidding[tokenId].bidder", _bidding[tokenId].bidder);
-	// 		(bool success, ) = payable(_bidding[tokenId].bidder).call{
-	// 			value: _bidding[tokenId].price,
-	// 			gas: 10000
-	// 		}("");
-	// 		refunded = _bidding[tokenId].price;
-	// 		if (!success) {
-	// 			_eventEmitter().emitPaymentFailure(
-	// 				_bidding[tokenId].bidder,
-	// 				_bidding[tokenId].price
-	// 			);
-	// 		}
-	// 	}
-	// }
+	function _checkBeforeReceiveToken(uint256 tokenId)
+		internal
+		view
+		returns (Ad.Period memory period)
+	{
+		period = _adPool().allPeriods(tokenId);
+		require(period.pricing == Ad.Pricing.ENGLISH, "KD124");
+		require(!period.sold, "KD121");
+		require(period.saleEndTimestamp < _blockTimestamp(), "KD125");
+	}
+
+	function receiveToken(uint256 tokenId)
+		external
+		returns (address bidder, uint256 price)
+	{
+		_checkBeforeReceiveToken(tokenId);
+		bidder = _bidding[tokenId].bidder;
+		price = _bidding[tokenId].price;
+		delete _bidding[tokenId];
+		_eventEmitter().emitReceiveToken(tokenId, price, bidder, _blockTimestamp());
+	}
 
 	function bidding(uint256 tokenId)
 		public

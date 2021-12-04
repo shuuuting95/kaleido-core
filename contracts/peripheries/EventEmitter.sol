@@ -167,7 +167,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 price,
 		address buyer,
 		uint256 blockTimestamp
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit ReceiveToken(tokenId, price, buyer, blockTimestamp);
 	}
 

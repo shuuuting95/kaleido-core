@@ -240,113 +240,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		}
 	}
 
-	// /// @dev Receives the token you bidded if you are the successful bidder.
-	// /// @param tokenId uint256 of the token ID
-	// function receiveToken(uint256 tokenId)
-	// 	external
-	// 	virtual
-	// 	onlySuccessfulBidder(tokenId)
-	// {
-	// 	_toSuccessfulBidder(tokenId, msg.sender);
-	// }
-
-	// /// @dev Receives the token you bidded if you are the successful bidder.
-	// /// @param tokenId uint256 of the token ID
-	// function pushToSuccessfulBidder(uint256 tokenId) external virtual onlyMedia {
-	// 	_toSuccessfulBidder(tokenId, bidding[tokenId].bidder);
-	// }
-
-	// /// @dev Offers to buy a period that the sender requests.
-	// /// @param spaceMetadata string of the space metadata
-	// /// @param displayStartTimestamp uint256 of the start timestamp for the display
-	// /// @param displayEndTimestamp uint256 of the end timestamp for the display
-	// function offerPeriod(
-	// 	string memory spaceMetadata,
-	// 	uint256 displayStartTimestamp,
-	// 	uint256 displayEndTimestamp
-	// ) external payable virtual exceptYourself {
-	// 	require(spaced[spaceMetadata], "KD101");
-	// 	require(displayStartTimestamp < displayEndTimestamp, "KD113");
-	// 	uint256 tokenId = Ad.id(
-	// 		spaceMetadata,
-	// 		displayStartTimestamp,
-	// 		displayEndTimestamp
-	// 	);
-	// 	offered[tokenId] = Sale.Offer(
-	// 		spaceMetadata,
-	// 		displayStartTimestamp,
-	// 		displayEndTimestamp,
-	// 		msg.sender,
-	// 		msg.value
-	// 	);
-	// 	_offeredTotal += msg.value;
-	// 	_eventEmitter().emitOfferPeriod(
-	// 		tokenId,
-	// 		spaceMetadata,
-	// 		displayStartTimestamp,
-	// 		displayEndTimestamp,
-	// 		msg.sender,
-	// 		msg.value
-	// 	);
-	// }
-
-	// /// @dev Cancels an offer.
-	// /// @param tokenId uint256 of the token ID
-	// function cancelOffer(uint256 tokenId) external virtual exceptYourself {
-	// 	require(offered[tokenId].sender == msg.sender, "KD116");
-	// 	_refundOfferedAmount(tokenId);
-	// 	_offeredTotal -= offered[tokenId].price;
-	// 	delete offered[tokenId];
-	// 	_eventEmitter().emitCancelOffer(tokenId);
-	// }
-
-	// /// @dev Accepts an offer by the Media.
-	// /// @param tokenId uint256 of the token ID
-	// /// @param tokenMetadata string of the NFT token metadata
-	// function acceptOffer(uint256 tokenId, string memory tokenMetadata)
-	// 	external
-	// 	virtual
-	// 	onlyMedia
-	// {
-	// 	Sale.Offer memory offer = offered[tokenId];
-	// 	require(offer.sender != address(0), "KD115");
-	// 	_checkOverlapping(
-	// 		offer.spaceMetadata,
-	// 		offer.displayStartTimestamp,
-	// 		offer.displayEndTimestamp
-	// 	);
-	// 	Ad.Period memory period = Ad.Period(
-	// 		offer.sender,
-	// 		offer.spaceMetadata,
-	// 		tokenMetadata,
-	// 		_blockTimestamp(),
-	// 		_blockTimestamp(),
-	// 		offer.displayStartTimestamp,
-	// 		offer.displayEndTimestamp,
-	// 		Ad.Pricing.OFFER,
-	// 		offer.price,
-	// 		offer.price,
-	// 		true
-	// 	);
-
-	// 	_mintRight(offer.sender, tokenId, tokenMetadata);
-	// 	_savePeriod(offer.spaceMetadata, tokenId, period);
-	// 	_collectFees(offer.price / 10);
-
-	// 	_offeredTotal -= offer.price;
-	// 	delete offered[tokenId];
-
-	// 	_eventEmitter().emitAcceptOffer(
-	// 		tokenId,
-	// 		offer.spaceMetadata,
-	// 		tokenMetadata,
-	// 		offer.displayStartTimestamp,
-	// 		offer.displayEndTimestamp,
-	// 		offer.price
-	// 	);
-	// 	_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
-	// }
-
 	/// @dev Receives the token you bidded if you are the successful bidder.
 	/// @param tokenId uint256 of the token ID
 	function receiveToken(uint256 tokenId)
@@ -354,13 +247,13 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		virtual
 		onlySuccessfulBidder(tokenId)
 	{
-		// _toSuccessfulBidder(tokenId, msg.sender);
+		_toSuccessfulBidder(tokenId, msg.sender);
 	}
 
 	/// @dev Receives the token you bidded if you are the successful bidder.
 	/// @param tokenId uint256 of the token ID
 	function pushToSuccessfulBidder(uint256 tokenId) external virtual onlyMedia {
-		// _toSuccessfulBidder(tokenId, _english().bidding(tokenId).bidder);
+		_toSuccessfulBidder(tokenId, _english().bidding(tokenId).bidder);
 	}
 
 	/// @dev Offers to buy a period that the sender requests.
@@ -543,62 +436,17 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		return ("", 0);
 	}
 
-	// function _checkBeforeReceiveToken(uint256 tokenId) internal view virtual {
-	// 	require(periods[tokenId].pricing == Ad.Pricing.ENGLISH, "KD124");
-	// 	require(!periods[tokenId].sold, "KD121");
-	// 	require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
-	// }
-
-	function _checkBeforeReceiveToken(uint256 tokenId) internal view virtual {
-		Ad.Period memory period = _adPool().allPeriods(tokenId);
-		require(period.pricing == Ad.Pricing.ENGLISH, "KD124");
-		require(!period.sold, "KD121");
-		require(period.saleEndTimestamp < _blockTimestamp(), "KD125");
+	function _toSuccessfulBidder(uint256 tokenId, address receiver)
+		internal
+		virtual
+	{
+		(address bidder, uint256 price) = _english().receiveToken(tokenId);
+		_adPool().sold(tokenId);
+		_processingTotal -= price;
+		_dropRight(bidder, tokenId);
+		_collectFees(price / 10);
+		_eventEmitter().emitTransferCustom(address(this), receiver, tokenId);
 	}
-
-	// function _refundToProposers(uint256 tokenId, uint256 successfulBidderNo)
-	// 	internal
-	// 	virtual
-	// {
-	// 	for (uint256 i = 0; i < appealed[tokenId].length; i++) {
-	// 		Sale.Appeal memory appeal = appealed[tokenId][i];
-	// 		_biddingTotal -= appeal.price;
-	// 		if (i == successfulBidderNo) {
-	// 			_collectFees(appeal.price / 10);
-	// 		} else {
-	// 			(bool success, ) = payable(appeal.sender).call{
-	// 				value: appeal.price,
-	// 				gas: 10000
-	// 			}("");
-	// 			if (!success) {
-	// 				_eventEmitter().emitPaymentFailure(appeal.sender, appeal.price);
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	//TODO
-	// function _toSuccessfulBidder(uint256 tokenId, address receiver)
-	// 	internal
-	// 	virtual
-	// {
-	// 	_checkBeforeReceiveToken(tokenId);
-	// 	uint256 price = bidding[tokenId].price;
-	// 	periods[tokenId].sold = true;
-	// 	// period.sold = true;
-	// 	_adPool().sold(tokenId);
-	// 	_biddingTotal -= price;
-	// 	_dropRight(receiver, tokenId);
-	// 	_collectFees(price / 10);
-	// 	delete bidding[tokenId];
-	// 	_eventEmitter().emitReceiveToken(
-	// 		tokenId,
-	// 		price,
-	// 		receiver,
-	// 		_blockTimestamp()
-	// 	);
-	// 	_eventEmitter().emitTransferCustom(address(this), receiver, tokenId);
-	// }
 
 	function _collectFees(uint256 value) internal virtual {
 		address vault = vaultAddress();
