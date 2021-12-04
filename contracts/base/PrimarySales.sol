@@ -21,12 +21,12 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 					(_blockTimestamp() - period.saleStartTimestamp)) /
 				(period.saleEndTimestamp - period.saleStartTimestamp);
 		}
-		if (period.pricing == Ad.Pricing.ENGLISH) {
-			return bidding[tokenId].price;
-		}
-		if (period.pricing == Ad.Pricing.OFFER) {
-			return offered[tokenId].price;
-		}
+		// if (period.pricing == Ad.Pricing.ENGLISH) {
+		// 	return bidding[tokenId].price;
+		// }
+		// if (period.pricing == Ad.Pricing.OFFER) {
+		// 	return offered[tokenId].price;
+		// }
 		if (period.pricing == Ad.Pricing.OPEN) {
 			return 0;
 		}
@@ -60,8 +60,9 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 	}
 
 	function _alreadyBid(uint256 tokenId) internal view virtual returns (bool) {
-		return
-			bidding[tokenId].bidder != address(0) || appealed[tokenId].length != 0;
+		return appealed[tokenId].length != 0;
+		// return
+		// 	bidding[tokenId].bidder != address(0) || appealed[tokenId].length != 0;
 	}
 
 	// function _refundBiddingAmount(uint256 tokenId) internal virtual {

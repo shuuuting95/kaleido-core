@@ -20,11 +20,11 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_;
 	}
 
-	/// @dev Called by the successful bidder
-	modifier onlySuccessfulBidder(uint256 tokenId) {
-		require(bidding[tokenId].bidder == msg.sender, "KD126");
-		_;
-	}
+	// /// @dev Called by the successful bidder
+	// modifier onlySuccessfulBidder(uint256 tokenId) {
+	// 	require(bidding[tokenId].bidder == msg.sender, "KD126");
+	// 	_;
+	// }
 
 	/// @dev Can call it only once
 	modifier initializer() {
