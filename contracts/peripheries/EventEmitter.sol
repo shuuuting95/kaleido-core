@@ -117,7 +117,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		);
 	}
 
-	function emitDeletePeriod(uint256 tokenId) external onlyProxies {
+	function emitDeletePeriod(uint256 tokenId) external onlyAllowedContract {
 		emit DeletePeriod(tokenId);
 	}
 

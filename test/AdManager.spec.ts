@@ -273,113 +273,122 @@ describe('AdManager', async () => {
     })
   })
 
-  // describe('deletePeriod', async () => {
-  //   it('should delete a period', async () => {
-  //     const { now, factory, name, event, pool } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
-  //     await newPeriodWith(manager, { now })
+  describe('deletePeriod', async () => {
+    it('should delete a period', async () => {
+      const { now, factory, name, event, pool } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
+      await newPeriodWith(manager, { now })
 
-  //     expect(await manager.deletePeriod(tokenId, option()))
-  //       .to.emit(event, 'DeletePeriod')
-  //       .withArgs(tokenId)
-  //       .to.emit(event, 'TransferCustom')
-  //       .withArgs(manager.address, ADDRESS_ZERO, tokenId)
-  //     await expect(manager.ownerOf(tokenId)).to.be.revertedWith('KD114')
-  //     expect(await pool.allPeriods(tokenId)).to.deep.equal([
-  //       ADDRESS_ZERO,
-  //       '',
-  //       '',
-  //       BigNumber.from(0),
-  //       BigNumber.from(0),
-  //       BigNumber.from(0),
-  //       BigNumber.from(0),
-  //       0,
-  //       BigNumber.from(0),
-  //       BigNumber.from(0),
-  //       false,
-  //     ])
-  //   })
+      expect((await pool.tokenIdsOf(spaceMetadata))[0]).to.be.eq(tokenId)
+      expect(await manager.deletePeriod(tokenId, option()))
+        .to.emit(event, 'DeletePeriod')
+        .withArgs(tokenId)
+        .to.emit(event, 'TransferCustom')
+        .withArgs(manager.address, ADDRESS_ZERO, tokenId)
+      await expect(manager.ownerOf(tokenId)).to.be.revertedWith('KD114')
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
+        ADDRESS_ZERO,
+        '',
+        '',
+        BigNumber.from(0),
+        BigNumber.from(0),
+        BigNumber.from(0),
+        BigNumber.from(0),
+        0,
+        BigNumber.from(0),
+        BigNumber.from(0),
+        false,
+      ])
+      expect((await pool.tokenIdsOf(spaceMetadata))[0]).to.be.eq(
+        BigNumber.from(0)
+      )
+    })
 
-  //   it('should revert because it has already deleted', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
+    it('should revert because it has already deleted', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
 
-  //     await newPeriodWith(manager, { now })
-  //     await manager.deletePeriod(tokenId, option())
-  //     await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
-  //       'KD114'
-  //     )
-  //   })
+      await newPeriodWith(manager, { now })
+      await manager.deletePeriod(tokenId, option())
+      await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
+        'KD114'
+      )
+    })
 
-  //   it('should revert because it has been sold out', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
+    it('should revert because it has been sold out', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
 
-  //     await newPeriodWith(manager.connect(user2), { now })
-  //     await buyWith(manager.connect(user3), {
-  //       tokenId,
-  //       value: parseEther('0.1'),
-  //     })
-  //     await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
-  //       'KD121'
-  //     )
-  //   })
+      await newPeriodWith(manager.connect(user2), { now })
+      await buyWith(manager.connect(user3), {
+        tokenId,
+        value: parseEther('0.1'),
+      })
+      await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
+        'KD121'
+      )
+    })
 
-  //   it('should delete repeatedly', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+    it('should delete repeatedly', async () => {
+      const { now, factory, name, pool } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
+      await newPeriodWith(manager, { now })
+      await manager.deletePeriod(tokenId, option())
 
-  //     await newPeriodWith(manager, { now })
-  //     await manager.deletePeriod(tokenId, option())
+      await newPeriodWith(manager, { now })
+      await manager.deletePeriod(tokenId, option())
 
-  //     await newPeriodWith(manager, { now })
-  //     await manager.deletePeriod(tokenId, option())
+      await newPeriodWith(manager, { now })
+      expect(await pool.tokenIdsOf(spaceMetadata)).to.deep.equal([
+        BigNumber.from(0),
+        BigNumber.from(0),
+        tokenId,
+      ])
+    })
 
-  //     await newPeriodWith(manager, { now })
-  //     expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([
-  //       BigNumber.from(0),
-  //       BigNumber.from(0),
-  //       tokenId,
-  //     ])
-  //   })
+    it('should not delete because someone has already bid', async () => {
+      const { now, factory, name, event, pool } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
+      await newPeriodWith(manager, { now, pricing: 2 })
+      await manager
+        .connect(user3)
+        .bid(tokenId, option({ value: parseEther('0.3') }))
 
-  //   it('should not delete because someone has already bid', async () => {
-  //     const { now, factory, name, event, pool } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
-  //     await newPeriodWith(manager, { now, pricing: 2 })
-  //     await manager
-  //       .connect(user3)
-  //       .bid(tokenId, option({ value: parseEther('0.3') }))
+      await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
+        'KD128'
+      )
+    })
 
-  //     await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
-  //       'KD128'
-  //     )
-  //   })
+    it('should not delete because someone has already bid with a proposal', async () => {
+      const { now, factory, name, event, pool } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
+      const metadata = '3wijisdkfj;alkjda'
+      await newPeriodWith(manager, { now, pricing: 4 })
+      await manager
+        .connect(user3)
+        .bidWithProposal(
+          tokenId,
+          metadata,
+          option({ value: parseEther('0.3') })
+        )
 
-  //   it('should not delete because someone has already bid with a proposal', async () => {
-  //     const { now, factory, name, event, pool } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
-  //     const metadata = '3wijisdkfj;alkjda'
-  //     await newPeriodWith(manager, { now, pricing: 4 })
-  //     await manager
-  //       .connect(user3)
-  //       .bidWithProposal(
-  //         tokenId,
-  //         metadata,
-  //         option({ value: parseEther('0.3') })
-  //       )
-
-  //     await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
-  //       'KD128'
-  //     )
-  //   })
-  // })
+      await expect(manager.deletePeriod(tokenId, option())).to.be.revertedWith(
+        'KD128'
+      )
+    })
+  })
 
   // describe('offerPeriod', async () => {
   //   it('should offer', async () => {

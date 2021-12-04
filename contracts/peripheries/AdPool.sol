@@ -85,6 +85,21 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		);
 	}
 
+	/// @inheritdoc IAdPool
+	function deletePeriod(uint256 tokenId) external onlyProxies {
+		string memory spaceMetadata = periods[tokenId].spaceMetadata;
+		uint256 index = 0;
+		for (uint256 i = 1; i < _periodKeys[spaceMetadata].length + 1; i++) {
+			if (_periodKeys[spaceMetadata][i - 1] == tokenId) {
+				index = i;
+			}
+		}
+		require(index != 0, "No deletable keys");
+		delete _periodKeys[spaceMetadata][index - 1];
+		delete periods[tokenId];
+		_eventEmitter().emitDeletePeriod(tokenId);
+	}
+
 	function acceptOffer(
 		uint256 tokenId,
 		string memory tokenMetadata,
@@ -122,21 +137,6 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 
 	function sold(uint256 tokenId) external onlyProxies {
 		periods[tokenId].sold = true;
-	}
-
-	/// @inheritdoc IAdPool
-	function deletePeriod(uint256 tokenId) external onlyProxies {
-		string memory spaceMetadata = periods[tokenId].spaceMetadata;
-		uint256 index = 0;
-		for (uint256 i = 1; i < _periodKeys[spaceMetadata].length + 1; i++) {
-			if (_periodKeys[spaceMetadata][i - 1] == tokenId) {
-				index = i;
-			}
-		}
-		require(index != 0, "No deletable keys");
-		delete _periodKeys[spaceMetadata][index - 1];
-		delete periods[tokenId];
-		_eventEmitter().emitDeletePeriod(tokenId);
 	}
 
 	function allPeriods(uint256 tokenId)

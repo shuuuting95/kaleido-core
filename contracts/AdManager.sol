@@ -565,12 +565,14 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	{
 		uint256[] memory tokenIds = _adPool().tokenIdsOf(spaceMetadata);
 		for (uint256 i = 0; i < tokenIds.length; i++) {
-			Ad.Period memory period = _adPool().allPeriods(tokenIds[i]);
-			if (
-				period.displayStartTimestamp <= _blockTimestamp() &&
-				period.displayEndTimestamp >= _blockTimestamp()
-			) {
-				return (accepted[tokenIds[i]], tokenIds[i]);
+			if (tokenIds[i] != 0) {
+				Ad.Period memory period = _adPool().allPeriods(tokenIds[i]);
+				if (
+					period.displayStartTimestamp <= _blockTimestamp() &&
+					period.displayEndTimestamp >= _blockTimestamp()
+				) {
+					return (accepted[tokenIds[i]], tokenIds[i]);
+				}
 			}
 		}
 		return ("", 0);
