@@ -24,6 +24,13 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		uint256 value
 	) external {
 		_bidding[tokenId].push(Sale.OpenBid(tokenId, sender, value, proposal));
+		_eventEmitter().emitBidWithProposal(
+			tokenId,
+			value,
+			sender,
+			proposal,
+			_blockTimestamp()
+		);
 	}
 
 	function biddingList(uint256 tokenId)

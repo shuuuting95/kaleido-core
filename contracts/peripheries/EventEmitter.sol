@@ -145,7 +145,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		address msgSender,
 		string memory metadata,
 		uint256 blockTimestamp
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit BidWithProposal(
 			tokenId,
 			msgValue,

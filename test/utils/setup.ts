@@ -73,7 +73,7 @@ export const getOfferBidContract = async () => {
   const contract = await hre.ethers.getContractFactory('OfferBid', {
     libraries: {
       Ad: (await deployments.get('Ad')).address,
-      Purchase: (await deployments.get('Purchase')).address,
+      // Purchase: (await deployments.get('Purchase')).address,
     },
   })
   return contract.attach(Deployment.address)

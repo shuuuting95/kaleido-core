@@ -180,17 +180,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			_blockTimestamp()
 		);
 		_processingTotal += msg.value;
-		// appealed[tokenId].push(
-		// 	Sale.Appeal(tokenId, msg.sender, msg.value, proposalMetadata)
-		// );
 		_openBid().bid(tokenId, proposalMetadata, msg.sender, msg.value);
-		_eventEmitter().emitBidWithProposal(
-			tokenId,
-			msg.value,
-			msg.sender,
-			proposalMetadata,
-			_blockTimestamp()
-		);
 	}
 
 	/// @dev Selects the best proposal bidded with.
