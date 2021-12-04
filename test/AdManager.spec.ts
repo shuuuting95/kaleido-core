@@ -1017,128 +1017,132 @@ describe('AdManager', async () => {
     })
   })
 
-  // describe('selectProposal', async () => {
-  //   it('should select a proposal', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId, saleEndTimestamp } = await defaultPeriodProps(
-  //       manager,
-  //       now
-  //     )
-  //     const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
-  //     const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
+  describe('selectProposal', async () => {
+    it('should select a proposal', async () => {
+      const { now, factory, name, event, open } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId, saleEndTimestamp } = await defaultPeriodProps(
+        manager,
+        now
+      )
+      const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
+      const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
 
-  //     const pricing = 4
-  //     const minPrice = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing,
-  //       minPrice,
-  //       saleEndTimestamp,
-  //     })
-  //     await manager
-  //       .connect(user3)
-  //       .bidWithProposal(
-  //         tokenId,
-  //         proposalMetadata,
-  //         option({ value: parseEther('0.3') })
-  //       )
-  //     await manager
-  //       .connect(user4)
-  //       .bidWithProposal(
-  //         tokenId,
-  //         proposalMetadata2,
-  //         option({ value: parseEther('0.4') })
-  //       )
-  //     await manager.setTime(saleEndTimestamp + 1)
+      const pricing = 4
+      const minPrice = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing,
+        minPrice,
+        saleEndTimestamp,
+      })
+      await manager
+        .connect(user3)
+        .bidWithProposal(
+          tokenId,
+          proposalMetadata,
+          option({ value: parseEther('0.3') })
+        )
+      await manager
+        .connect(user4)
+        .bidWithProposal(
+          tokenId,
+          proposalMetadata2,
+          option({ value: parseEther('0.4') })
+        )
+      await manager.setTime(saleEndTimestamp + 1)
+      await open.setTime(saleEndTimestamp + 1)
 
-  //     expect(await manager.balance()).to.be.eq(parseEther('0.7'))
-  //     expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
+      expect(await manager.balance()).to.be.eq(parseEther('0.7'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
 
-  //     expect(await manager.connect(user2).selectProposal(tokenId, 1, option()))
-  //       .to.emit(event, 'SelectProposal')
-  //       .withArgs(tokenId, user4.address)
-  //     expect(await manager.balance()).to.be.eq(parseEther('0.36'))
-  //     expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0.36'))
-  //   })
+      expect(await manager.connect(user2).selectProposal(tokenId, 1, option()))
+        .to.emit(event, 'SelectProposal')
+        .withArgs(tokenId, user4.address)
+      expect(await manager.balance()).to.be.eq(parseEther('0.36'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0.36'))
+      expect(await open.biddingList(tokenId)).to.deep.equal([])
+    })
 
-  //   it('should not select a proposal because the auction still continues', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId, saleEndTimestamp } = await defaultPeriodProps(
-  //       manager,
-  //       now
-  //     )
-  //     const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
-  //     const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
+    it('should not select a proposal because the auction still continues', async () => {
+      const { now, factory, name, event, open } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId, saleEndTimestamp } = await defaultPeriodProps(
+        manager,
+        now
+      )
+      const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
+      const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
 
-  //     const pricing = 4
-  //     const minPrice = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing,
-  //       minPrice,
-  //       saleEndTimestamp,
-  //     })
-  //     await manager
-  //       .connect(user3)
-  //       .bidWithProposal(
-  //         tokenId,
-  //         proposalMetadata,
-  //         option({ value: parseEther('0.3') })
-  //       )
-  //     await manager
-  //       .connect(user4)
-  //       .bidWithProposal(
-  //         tokenId,
-  //         proposalMetadata2,
-  //         option({ value: parseEther('0.25') })
-  //       )
-  //     await manager.setTime(saleEndTimestamp)
-  //     await expect(
-  //       manager.connect(user2).selectProposal(tokenId, 1, option())
-  //     ).to.be.revertedWith('KD129')
-  //   })
+      const pricing = 4
+      const minPrice = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing,
+        minPrice,
+        saleEndTimestamp,
+      })
+      await manager
+        .connect(user3)
+        .bidWithProposal(
+          tokenId,
+          proposalMetadata,
+          option({ value: parseEther('0.3') })
+        )
+      await manager
+        .connect(user4)
+        .bidWithProposal(
+          tokenId,
+          proposalMetadata2,
+          option({ value: parseEther('0.25') })
+        )
+      await manager.setTime(saleEndTimestamp)
+      await open.setTime(saleEndTimestamp)
+      await expect(
+        manager.connect(user2).selectProposal(tokenId, 1, option())
+      ).to.be.revertedWith('KD129')
+    })
 
-  //   it('should not select a proposal because of dubble actions', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId, saleEndTimestamp } = await defaultPeriodProps(
-  //       manager,
-  //       now
-  //     )
-  //     const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
-  //     const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
+    it('should not select a proposal because of dubble actions', async () => {
+      const { now, factory, name, event, open } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId, saleEndTimestamp } = await defaultPeriodProps(
+        manager,
+        now
+      )
+      const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
+      const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
 
-  //     const pricing = 4
-  //     const minPrice = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing,
-  //       minPrice,
-  //       saleEndTimestamp,
-  //     })
-  //     await manager
-  //       .connect(user3)
-  //       .bidWithProposal(
-  //         tokenId,
-  //         proposalMetadata,
-  //         option({ value: parseEther('0.3') })
-  //       )
-  //     await manager
-  //       .connect(user4)
-  //       .bidWithProposal(
-  //         tokenId,
-  //         proposalMetadata2,
-  //         option({ value: parseEther('0.25') })
-  //       )
-  //     await manager.setTime(saleEndTimestamp + 1)
-  //     await manager.connect(user2).selectProposal(tokenId, 1, option())
-  //     await expect(
-  //       manager.connect(user2).selectProposal(tokenId, 1, option())
-  //     ).to.be.revertedWith('KD114')
-  //   })
-  // })
+      const pricing = 4
+      const minPrice = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing,
+        minPrice,
+        saleEndTimestamp,
+      })
+      await manager
+        .connect(user3)
+        .bidWithProposal(
+          tokenId,
+          proposalMetadata,
+          option({ value: parseEther('0.3') })
+        )
+      await manager
+        .connect(user4)
+        .bidWithProposal(
+          tokenId,
+          proposalMetadata2,
+          option({ value: parseEther('0.25') })
+        )
+      await manager.setTime(saleEndTimestamp + 1)
+      await open.setTime(saleEndTimestamp + 1)
+      await manager.connect(user2).selectProposal(tokenId, 1, option())
+      await expect(
+        manager.connect(user2).selectProposal(tokenId, 1, option())
+      ).to.be.revertedWith('KD114')
+    })
+  })
 
   // describe('receiveToken', async () => {
   //   it('should receive token by the successful bidder', async () => {

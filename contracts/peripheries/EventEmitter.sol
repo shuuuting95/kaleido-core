@@ -157,7 +157,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 
 	function emitSelectProposal(uint256 tokenId, address successfulBidder)
 		external
-		onlyProxies
+		onlyAllowedContract
 	{
 		emit SelectProposal(tokenId, successfulBidder);
 	}

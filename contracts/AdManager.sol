@@ -191,27 +191,34 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		virtual
 		onlyMedia
 	{
-		// require(
-		// 	appealed[tokenId].length >= index &&
-		// 		appealed[tokenId][index].sender != address(0),
-		// 	"KD114"
-		// );
-		// require(
-		// 	_adPool().allPeriods(tokenId).saleEndTimestamp < _blockTimestamp(),
-		// 	"KD129"
-		// );
-
+		_refundToProposers(tokenId, index);
 		address successfulBidder = _openBid().selectProposal(tokenId, index);
-		// Sale.Appeal memory appeal = appealed[tokenId][index];
 		_dropRight(successfulBidder, tokenId);
-		// _refundToProposers(tokenId, index);
-		// delete appealed[tokenId];
-		// _eventEmitter().emitSelectProposal(tokenId, appeal.sender);
 		_eventEmitter().emitTransferCustom(
 			address(this),
 			successfulBidder,
 			tokenId
 		);
+	}
+
+	function _refundToProposers(uint256 tokenId, uint256 index) internal virtual {
+		Sale.OpenBid[] memory _biddings = _openBid().biddingList(tokenId);
+
+		for (uint256 i = 0; i < _biddings.length; i++) {
+			Sale.OpenBid memory target = _biddings[i];
+			_processingTotal -= target.price;
+			if (i == index) {
+				_collectFees(target.price / 10);
+			} else {
+				(bool success, ) = payable(target.sender).call{
+					value: target.price,
+					gas: 10000
+				}("");
+				if (!success) {
+					_eventEmitter().emitPaymentFailure(target.sender, target.price);
+				}
+			}
+		}
 	}
 
 	function _refundBiddingAmount(uint256 tokenId)

@@ -41,44 +41,30 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		return _bidding[tokenId];
 	}
 
-	function selectProposal(uint256 tokenId, uint256 index)
-		external
-		returns (address successfulBidder)
+	function bidding(uint256 tokenId, uint256 index)
+		public
+		view
+		returns (Sale.OpenBid memory)
 	{
 		require(
 			_bidding[tokenId].length >= index &&
 				_bidding[tokenId][index].sender != address(0),
 			"KD114"
 		);
+		return _bidding[tokenId][index];
+	}
+
+	function selectProposal(uint256 tokenId, uint256 index)
+		external
+		returns (address successfulBidder)
+	{
 		require(
 			_adPool().allPeriods(tokenId).saleEndTimestamp < _blockTimestamp(),
 			"KD129"
 		);
-		_refundToProposers(tokenId, index);
-
+		successfulBidder = bidding(tokenId, index).sender;
 		delete _bidding[tokenId];
 		_eventEmitter().emitSelectProposal(tokenId, successfulBidder);
-	}
-
-	function _refundToProposers(uint256 tokenId, uint256 successfulBidderNo)
-		internal
-		virtual
-	{
-		for (uint256 i = 0; i < _bidding[tokenId].length; i++) {
-			Sale.OpenBid memory appeal = _bidding[tokenId][i];
-			// TODO: _biddingTotal -= appeal.price;
-			if (i == successfulBidderNo) {
-				// TODO: _collectFees(appeal.price / 10);
-			} else {
-				(bool success, ) = payable(appeal.sender).call{
-					value: appeal.price,
-					gas: 10000
-				}("");
-				if (!success) {
-					_eventEmitter().emitPaymentFailure(appeal.sender, appeal.price);
-				}
-			}
-		}
 	}
 
 	/**

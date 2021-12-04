@@ -18,6 +18,11 @@ interface IOpenBid {
 		view
 		returns (Sale.OpenBid[] memory);
 
+	function bidding(uint256 tokenId, uint256 index)
+		external
+		view
+		returns (Sale.OpenBid memory);
+
 	function selectProposal(uint256 tokenId, uint256 index)
 		external
 		returns (address successfulBidder);
