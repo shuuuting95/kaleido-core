@@ -10,7 +10,7 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 	/// @dev Returns the current price.
 	/// @param tokenId uint256 of the token ID
 	function currentPrice(uint256 tokenId) public view virtual returns (uint256) {
-		Ad.Period memory period = periods[tokenId];
+		Ad.Period memory period = _adPool().allPeriods(tokenId);
 		if (period.pricing == Ad.Pricing.RRP) {
 			return period.minPrice;
 		}
@@ -21,12 +21,14 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 					(_blockTimestamp() - period.saleStartTimestamp)) /
 				(period.saleEndTimestamp - period.saleStartTimestamp);
 		}
-		// if (period.pricing == Ad.Pricing.ENGLISH) {
-		// 	return bidding[tokenId].price;
-		// }
-		// if (period.pricing == Ad.Pricing.OFFER) {
-		// 	return offered[tokenId].price;
-		// }
+		if (period.pricing == Ad.Pricing.ENGLISH) {
+			// return bidding[tokenId].price;
+			return _english().currentPrice(tokenId);
+		}
+		if (period.pricing == Ad.Pricing.OFFER) {
+			// return offered[tokenId].price;
+			return _offerBid().currentPrice(tokenId);
+		}
 		if (period.pricing == Ad.Pricing.OPEN) {
 			return 0;
 		}
@@ -68,6 +70,16 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 	// function _refundBiddingAmount(uint256 tokenId) internal virtual {
 	// 	if (
 	// 		periods[tokenId].pricing == Ad.Pricing.ENGLISH &&
+	function _alreadyBid(uint256 tokenId) internal view virtual returns (bool) {
+		return
+			_english().bidding(tokenId).bidder != address(0) ||
+			_openBid().biddingList(tokenId).length != 0;
+	}
+
+	// function _refundBiddingAmount(uint256 tokenId) internal virtual {
+	// 	Ad.Period memory period = _adPool().allPeriods(tokenId);
+	// 	if (
+	// 		period.pricing == Ad.Pricing.ENGLISH &&
 	// 		bidding[tokenId].bidder != address(0)
 	// 	) {
 	// 		(bool success, ) = payable(bidding[tokenId].bidder).call{
@@ -86,6 +98,9 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 	// function _refundOfferedAmount(uint256 tokenId) internal virtual {
 	// 	if (
 	// 		periods[tokenId].pricing == Ad.Pricing.OFFER &&
+	// 	Ad.Period memory period = _adPool().allPeriods(tokenId);
+	// 	if (
+	// 		period.pricing == Ad.Pricing.OFFER &&
 	// 		offered[tokenId].sender != address(0)
 	// 	) {
 	// 		(bool success, ) = payable(offered[tokenId].sender).call{

@@ -62,6 +62,21 @@ contract NameAccessor {
 		return _nameRegistry.get(keccak256(abi.encodePacked("EventEmitter")));
 	}
 
+	/// @dev Gets the address of EnglishAuction.
+	function englishAuctionAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("EnglishAuction")));
+	}
+
+	/// @dev Gets the address of OpenBid.
+	function openBidAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("OpenBid")));
+	}
+
+	/// @dev Gets the address of OfferBid.
+	function offerBidAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("OfferBid")));
+	}
+
 	/// @dev Gets the owner address.
 	function owner() public view returns (address) {
 		return _nameRegistry.deployer();

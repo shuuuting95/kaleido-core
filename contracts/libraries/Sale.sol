@@ -16,7 +16,7 @@ library Sale {
 		address sender;
 		uint256 price;
 	}
-	struct Appeal {
+	struct OpenBid {
 		uint256 tokenId;
 		address sender;
 		uint256 price;
