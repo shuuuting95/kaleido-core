@@ -1,8 +1,8 @@
 import { utils } from 'ethers'
 import { DeployFunction } from 'hardhat-deploy/types'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
-import { option } from '../../scripts/common/wallet'
 import { findNameRegistry } from '../common/nameRegistry'
+import { option } from './../../scripts/common/wallet'
 
 const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre

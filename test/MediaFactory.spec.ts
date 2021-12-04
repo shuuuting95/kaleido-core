@@ -48,7 +48,7 @@ describe('MediaFactory', async () => {
     it('should revert because the sender is not the owner', async () => {
       const { factory, name } = await setupTests()
 
-      const initializer = defaultInitializer(name.address)
+      const initializer = defaultInitializer(name.address, user2.address)
       await expect(
         factory
           .connect(user2)
@@ -77,7 +77,7 @@ export const newMediaWith = async (
   name: ethers.Contract,
   props?: NewMediaProps
 ) => {
-  const initializer = defaultInitializer(name.address)
+  const initializer = defaultInitializer(name.address, user.address)
   const tx = await factory.newMedia(
     user.address,
     props?.applicationMetadata
@@ -92,11 +92,13 @@ export const newMediaWith = async (
   return event.args
 }
 
-const defaultInitializer = (name: string) => {
+const defaultInitializer = (name: string, eoa: string) => {
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
   const initializer = ifaceAdManager.encodeFunctionData('initialize', [
     'BridgesMedia',
     'ipfs://',
+    'asfajijij3rjiajwefjajkj;afsj',
+    eoa,
     name,
   ])
   return initializer
