@@ -37,15 +37,20 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Initialize the instance.
 	/// @param title string of the title of the instance
 	/// @param baseURI string of the base URI
+	/// @param tokenMetadata string of the token metadata
+	/// @param mediaEOA address of the media owner
 	/// @param nameRegistry address of NameRegistry
 	function initialize(
 		string memory title,
 		string memory baseURI,
+		string memory tokenMetadata,
+		address mediaEOA,
 		address nameRegistry
 	) external virtual {
 		_name = title;
 		_symbol = string(abi.encodePacked("Kaleido_", title));
 		_baseURI = baseURI;
+		_mintRight(mediaEOA, 0, tokenMetadata);
 		initialize(nameRegistry);
 	}
 

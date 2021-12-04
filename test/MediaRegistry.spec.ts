@@ -85,7 +85,7 @@ export const newMediaWith = async (
   name: ethers.Contract,
   props?: NewMediaProps
 ) => {
-  const initializer = defaultInitializer(name.address)
+  const initializer = defaultInitializer(name.address, user.address)
   const tx = await factory.newMedia(
     user.address,
     props?.applicationMetadata
@@ -100,11 +100,13 @@ export const newMediaWith = async (
   return event.args
 }
 
-const defaultInitializer = (name: string) => {
+const defaultInitializer = (name: string, eoa: string) => {
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
   const initializer = ifaceAdManager.encodeFunctionData('initialize', [
     'NameA',
     'https://base/',
+    'safajfaiejiajfej;alkjfaj',
+    eoa,
     name,
   ])
   return initializer
