@@ -37,6 +37,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 
 	/// @inheritdoc IAdPool
 	function addPeriod(
+		address proxy,
 		string memory spaceMetadata,
 		string memory tokenMetadata,
 		uint256 saleEndTimestamp,
@@ -56,7 +57,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		);
 		tokenId = Ad.id(spaceMetadata, displayStartTimestamp, displayEndTimestamp);
 		Ad.Period memory period = Ad.Period(
-			address(this),
+			proxy,
 			spaceMetadata,
 			tokenMetadata,
 			_blockTimestamp(),

@@ -14,6 +14,7 @@ interface IAdPool {
 	function addSpace(string memory spaceMetadata) external;
 
 	function addPeriod(
+		address proxy,
 		string memory spaceMetadata,
 		string memory tokenMetadata,
 		uint256 saleEndTimestamp,

@@ -8,6 +8,7 @@ import {
 } from '../scripts/common/file'
 import { option } from '../scripts/common/wallet'
 import { newMediaWith } from './MediaFactory.spec'
+import { ADDRESS_ZERO } from './utils/address'
 import {
   getAdPoolContract,
   getEventEmitterContract,
@@ -29,13 +30,14 @@ describe('AdManager', async () => {
     const now = Date.now()
     await network.provider.send('evm_setNextBlockTimestamp', [now])
     await network.provider.send('evm_mine')
-
+    const pool = await getAdPoolContract()
+    await pool.setTime(now)
     return {
       now: now,
       factory: await getMediaFactoryContract(),
       name: await getNameRegistryContract(),
       registry: await getMediaRegistryContract(),
-      pool: await getAdPoolContract(),
+      pool: pool,
       event: await getEventEmitterContract(),
     }
   })
@@ -123,156 +125,153 @@ describe('AdManager', async () => {
     })
   })
 
-  // describe('newPeirod', async () => {
-  //   it('should new an ad period', async () => {
-  //     const { now, factory, name, event, pool } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const tokenMetadata = 'poiknfknajnjaer'
-  //     const saleEndTimestamp = now + 2400
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const pricing = 0
-  //     const minPrice = parseEther('0.2')
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
+  describe('newPeirod', async () => {
+    it('should new an ad period', async () => {
+      const { now, factory, name, event, pool } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const tokenMetadata = 'poiknfknajnjaer'
+      const saleEndTimestamp = now + 2400
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const pricing = 0
+      const minPrice = parseEther('0.2')
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      await manager.newSpace(spaceMetadata, option())
+      expect(
+        await newPeriodWith(manager, {
+          spaceMetadata: spaceMetadata,
+          tokenMetadata: tokenMetadata,
+          saleEndTimestamp: saleEndTimestamp,
+          displayStartTimestamp: displayStartTimestamp,
+          displayEndTimestamp: displayEndTimestamp,
+          pricing: pricing,
+          minPrice: minPrice,
+        })
+      )
+        .to.emit(event, 'NewPeriod')
+        .withArgs(
+          tokenId,
+          spaceMetadata,
+          tokenMetadata,
+          now,
+          saleEndTimestamp,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          pricing,
+          minPrice
+        )
+        .to.emit(event, 'TransferCustom')
+        .withArgs(ADDRESS_ZERO, manager.address, tokenId)
+      expect(await pool.spaced(spaceMetadata)).to.be.true
+      expect(await pool.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
+      expect(await pool.periods(tokenId)).to.deep.equal([
+        manager.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now),
+        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        pricing,
+        minPrice,
+        minPrice,
+        false,
+      ])
+      expect(await manager.ownerOf(tokenId)).to.be.eq(manager.address)
+      expect(await manager.tokenURI(tokenId)).to.be.eq(
+        `ipfs://${tokenMetadata}`
+      )
+    })
 
-  //     expect(
-  //       await newPeriodWith(manager, {
-  //         spaceMetadata: spaceMetadata,
-  //         tokenMetadata: tokenMetadata,
-  //         saleEndTimestamp: saleEndTimestamp,
-  //         displayStartTimestamp: displayStartTimestamp,
-  //         displayEndTimestamp: displayEndTimestamp,
-  //         pricing: pricing,
-  //         minPrice: minPrice,
-  //       })
-  //     )
-  //       .to.emit(event, 'NewPeriod')
-  //       .withArgs(
-  //         tokenId,
-  //         spaceMetadata,
-  //         tokenMetadata,
-  //         now,
-  //         saleEndTimestamp,
-  //         displayStartTimestamp,
-  //         displayEndTimestamp,
-  //         pricing,
-  //         minPrice
-  //       )
-  //       .to.emit(event, 'TransferCustom')
-  //       .withArgs(ADDRESS_ZERO, manager.address, tokenId)
-  //     expect(await manager.spaced(spaceMetadata)).to.be.true
-  //     expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
-  //     expect(await manager.periods(tokenId)).to.deep.equal([
-  //       manager.address,
-  //       spaceMetadata,
-  //       tokenMetadata,
-  //       BigNumber.from(now),
-  //       BigNumber.from(saleEndTimestamp),
-  //       BigNumber.from(displayStartTimestamp),
-  //       BigNumber.from(displayEndTimestamp),
-  //       pricing,
-  //       minPrice,
-  //       minPrice,
-  //       false,
-  //     ])
-  //     expect(await manager.ownerOf(tokenId)).to.be.eq(manager.address)
-  //     expect(await manager.tokenURI(tokenId)).to.be.eq(
-  //       `ipfs://${tokenMetadata}`
-  //     )
-  //     expect(await pool.allPeriods(tokenId)).to.deep.equal([
-  //       manager.address,
-  //       spaceMetadata,
-  //       tokenMetadata,
-  //       BigNumber.from(now),
-  //       BigNumber.from(saleEndTimestamp),
-  //       BigNumber.from(displayStartTimestamp),
-  //       BigNumber.from(displayEndTimestamp),
-  //       pricing,
-  //       minPrice,
-  //       minPrice,
-  //       false,
-  //     ])
-  //   })
+    it('should revert because the media is not yours', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
 
-  //   it('should revert because the media is not yours', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
+      await expect(newPeriodWith(manager.connect(user4))).to.be.revertedWith(
+        'KD012'
+      )
+    })
 
-  //     await expect(newPeriodWith(manager.connect(user4))).to.be.revertedWith(
-  //       'KD012'
-  //     )
-  //   })
+    it('should revert because of overlapped period', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const saleEndTimestamp = now + 2400
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const { spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
 
-  //   it('should revert because of overlapped period', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const saleEndTimestamp = now + 2400
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
+      await newPeriodWith(manager, {
+        saleEndTimestamp: saleEndTimestamp,
+        displayStartTimestamp: displayStartTimestamp,
+        displayEndTimestamp: displayEndTimestamp,
+      })
+      await expect(
+        newPeriodWith(manager, {
+          saleEndTimestamp: now + 5000,
+          displayStartTimestamp: now + 7100,
+          displayEndTimestamp: now + 9000,
+        })
+      ).to.be.revertedWith('KD110')
+    })
 
-  //     await newPeriodWith(manager, {
-  //       saleEndTimestamp: saleEndTimestamp,
-  //       displayStartTimestamp: displayStartTimestamp,
-  //       displayEndTimestamp: displayEndTimestamp,
-  //     })
-  //     await expect(
-  //       newPeriodWith(manager, {
-  //         saleEndTimestamp: now + 5000,
-  //         displayStartTimestamp: now + 7100,
-  //         displayEndTimestamp: now + 9000,
-  //       })
-  //     ).to.be.revertedWith('KD110')
-  //   })
+    it('should revert because the sale end time is the past', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const saleEndTimestamp = now - 1000
+      const { spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
 
-  //   it('should revert because the sale end time is the past', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const saleEndTimestamp = now - 1000
+      await expect(
+        newPeriodWith(manager, {
+          saleEndTimestamp: saleEndTimestamp,
+        })
+      ).to.be.revertedWith('KD111')
+    })
 
-  //     await expect(
-  //       newPeriodWith(manager, {
-  //         saleEndTimestamp: saleEndTimestamp,
-  //       })
-  //     ).to.be.revertedWith('KD111')
-  //   })
+    it('should revert because the display start time is before the end of the sale', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const saleEndTimestamp = now + 3600
+      const displayStartTimestamp = now + 2400
+      const displayEndTimestamp = now + 7200
+      const { spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
 
-  //   it('should revert because the display start time is before the end of the sale', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const saleEndTimestamp = now + 3600
-  //     const displayStartTimestamp = now + 2400
-  //     const displayEndTimestamp = now + 7200
+      await expect(
+        newPeriodWith(manager, {
+          saleEndTimestamp: saleEndTimestamp,
+          displayStartTimestamp: displayStartTimestamp,
+          displayEndTimestamp: displayEndTimestamp,
+        })
+      ).to.be.revertedWith('KD112')
+    })
 
-  //     await expect(
-  //       newPeriodWith(manager, {
-  //         saleEndTimestamp: saleEndTimestamp,
-  //         displayStartTimestamp: displayStartTimestamp,
-  //         displayEndTimestamp: displayEndTimestamp,
-  //       })
-  //     ).to.be.revertedWith('KD112')
-  //   })
+    it('should revert because the display end time is before the start of the display', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const saleEndTimestamp = now + 2400
+      const displayStartTimestamp = now + 7200
+      const displayEndTimestamp = now + 3600
+      const { spaceMetadata } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
 
-  //   it('should revert because the display end time is before the start of the display', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const saleEndTimestamp = now + 2400
-  //     const displayStartTimestamp = now + 7200
-  //     const displayEndTimestamp = now + 3600
-
-  //     await expect(
-  //       newPeriodWith(manager, {
-  //         saleEndTimestamp: saleEndTimestamp,
-  //         displayStartTimestamp: displayStartTimestamp,
-  //         displayEndTimestamp: displayEndTimestamp,
-  //       })
-  //     ).to.be.revertedWith('KD113')
-  //   })
-  // })
+      await expect(
+        newPeriodWith(manager, {
+          saleEndTimestamp: saleEndTimestamp,
+          displayStartTimestamp: displayStartTimestamp,
+          displayEndTimestamp: displayEndTimestamp,
+        })
+      ).to.be.revertedWith('KD113')
+    })
+  })
 
   // describe('deletePeriod', async () => {
   //   it('should delete a period', async () => {

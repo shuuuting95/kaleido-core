@@ -90,6 +90,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		// require(saleEndTimestamp < displayStartTimestamp, "KD112");
 		// require(displayStartTimestamp < displayEndTimestamp, "KD113");
 		uint256 tokenId = _adPool().addPeriod(
+			address(this),
 			spaceMetadata,
 			tokenMetadata,
 			saleEndTimestamp,

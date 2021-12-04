@@ -19,7 +19,6 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 	);
 	event UpdateMedia(address proxy, address mediaEOA, string accountMetadata);
 	event NewSpace(string metadata);
-	event DeleteSpace(string metadata);
 	event NewPeriod(
 		uint256 tokenId,
 		string spaceMetadata,
@@ -94,10 +93,6 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		emit NewSpace(metadata);
 	}
 
-	function emitDeleteSpace(string memory metadata) external onlyProxies {
-		emit DeleteSpace(metadata);
-	}
-
 	function emitNewPeriod(
 		uint256 tokenId,
 		string memory spaceMetadata,
@@ -108,7 +103,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 displayEndTimestamp,
 		Ad.Pricing pricing,
 		uint256 minPrice
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit NewPeriod(
 			tokenId,
 			spaceMetadata,
