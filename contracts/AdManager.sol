@@ -64,7 +64,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @dev Creates a new space for the media account.
 	/// @param spaceMetadata string of the space metadata
 	function newSpace(string memory spaceMetadata) external virtual onlyMedia {
-		// _newSpace(spaceMetadata);
 		_adPool().addSpace(spaceMetadata);
 	}
 
@@ -86,9 +85,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		Ad.Pricing pricing,
 		uint256 minPrice
 	) external virtual onlyMedia {
-		// require(saleEndTimestamp > _blockTimestamp(), "KD111");
-		// require(saleEndTimestamp < displayStartTimestamp, "KD112");
-		// require(displayStartTimestamp < displayEndTimestamp, "KD113");
 		uint256 tokenId = _adPool().addPeriod(
 			address(this),
 			spaceMetadata,
@@ -128,39 +124,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
-	// /// @dev Buys the token that is defined as the specific period on an ad space.
-	// ///      The price is decreasing as time goes by, that is defined as an Dutch Auction.
-	// /// @param tokenId uint256 of the token ID
-	// function buyBasedOnTime(uint256 tokenId)
-	// 	external
-	// 	payable
-	// 	virtual
-	// 	exceptYourself
-	// {
-	// 	_checkBeforeBuyBasedOnTime(tokenId);
-	// 	periods[tokenId].sold = true;
-	// 	_dropRight(msg.sender, tokenId);
-	// 	_collectFees(msg.value / 10);
-	// 	_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
-	// 	_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
-	// }
-
-	// /// @dev Bids to participate in an auction.
-	// ///      It is defined as an English Auction.
-	// /// @param tokenId uint256 of the token ID
-	// function bid(uint256 tokenId)
-	// 	external
-	// 	payable
-	// 	virtual
-	// 	exceptYourself
-	// 	nonReentrant
-	// {
-	// 	_checkBeforeBid(tokenId);
-	// 	_refundBiddingAmount(tokenId);
-	// 	_biddingTotal += (msg.value - bidding[tokenId].price);
-	// 	bidding[tokenId] = Sale.Bidding(tokenId, msg.sender, msg.value);
-	// 	_eventEmitter().emitBid(tokenId, msg.value, msg.sender, _blockTimestamp());
-	// }
 	/// @dev Buys the token that is defined as the specific period on an ad space.
 	///      The price is decreasing as time goes by, that is defined as an Dutch Auction.
 	/// @param tokenId uint256 of the token ID

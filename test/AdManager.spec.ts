@@ -193,8 +193,6 @@ describe('AdManager', async () => {
     it('should revert because the media is not yours', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name, now)
-      const { spaceMetadata } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
 
       await expect(newPeriodWith(manager.connect(user4))).to.be.revertedWith(
         'KD012'
@@ -207,8 +205,6 @@ describe('AdManager', async () => {
       const saleEndTimestamp = now + 2400
       const displayStartTimestamp = now + 3600
       const displayEndTimestamp = now + 7200
-      const { spaceMetadata } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
 
       await newPeriodWith(manager, {
         saleEndTimestamp: saleEndTimestamp,
@@ -228,8 +224,6 @@ describe('AdManager', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name, now)
       const saleEndTimestamp = now - 1000
-      const { spaceMetadata } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
 
       await expect(
         newPeriodWith(manager, {
@@ -244,8 +238,6 @@ describe('AdManager', async () => {
       const saleEndTimestamp = now + 3600
       const displayStartTimestamp = now + 2400
       const displayEndTimestamp = now + 7200
-      const { spaceMetadata } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
 
       await expect(
         newPeriodWith(manager, {
@@ -262,8 +254,6 @@ describe('AdManager', async () => {
       const saleEndTimestamp = now + 2400
       const displayStartTimestamp = now + 7200
       const displayEndTimestamp = now + 3600
-      const { spaceMetadata } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
 
       await expect(
         newPeriodWith(manager, {
@@ -280,7 +270,6 @@ describe('AdManager', async () => {
       const { now, factory, name, event, pool } = await setupTests()
       const manager = await managerInstance(factory, name, now)
       const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
       await newPeriodWith(manager, { now })
 
       expect((await pool.tokenIdsOf(spaceMetadata))[0]).to.be.eq(tokenId)
@@ -311,8 +300,7 @@ describe('AdManager', async () => {
     it('should revert because it has already deleted', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name, now)
-      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
       await newPeriodWith(manager, { now })
       await manager.deletePeriod(tokenId, option())
@@ -324,8 +312,7 @@ describe('AdManager', async () => {
     it('should revert because it has been sold out', async () => {
       const { now, factory, name } = await setupTests()
       const manager = await managerInstance(factory, name, now)
-      const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
       await newPeriodWith(manager.connect(user2), { now })
       await buyWith(manager.connect(user3), {
@@ -341,7 +328,6 @@ describe('AdManager', async () => {
       const { now, factory, name, pool } = await setupTests()
       const manager = await managerInstance(factory, name, now)
       const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
       await newPeriodWith(manager, { now })
       await manager.deletePeriod(tokenId, option())
 
@@ -360,7 +346,6 @@ describe('AdManager', async () => {
       const { now, factory, name, event, pool } = await setupTests()
       const manager = await managerInstance(factory, name, now)
       const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
       await newPeriodWith(manager, { now, pricing: 2 })
       await manager
         .connect(user3)
@@ -662,7 +647,6 @@ describe('AdManager', async () => {
         displayEndTimestamp,
         displayStartTimestamp,
       } = await defaultPeriodProps(manager, now)
-      await manager.newSpace(spaceMetadata, option())
 
       const pricing = 0
       const price = parseEther('0.2')
@@ -777,57 +761,79 @@ describe('AdManager', async () => {
     })
   })
 
-  // describe('buyBasedOnTime', async () => {
-  //   it('should buy a period', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
+  describe('buyBasedOnTime', async () => {
+    it('should buy a period', async () => {
+      const { now, factory, name, event, pool, vault } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const {
+        tokenId,
+        spaceMetadata,
+        tokenMetadata,
+        saleEndTimestamp,
+        displayEndTimestamp,
+        displayStartTimestamp,
+      } = await defaultPeriodProps(manager, now)
 
-  //     const pricing = 1
-  //     const price = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
+      const pricing = 1
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
 
-  //     // 2400/3600 -> 66% passed
-  //     await manager.setTime(now + 2400)
+      // 2400/3600 -> 66% passed
+      await manager.setTime(now + 2400)
 
-  //     const currentPrice = await manager.currentPrice(tokenId)
+      const currentPrice = await manager.currentPrice(tokenId)
 
-  //     // slightly passed for its operation
-  //     await manager.setTime(now + 2460)
+      // slightly passed for its operation
+      await manager.setTime(now + 2460)
 
-  //     expect(
-  //       await manager
-  //         .connect(user3)
-  //         .buyBasedOnTime(tokenId, option({ value: currentPrice }))
-  //     )
-  //       .to.emit(event, 'Buy')
-  //       .withArgs(tokenId, currentPrice, user3.address, now + 2460)
-  //       .to.emit(event, 'TransferCustom')
-  //       .withArgs(manager.address, user3.address, tokenId)
-  //   })
+      expect(
+        await manager
+          .connect(user3)
+          .buyBasedOnTime(tokenId, option({ value: currentPrice }))
+      )
+        .to.emit(event, 'Buy')
+        .withArgs(tokenId, currentPrice, user3.address, now + 2460)
+        .to.emit(event, 'TransferCustom')
+        .withArgs(manager.address, user3.address, tokenId)
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
+        manager.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now),
+        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        pricing,
+        price,
+        price.mul(10),
+        true,
+      ])
+      expect(await manager.ownerOf(tokenId)).to.be.eq(user3.address)
+      expect(await vault.balance()).to.be.eq(currentPrice.div(10))
+    })
 
-  //   it('should revert because the pricing is not DPBT', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
-  //     const pricing = 2
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing: pricing,
-  //     })
+    it('should revert because the pricing is not DPBT', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const pricing = 2
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+      })
 
-  //     const currentPrice = await manager.currentPrice(tokenId)
-  //     await expect(
-  //       manager
-  //         .connect(user3)
-  //         .buyBasedOnTime(tokenId, option({ value: currentPrice }))
-  //     ).to.be.revertedWith('KD123')
-  //   })
-  // })
+      const currentPrice = await manager.currentPrice(tokenId)
+      await expect(
+        manager
+          .connect(user3)
+          .buyBasedOnTime(tokenId, option({ value: currentPrice }))
+      ).to.be.revertedWith('KD123')
+    })
+  })
 
   // describe('bid', async () => {
   //   it('should bid', async () => {

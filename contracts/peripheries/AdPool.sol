@@ -50,6 +50,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		require(saleEndTimestamp < displayStartTimestamp, "KD112");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
 
+		_addSpaceIfNot(spaceMetadata);
 		_checkOverlapping(
 			spaceMetadata,
 			displayStartTimestamp,
@@ -193,6 +194,13 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 			) {
 				revert("KD110");
 			}
+		}
+	}
+
+	function _addSpaceIfNot(string memory metadata) internal {
+		if (!spaced[metadata]) {
+			spaced[metadata] = true;
+			_eventEmitter().emitNewSpace(metadata);
 		}
 	}
 
