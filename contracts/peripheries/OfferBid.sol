@@ -4,12 +4,11 @@ pragma solidity 0.8.9;
 import "../libraries/Ad.sol";
 import "../libraries/Purchase.sol";
 import "../accessors/NameAccessor.sol";
-import "../common/BlockTimestamp.sol";
 import "../interfaces/IAdPool.sol";
 import "../interfaces/IEventEmitter.sol";
 import "../interfaces/IOfferBid.sol";
 
-contract OfferBid is IOfferBid, BlockTimestamp, NameAccessor {
+contract OfferBid is IOfferBid, NameAccessor {
 	/// @dev Maps a tokenId with offer info
 	mapping(uint256 => Sale.Offer) internal _offered;
 
@@ -34,25 +33,32 @@ contract OfferBid is IOfferBid, BlockTimestamp, NameAccessor {
 			sender,
 			value
 		);
+		_eventEmitter().emitOfferPeriod(
+			tokenId,
+			spaceMetadata,
+			displayStartTimestamp,
+			displayEndTimestamp,
+			sender,
+			value
+		);
 	}
 
-	function cancel(uint256 tokenId) external {
-		require(_offered[tokenId].sender == msg.sender, "KD116");
-		_refundOfferedAmount(tokenId);
-
+	function cancel(uint256 tokenId, address sender) external {
+		require(_offered[tokenId].sender == sender, "KD116");
 		delete _offered[tokenId];
+		_eventEmitter().emitCancelOffer(tokenId);
 	}
 
 	function accept(uint256 tokenId, string memory tokenMetadata)
 		external
 		returns (address, uint256)
 	{
-		Sale.Offer memory offered = _offered[tokenId];
-		require(offered.sender != address(0), "KD115");
-		_adPool().acceptOffer(tokenId, tokenMetadata, offered);
+		Sale.Offer memory target = _offered[tokenId];
+		require(target.sender != address(0), "KD115");
+		_adPool().acceptOffer(tokenId, tokenMetadata, target);
 
 		delete _offered[tokenId];
-		return (offered.sender, offered.price);
+		return (target.sender, target.price);
 	}
 
 	function currentPrice(uint256 tokenId)
@@ -64,23 +70,8 @@ contract OfferBid is IOfferBid, BlockTimestamp, NameAccessor {
 		return _offered[tokenId].price;
 	}
 
-	function _refundOfferedAmount(uint256 tokenId) internal virtual {
-		Ad.Period memory period = _adPool().allPeriods(tokenId);
-		if (
-			period.pricing == Ad.Pricing.OFFER &&
-			_offered[tokenId].sender != address(0)
-		) {
-			(bool success, ) = payable(_offered[tokenId].sender).call{
-				value: _offered[tokenId].price,
-				gas: 10000
-			}("");
-			if (!success) {
-				_eventEmitter().emitPaymentFailure(
-					_offered[tokenId].sender,
-					_offered[tokenId].price
-				);
-			}
-		}
+	function offered(uint256 tokenId) external view returns (Sale.Offer memory) {
+		return _offered[tokenId];
 	}
 
 	/**

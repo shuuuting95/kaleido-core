@@ -372,21 +372,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp
 	) external payable virtual exceptYourself {
-		// require(_adPool().spaced(spaceMetadata), "KD101");
-		// require(displayStartTimestamp < displayEndTimestamp, "KD113");
-		// uint256 tokenId = Ad.id(
-		// 	spaceMetadata,
-		// 	displayStartTimestamp,
-		// 	displayEndTimestamp
-		// );
-		// offered[tokenId] = Sale.Offer(
-		// 	spaceMetadata,
-		// 	displayStartTimestamp,
-		// 	displayEndTimestamp,
-		// 	msg.sender,
-		// 	msg.value
-		// );
-		uint256 tokenId = _offerBid().offer(
+		_offerBid().offer(
 			spaceMetadata,
 			displayStartTimestamp,
 			displayEndTimestamp,
@@ -394,25 +380,33 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			msg.value
 		);
 		_processingTotal += msg.value;
-		_eventEmitter().emitOfferPeriod(
-			tokenId,
-			spaceMetadata,
-			displayStartTimestamp,
-			displayEndTimestamp,
-			msg.sender,
-			msg.value
-		);
 	}
 
 	/// @dev Cancels an offer.
 	/// @param tokenId uint256 of the token ID
 	function cancelOffer(uint256 tokenId) external virtual exceptYourself {
-		// require(offered[tokenId].sender == msg.sender, "KD116");
-		// _refundOfferedAmount(tokenId);
-		_offerBid().cancel(tokenId);
-		// TODO: _offeredTotal -= offered[tokenId].price;
-		// delete offered[tokenId];
-		_eventEmitter().emitCancelOffer(tokenId);
+		uint256 offeredPrice = _refundOfferedAmount(tokenId);
+		_offerBid().cancel(tokenId, msg.sender);
+		_processingTotal -= offeredPrice;
+	}
+
+	function _refundOfferedAmount(uint256 tokenId)
+		internal
+		virtual
+		returns (uint256 offeredPrice)
+	{
+		Ad.Period memory period = _adPool().allPeriods(tokenId);
+		Sale.Offer memory _offered = _offerBid().offered(tokenId);
+		if (period.pricing == Ad.Pricing.OFFER && _offered.sender != address(0)) {
+			(bool success, ) = payable(_offered.sender).call{
+				value: _offered.price,
+				gas: 10000
+			}("");
+			offeredPrice = _offered.price;
+			if (!success) {
+				_eventEmitter().emitPaymentFailure(_offered.sender, _offered.price);
+			}
+		}
 	}
 
 	/// @dev Accepts an offer by the Media.
@@ -423,18 +417,13 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		virtual
 		onlyMedia
 	{
-		// Sale.Offer memory offer = offered[tokenId];
-		// require(offer.sender != address(0), "KD115");
-		// _adPool().acceptOffer(tokenId, tokenMetadata, offer);
 		(address sender, uint256 price) = _offerBid().accept(
 			tokenId,
 			tokenMetadata
 		);
 		_mintRight(sender, tokenId, tokenMetadata);
 		_collectFees(price / 10);
-
 		_processingTotal -= price;
-		// delete offered[tokenId];
 		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
 	}
 

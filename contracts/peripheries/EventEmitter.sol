@@ -178,7 +178,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 displayEndTimestamp,
 		address sender,
 		uint256 price
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit OfferPeriod(
 			tokenId,
 			spaceMetadata,
@@ -189,7 +189,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		);
 	}
 
-	function emitCancelOffer(uint256 tokenId) external onlyProxies {
+	function emitCancelOffer(uint256 tokenId) external onlyAllowedContract {
 		emit CancelOffer(tokenId);
 	}
 
@@ -200,7 +200,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp,
 		uint256 price
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit AcceptOffer(
 			tokenId,
 			spaceMetadata,

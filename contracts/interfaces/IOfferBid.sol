@@ -14,11 +14,13 @@ interface IOfferBid {
 		uint256 value
 	) external returns (uint256);
 
-	function cancel(uint256 tokenId) external;
+	function cancel(uint256 tokenId, address sender) external;
 
 	function accept(uint256 tokenId, string memory tokenMetadata)
 		external
 		returns (address, uint256);
 
 	function currentPrice(uint256 tokenId) external view returns (uint256);
+
+	function offered(uint256 tokenId) external view returns (Sale.Offer memory);
 }

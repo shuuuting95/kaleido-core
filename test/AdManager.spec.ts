@@ -16,6 +16,7 @@ import {
   getMediaFactoryContract,
   getMediaRegistryContract,
   getNameRegistryContract,
+  getOfferBidContract,
   getOpenBidContract,
   getVaultContract,
 } from './utils/setup'
@@ -39,6 +40,7 @@ describe('AdManager', async () => {
     await eng.setTime(now)
     const open = await getOpenBidContract()
     await open.setTime(now)
+
     return {
       now: now,
       factory: await getMediaFactoryContract(),
@@ -47,6 +49,7 @@ describe('AdManager', async () => {
       pool: pool,
       eng: eng,
       open: open,
+      offer: await getOfferBidContract(),
       event: await getEventEmitterContract(),
       vault: await getVaultContract(),
     }
@@ -384,264 +387,6 @@ describe('AdManager', async () => {
       )
     })
   })
-
-  // describe('offerPeriod', async () => {
-  //   it('should offer', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const price = parseEther('0.4')
-  //     await manager.connect(user2).newSpace(spaceMetadata)
-  //     expect(
-  //       await manager
-  //         .connect(user3)
-  //         .offerPeriod(
-  //           spaceMetadata,
-  //           displayStartTimestamp,
-  //           displayEndTimestamp,
-  //           option({ value: price })
-  //         )
-  //     )
-  //       .to.emit(event, 'OfferPeriod')
-  //       .withArgs(
-  //         tokenId,
-  //         spaceMetadata,
-  //         displayStartTimestamp,
-  //         displayEndTimestamp,
-  //         user3.address,
-  //         price
-  //       )
-  //   })
-
-  //   it('should revert because of missing the space', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-
-  //     const wrongSpaceMetadata = 'asdfadfaweferhertheaeerwerafadfa'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const price = parseEther('0.4')
-  //     await expect(
-  //       manager
-  //         .connect(user3)
-  //         .offerPeriod(
-  //           wrongSpaceMetadata,
-  //           displayStartTimestamp,
-  //           displayEndTimestamp,
-  //           option({ value: price })
-  //         )
-  //     ).to.be.revertedWith('KD101')
-  //   })
-  // })
-
-  // describe('cancelOffer', async () => {
-  //   it('should cancel an offer', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const price = parseEther('0.4')
-  //     await manager.connect(user2).newSpace(spaceMetadata)
-  //     await manager
-  //       .connect(user3)
-  //       .offerPeriod(
-  //         spaceMetadata,
-  //         displayStartTimestamp,
-  //         displayEndTimestamp,
-  //         option({ value: price })
-  //       )
-  //     expect(await manager.connect(user3).cancelOffer(tokenId, option()))
-  //       .to.emit(event, 'CancelOffer')
-  //       .withArgs(tokenId)
-  //     expect(await manager.offered(tokenId)).to.deep.equal([
-  //       '',
-  //       BigNumber.from(0),
-  //       BigNumber.from(0),
-  //       ADDRESS_ZERO,
-  //       BigNumber.from(0),
-  //     ])
-  //   })
-
-  //   it('should revert because the offer is not yours', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const price = parseEther('0.4')
-  //     await manager.connect(user2).newSpace(spaceMetadata)
-  //     await manager
-  //       .connect(user3)
-  //       .offerPeriod(
-  //         spaceMetadata,
-  //         displayStartTimestamp,
-  //         displayEndTimestamp,
-  //         option({ value: price })
-  //       )
-  //     await expect(
-  //       manager.connect(user4).cancelOffer(tokenId, option())
-  //     ).to.be.revertedWith('KD116')
-  //   })
-  // })
-
-  // describe('acceptOffer', async () => {
-  //   it('should accept an offer', async () => {
-  //     const { now, factory, name, pool, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-
-  //     const spaceMetadata = 'abi09nadu2brasfjl'
-  //     const tokenMetadata = 'poiknfknajnjaer'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const price = parseEther('0.4')
-  //     await manager.newSpace(spaceMetadata)
-  //     await manager
-  //       .connect(user3)
-  //       .offerPeriod(
-  //         spaceMetadata,
-  //         displayStartTimestamp,
-  //         displayEndTimestamp,
-  //         option({ value: price })
-  //       )
-  //     expect(await manager.balance()).to.be.eq(parseEther('0.4'))
-  //     expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
-
-  //     expect(await manager.acceptOffer(tokenId, tokenMetadata, option()))
-  //       .to.emit(event, 'AcceptOffer')
-  //       .withArgs(
-  //         tokenId,
-  //         spaceMetadata,
-  //         tokenMetadata,
-  //         displayStartTimestamp,
-  //         displayEndTimestamp,
-  //         price
-  //       )
-  //     expect(await manager.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
-  //     expect(await manager.balance()).to.be.eq(parseEther('0.36'))
-  //     expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0.36'))
-
-  //     expect(await manager.periods(tokenId)).to.deep.equal([
-  //       user3.address,
-  //       spaceMetadata,
-  //       tokenMetadata,
-  //       BigNumber.from(now),
-  //       BigNumber.from(now),
-  //       BigNumber.from(displayStartTimestamp),
-  //       BigNumber.from(displayEndTimestamp),
-  //       3,
-  //       price,
-  //       price,
-  //       true,
-  //     ])
-  //     expect(await pool.allPeriods(tokenId)).to.deep.equal([
-  //       user3.address,
-  //       spaceMetadata,
-  //       tokenMetadata,
-  //       BigNumber.from(now),
-  //       BigNumber.from(now),
-  //       BigNumber.from(displayStartTimestamp),
-  //       BigNumber.from(displayEndTimestamp),
-  //       3,
-  //       price,
-  //       price,
-  //       true,
-  //     ])
-  //   })
-
-  //   it('should revert because of the invalid tokenId', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-
-  //     const spaceMetadata = 'abi09nadu2brasfjl'
-  //     const tokenMetadata = 'poiknfknajnjaer'
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const wrongTokenId = await manager.adId(
-  //       'asjkjkasjfkajkjfakjfkakdjak',
-  //       displayStartTimestamp,
-  //       displayEndTimestamp
-  //     )
-  //     const price = parseEther('0.4')
-  //     await manager.newSpace(spaceMetadata)
-  //     await manager
-  //       .connect(user3)
-  //       .offerPeriod(
-  //         spaceMetadata,
-  //         displayStartTimestamp,
-  //         displayEndTimestamp,
-  //         option({ value: price })
-  //       )
-  //     await expect(
-  //       manager.acceptOffer(wrongTokenId, tokenMetadata, option())
-  //     ).to.be.revertedWith('KD115')
-  //   })
-
-  //   it('should revert because the period has already bought and overlapped', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const spaceMetadata = 'asfafkjksjfkajf'
-  //     const tokenMetadata = 'poiknfknajnjaer'
-  //     const saleEndTimestamp = now + 2400
-  //     const displayStartTimestamp = now + 3600
-  //     const displayEndTimestamp = now + 7200
-  //     const pricing = 0
-  //     const minPrice = parseEther('0.2')
-  //     const tokenId = await manager.adId(
-  //       spaceMetadata,
-  //       displayStartTimestamp + 1000,
-  //       displayEndTimestamp + 1000
-  //     )
-
-  //     const price = parseEther('0.4')
-  //     await newPeriodWith(manager.connect(user2), {
-  //       spaceMetadata: spaceMetadata,
-  //       tokenMetadata: tokenMetadata,
-  //       saleEndTimestamp: saleEndTimestamp,
-  //       displayStartTimestamp: displayStartTimestamp,
-  //       displayEndTimestamp: displayEndTimestamp,
-  //       pricing: pricing,
-  //       minPrice: minPrice,
-  //     })
-  //     await manager
-  //       .connect(user3)
-  //       .offerPeriod(
-  //         spaceMetadata,
-  //         displayStartTimestamp + 1000,
-  //         displayEndTimestamp + 1000,
-  //         option({ value: price })
-  //       )
-
-  //     await expect(
-  //       manager.connect(user2).acceptOffer(tokenId, tokenMetadata, option())
-  //     ).to.be.revertedWith('KD110')
-  //   })
-  // })
 
   describe('buy', async () => {
     it('should buy a period', async () => {
@@ -1141,6 +886,250 @@ describe('AdManager', async () => {
       await expect(
         manager.connect(user2).selectProposal(tokenId, 1, option())
       ).to.be.revertedWith('KD114')
+    })
+  })
+
+  describe('offerPeriod', async () => {
+    it('should offer', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.connect(user2).newSpace(spaceMetadata)
+      expect(
+        await manager
+          .connect(user3)
+          .offerPeriod(
+            spaceMetadata,
+            displayStartTimestamp,
+            displayEndTimestamp,
+            option({ value: price })
+          )
+      )
+        .to.emit(event, 'OfferPeriod')
+        .withArgs(
+          tokenId,
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          user3.address,
+          price
+        )
+    })
+
+    it('should revert because of missing the space', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+
+      const wrongSpaceMetadata = 'asdfadfaweferhertheaeerwerafadfa'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const price = parseEther('0.4')
+      await expect(
+        manager
+          .connect(user3)
+          .offerPeriod(
+            wrongSpaceMetadata,
+            displayStartTimestamp,
+            displayEndTimestamp,
+            option({ value: price })
+          )
+      ).to.be.revertedWith('KD101')
+    })
+  })
+
+  describe('cancelOffer', async () => {
+    it('should cancel an offer', async () => {
+      const { now, factory, name, event, offer } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.connect(user2).newSpace(spaceMetadata)
+      await manager
+        .connect(user3)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          option({ value: price })
+        )
+      expect(await manager.connect(user3).cancelOffer(tokenId, option()))
+        .to.emit(event, 'CancelOffer')
+        .withArgs(tokenId)
+      expect(await offer.offered(tokenId)).to.deep.equal([
+        '',
+        BigNumber.from(0),
+        BigNumber.from(0),
+        ADDRESS_ZERO,
+        BigNumber.from(0),
+      ])
+    })
+
+    it('should revert because the offer is not yours', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.connect(user2).newSpace(spaceMetadata)
+      await manager
+        .connect(user3)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          option({ value: price })
+        )
+      await expect(
+        manager.connect(user4).cancelOffer(tokenId, option())
+      ).to.be.revertedWith('KD116')
+    })
+  })
+
+  describe('acceptOffer', async () => {
+    it('should accept an offer', async () => {
+      const { now, factory, name, pool, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+
+      const spaceMetadata = 'abi09nadu2brasfjl'
+      const tokenMetadata = 'poiknfknajnjaer'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.newSpace(spaceMetadata)
+      await manager
+        .connect(user3)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          option({ value: price })
+        )
+      expect(await manager.balance()).to.be.eq(parseEther('0.4'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
+
+      expect(await manager.acceptOffer(tokenId, tokenMetadata, option()))
+        .to.emit(event, 'AcceptOffer')
+        .withArgs(
+          tokenId,
+          spaceMetadata,
+          tokenMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          price
+        )
+      expect(await pool.tokenIdsOf(spaceMetadata)).to.deep.equal([tokenId])
+      expect(await manager.balance()).to.be.eq(parseEther('0.36'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0.36'))
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
+        user3.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now),
+        BigNumber.from(now),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        3,
+        price,
+        price,
+        true,
+      ])
+    })
+
+    it('should revert because of the invalid tokenId', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+
+      const spaceMetadata = 'abi09nadu2brasfjl'
+      const tokenMetadata = 'poiknfknajnjaer'
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const wrongTokenId = await manager.adId(
+        'asjkjkasjfkajkjfakjfkakdjak',
+        displayStartTimestamp,
+        displayEndTimestamp
+      )
+      const price = parseEther('0.4')
+      await manager.newSpace(spaceMetadata)
+      await manager
+        .connect(user3)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp,
+          displayEndTimestamp,
+          option({ value: price })
+        )
+      await expect(
+        manager.acceptOffer(wrongTokenId, tokenMetadata, option())
+      ).to.be.revertedWith('KD115')
+    })
+
+    it('should revert because the period has already bought and overlapped', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const spaceMetadata = 'asfafkjksjfkajf'
+      const tokenMetadata = 'poiknfknajnjaer'
+      const saleEndTimestamp = now + 2400
+      const displayStartTimestamp = now + 3600
+      const displayEndTimestamp = now + 7200
+      const pricing = 0
+      const minPrice = parseEther('0.2')
+      const tokenId = await manager.adId(
+        spaceMetadata,
+        displayStartTimestamp + 1000,
+        displayEndTimestamp + 1000
+      )
+
+      const price = parseEther('0.4')
+      await newPeriodWith(manager.connect(user2), {
+        spaceMetadata: spaceMetadata,
+        tokenMetadata: tokenMetadata,
+        saleEndTimestamp: saleEndTimestamp,
+        displayStartTimestamp: displayStartTimestamp,
+        displayEndTimestamp: displayEndTimestamp,
+        pricing: pricing,
+        minPrice: minPrice,
+      })
+      await manager
+        .connect(user3)
+        .offerPeriod(
+          spaceMetadata,
+          displayStartTimestamp + 1000,
+          displayEndTimestamp + 1000,
+          option({ value: price })
+        )
+
+      await expect(
+        manager.connect(user2).acceptOffer(tokenId, tokenMetadata, option())
+      ).to.be.revertedWith('KD110')
     })
   })
 
