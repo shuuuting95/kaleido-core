@@ -1,0 +1,340 @@
+{
+  "address": "0x570aa59a67aE825a0acDfC0deD3e919E1c73666B",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "mediaProxy",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "spaceMetadata",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "tokenMetadata",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "saleStartTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "saleEndTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "displayStartTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "displayEndTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "enum Ad.Pricing",
+              "name": "pricing",
+              "type": "Ad.Pricing"
+            },
+            {
+              "internalType": "uint256",
+              "name": "minPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "sold",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Ad.Period",
+          "name": "period",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "currentPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "checkBeforeBid",
+      "outputs": [],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "mediaProxy",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "spaceMetadata",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "tokenMetadata",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "saleStartTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "saleEndTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "displayStartTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "displayEndTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "enum Ad.Pricing",
+              "name": "pricing",
+              "type": "Ad.Pricing"
+            },
+            {
+              "internalType": "uint256",
+              "name": "minPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "sold",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Ad.Period",
+          "name": "period",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "checkBeforeBidWithProposal",
+      "outputs": [],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "mediaProxy",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "spaceMetadata",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "tokenMetadata",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "saleStartTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "saleEndTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "displayStartTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "displayEndTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "enum Ad.Pricing",
+              "name": "pricing",
+              "type": "Ad.Pricing"
+            },
+            {
+              "internalType": "uint256",
+              "name": "minPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "sold",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Ad.Period",
+          "name": "period",
+          "type": "tuple"
+        }
+      ],
+      "name": "checkBeforeBuy",
+      "outputs": [],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "mediaProxy",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "spaceMetadata",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "tokenMetadata",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "saleStartTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "saleEndTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "displayStartTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "displayEndTimestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "enum Ad.Pricing",
+              "name": "pricing",
+              "type": "Ad.Pricing"
+            },
+            {
+              "internalType": "uint256",
+              "name": "minPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "sold",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Ad.Period",
+          "name": "period",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "currentPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "checkBeforeBuyBasedOnTime",
+      "outputs": [],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x6c81655ac8b59647198ee85f7ff7690559a90fc86e2b136215c31687d3ca9c3d",
+  "receipt": {
+    "to": null,
+    "from": "0xCdfc500F7f0FCe1278aECb0340b523cD55b3EBbb",
+    "contractAddress": "0x570aa59a67aE825a0acDfC0deD3e919E1c73666B",
+    "transactionIndex": 0,
+    "gasUsed": "421065",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x7ce37b3c7849c1cf75d70b6fdfa6a37504953a22caf50c676a158f0f406ae74c",
+    "transactionHash": "0x6c81655ac8b59647198ee85f7ff7690559a90fc86e2b136215c31687d3ca9c3d",
+    "logs": [],
+    "blockNumber": 9755546,
+    "cumulativeGasUsed": "421065",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "solcInputHash": "c223bd9c030b84fabf96ddb6a85aba33",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"mediaProxy\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"spaceMetadata\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"tokenMetadata\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"saleStartTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"saleEndTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"displayStartTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"displayEndTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"enum Ad.Pricing\",\"name\":\"pricing\",\"type\":\"Ad.Pricing\"},{\"internalType\":\"uint256\",\"name\":\"minPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startPrice\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"sold\",\"type\":\"bool\"}],\"internalType\":\"struct Ad.Period\",\"name\":\"period\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"currentPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"blockTimestamp\",\"type\":\"uint256\"}],\"name\":\"checkBeforeBid\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"mediaProxy\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"spaceMetadata\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"tokenMetadata\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"saleStartTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"saleEndTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"displayStartTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"displayEndTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"enum Ad.Pricing\",\"name\":\"pricing\",\"type\":\"Ad.Pricing\"},{\"internalType\":\"uint256\",\"name\":\"minPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startPrice\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"sold\",\"type\":\"bool\"}],\"internalType\":\"struct Ad.Period\",\"name\":\"period\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"blockTimestamp\",\"type\":\"uint256\"}],\"name\":\"checkBeforeBidWithProposal\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"mediaProxy\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"spaceMetadata\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"tokenMetadata\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"saleStartTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"saleEndTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"displayStartTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"displayEndTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"enum Ad.Pricing\",\"name\":\"pricing\",\"type\":\"Ad.Pricing\"},{\"internalType\":\"uint256\",\"name\":\"minPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startPrice\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"sold\",\"type\":\"bool\"}],\"internalType\":\"struct Ad.Period\",\"name\":\"period\",\"type\":\"tuple\"}],\"name\":\"checkBeforeBuy\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"mediaProxy\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"spaceMetadata\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"tokenMetadata\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"saleStartTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"saleEndTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"displayStartTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"displayEndTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"enum Ad.Pricing\",\"name\":\"pricing\",\"type\":\"Ad.Pricing\"},{\"internalType\":\"uint256\",\"name\":\"minPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startPrice\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"sold\",\"type\":\"bool\"}],\"internalType\":\"struct Ad.Period\",\"name\":\"period\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"currentPrice\",\"type\":\"uint256\"}],\"name\":\"checkBeforeBuyBasedOnTime\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/libraries/Purchase.sol\":\"Purchase\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[]},\"sources\":{\"contracts/libraries/Ad.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nlibrary Ad {\\n\\tuint256 private constant _ID_LENGTH = 100000000000000000000000000000000;\\n\\t// 0.RRP     : Recommended Retail Price\\n\\t// 1.DUTCH   : Dutch Auction\\n\\t// 2.ENGLISH : English Acction\\n\\t// 3.OFFER   : Offered by Others\\n\\t// 4.OPEN    : Open Bid by revealing the content\\n\\tenum Pricing {\\n\\t\\tRRP,\\n\\t\\tDUTCH,\\n\\t\\tENGLISH,\\n\\t\\tOFFER,\\n\\t\\tOPEN\\n\\t}\\n\\tstruct Period {\\n\\t\\taddress mediaProxy;\\n\\t\\tstring spaceMetadata;\\n\\t\\tstring tokenMetadata;\\n\\t\\tuint256 saleStartTimestamp;\\n\\t\\tuint256 saleEndTimestamp;\\n\\t\\tuint256 displayStartTimestamp;\\n\\t\\tuint256 displayEndTimestamp;\\n\\t\\tPricing pricing;\\n\\t\\tuint256 minPrice;\\n\\t\\tuint256 startPrice;\\n\\t\\tbool sold;\\n\\t}\\n\\n\\tfunction id(\\n\\t\\tstring memory metadata,\\n\\t\\tuint256 displayStartTimestamp,\\n\\t\\tuint256 displayEndTimestamp\\n\\t) public pure returns (uint256) {\\n\\t\\treturn\\n\\t\\t\\tuint256(\\n\\t\\t\\t\\tkeccak256(\\n\\t\\t\\t\\t\\tabi.encodePacked(metadata, displayStartTimestamp, displayEndTimestamp)\\n\\t\\t\\t\\t)\\n\\t\\t\\t) % _ID_LENGTH;\\n\\t}\\n}\\n\",\"keccak256\":\"0x98b8f7d36adbd4e0b75ef9c5a0ec7045e0661b9015a90beffa30004f35ff7039\",\"license\":\"UNLICENSED\"},\"contracts/libraries/Purchase.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nimport \\\"./Ad.sol\\\";\\n\\nlibrary Purchase {\\n\\tfunction checkBeforeBuy(Ad.Period memory period) external view {\\n\\t\\trequire(period.pricing == Ad.Pricing.RRP, \\\"KD120\\\");\\n\\t\\trequire(!period.sold, \\\"KD121\\\");\\n\\t\\trequire(period.minPrice == msg.value, \\\"KD122\\\");\\n\\t}\\n\\n\\tfunction checkBeforeBuyBasedOnTime(\\n\\t\\tAd.Period memory period,\\n\\t\\tuint256 currentPrice\\n\\t) external view {\\n\\t\\trequire(period.pricing == Ad.Pricing.DUTCH, \\\"KD123\\\");\\n\\t\\trequire(!period.sold, \\\"KD121\\\");\\n\\t\\trequire(currentPrice <= msg.value, \\\"KD122\\\");\\n\\t}\\n\\n\\tfunction checkBeforeBid(\\n\\t\\tAd.Period memory period,\\n\\t\\tuint256 currentPrice,\\n\\t\\tuint256 blockTimestamp\\n\\t) external view {\\n\\t\\trequire(period.pricing == Ad.Pricing.ENGLISH, \\\"KD124\\\");\\n\\t\\trequire(!period.sold, \\\"KD121\\\");\\n\\t\\trequire(currentPrice < msg.value, \\\"KD122\\\");\\n\\t\\trequire(period.saleEndTimestamp >= blockTimestamp, \\\"KD129\\\");\\n\\t}\\n\\n\\tfunction checkBeforeBidWithProposal(\\n\\t\\tAd.Period memory period,\\n\\t\\tuint256 blockTimestamp\\n\\t) external view {\\n\\t\\trequire(period.pricing == Ad.Pricing.OPEN, \\\"KD127\\\");\\n\\t\\trequire(!period.sold, \\\"KD121\\\");\\n\\t\\trequire(period.minPrice <= msg.value, \\\"KD122\\\");\\n\\t\\trequire(period.saleEndTimestamp >= blockTimestamp, \\\"KD129\\\");\\n\\t}\\n}\\n\",\"keccak256\":\"0x75b504f12f93fbb1be78980dad98029366c4947118eea0f232680b3c5c35123a\",\"license\":\"UNLICENSED\"}},\"version\":1}",
+  "bytecode": "0x6106a761003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600436106100565760003560e01c8063854d63001461005b5780639e8e66da14610070578063b26502ff14610083578063ca2652a814610096575b600080fd5b61006e610069366004610531565b6100a9565b005b61006e61007e36600461056d565b610145565b61006e6100913660046105ba565b6101fd565b61006e6100a43660046105ba565b610291565b60008160e0015160048111156100c1576100c16105fe565b146100fb5760405162461bcd60e51b815260206004820152600560248201526404b443132360dc1b60448201526064015b60405180910390fd5b8061014001511561011e5760405162461bcd60e51b81526004016100f290610614565b34816101000151146101425760405162461bcd60e51b81526004016100f290610633565b50565b60028360e00151600481111561015d5761015d6105fe565b146101925760405162461bcd60e51b815260206004820152600560248201526412d10c4c8d60da1b60448201526064016100f2565b826101400151156101b55760405162461bcd60e51b81526004016100f290610614565b3482106101d45760405162461bcd60e51b81526004016100f290610633565b80836080015110156101f85760405162461bcd60e51b81526004016100f290610652565b505050565b60018260e001516004811115610215576102156105fe565b1461024a5760405162461bcd60e51b81526020600482015260056024820152644b4431323360d81b60448201526064016100f2565b8161014001511561026d5760405162461bcd60e51b81526004016100f290610614565b3481111561028d5760405162461bcd60e51b81526004016100f290610633565b5050565b60048260e0015160048111156102a9576102a96105fe565b146102de5760405162461bcd60e51b81526020600482015260056024820152644b4431323760d81b60448201526064016100f2565b816101400151156103015760405162461bcd60e51b81526004016100f290610614565b3482610100015111156103265760405162461bcd60e51b81526004016100f290610633565b808260800151101561028d5760405162461bcd60e51b81526004016100f290610652565b634e487b7160e01b600052604160045260246000fd5b60405161016081016001600160401b03811182821017156103835761038361034a565b60405290565b80356001600160a01b03811681146103a057600080fd5b919050565b600082601f8301126103b657600080fd5b81356001600160401b03808211156103d0576103d061034a565b604051601f8301601f19908116603f011681019082821181831017156103f8576103f861034a565b8160405283815286602085880101111561041157600080fd5b836020870160208301376000602085830101528094505050505092915050565b8035600581106103a057600080fd5b803580151581146103a057600080fd5b6000610160828403121561046357600080fd5b61046b610360565b905061047682610389565b815260208201356001600160401b038082111561049257600080fd5b61049e858386016103a5565b602084015260408401359150808211156104b757600080fd5b506104c4848285016103a5565b604083015250606082013560608201526080820135608082015260a082013560a082015260c082013560c08201526104fe60e08301610431565b60e082015261010082810135908201526101208083013590820152610140610527818401610440565b9082015292915050565b60006020828403121561054357600080fd5b81356001600160401b0381111561055957600080fd5b61056584828501610450565b949350505050565b60008060006060848603121561058257600080fd5b83356001600160401b0381111561059857600080fd5b6105a486828701610450565b9660208601359650604090950135949350505050565b600080604083850312156105cd57600080fd5b82356001600160401b038111156105e357600080fd5b6105ef85828601610450565b95602094909401359450505050565b634e487b7160e01b600052602160045260246000fd5b6020808252600590820152644b4431323160d81b604082015260600190565b60208082526005908201526425a218991960d91b604082015260600190565b6020808252600590820152644b4431323960d81b60408201526060019056fea2646970667358221220ffa0af796c290d544785468501828bf99f28009096a631518be01bc8e614d45664736f6c63430008090033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600436106100565760003560e01c8063854d63001461005b5780639e8e66da14610070578063b26502ff14610083578063ca2652a814610096575b600080fd5b61006e610069366004610531565b6100a9565b005b61006e61007e36600461056d565b610145565b61006e6100913660046105ba565b6101fd565b61006e6100a43660046105ba565b610291565b60008160e0015160048111156100c1576100c16105fe565b146100fb5760405162461bcd60e51b815260206004820152600560248201526404b443132360dc1b60448201526064015b60405180910390fd5b8061014001511561011e5760405162461bcd60e51b81526004016100f290610614565b34816101000151146101425760405162461bcd60e51b81526004016100f290610633565b50565b60028360e00151600481111561015d5761015d6105fe565b146101925760405162461bcd60e51b815260206004820152600560248201526412d10c4c8d60da1b60448201526064016100f2565b826101400151156101b55760405162461bcd60e51b81526004016100f290610614565b3482106101d45760405162461bcd60e51b81526004016100f290610633565b80836080015110156101f85760405162461bcd60e51b81526004016100f290610652565b505050565b60018260e001516004811115610215576102156105fe565b1461024a5760405162461bcd60e51b81526020600482015260056024820152644b4431323360d81b60448201526064016100f2565b8161014001511561026d5760405162461bcd60e51b81526004016100f290610614565b3481111561028d5760405162461bcd60e51b81526004016100f290610633565b5050565b60048260e0015160048111156102a9576102a96105fe565b146102de5760405162461bcd60e51b81526020600482015260056024820152644b4431323760d81b60448201526064016100f2565b816101400151156103015760405162461bcd60e51b81526004016100f290610614565b3482610100015111156103265760405162461bcd60e51b81526004016100f290610633565b808260800151101561028d5760405162461bcd60e51b81526004016100f290610652565b634e487b7160e01b600052604160045260246000fd5b60405161016081016001600160401b03811182821017156103835761038361034a565b60405290565b80356001600160a01b03811681146103a057600080fd5b919050565b600082601f8301126103b657600080fd5b81356001600160401b03808211156103d0576103d061034a565b604051601f8301601f19908116603f011681019082821181831017156103f8576103f861034a565b8160405283815286602085880101111561041157600080fd5b836020870160208301376000602085830101528094505050505092915050565b8035600581106103a057600080fd5b803580151581146103a057600080fd5b6000610160828403121561046357600080fd5b61046b610360565b905061047682610389565b815260208201356001600160401b038082111561049257600080fd5b61049e858386016103a5565b602084015260408401359150808211156104b757600080fd5b506104c4848285016103a5565b604083015250606082013560608201526080820135608082015260a082013560a082015260c082013560c08201526104fe60e08301610431565b60e082015261010082810135908201526101208083013590820152610140610527818401610440565b9082015292915050565b60006020828403121561054357600080fd5b81356001600160401b0381111561055957600080fd5b61056584828501610450565b949350505050565b60008060006060848603121561058257600080fd5b83356001600160401b0381111561059857600080fd5b6105a486828701610450565b9660208601359650604090950135949350505050565b600080604083850312156105cd57600080fd5b82356001600160401b038111156105e357600080fd5b6105ef85828601610450565b95602094909401359450505050565b634e487b7160e01b600052602160045260246000fd5b6020808252600590820152644b4431323160d81b604082015260600190565b60208082526005908201526425a218991960d91b604082015260600190565b6020808252600590820152644b4431323960d81b60408201526060019056fea2646970667358221220ffa0af796c290d544785468501828bf99f28009096a631518be01bc8e614d45664736f6c63430008090033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}
