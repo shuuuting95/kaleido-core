@@ -4,7 +4,6 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./base/PrimarySales.sol";
 import "./base/DistributionRight.sol";
-import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
@@ -59,8 +58,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_mediaRegistry().updateMedia(newMediaEOA, newMetadata);
 		_eventEmitter().emitUpdateMedia(address(this), newMediaEOA, newMetadata);
 	}
-
-	// TODO: can withdraw by bidder to failure txs
 
 	/// @dev Creates a new space for the media account.
 	/// @param spaceMetadata string of the space metadata
@@ -159,39 +156,39 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
-	/// @dev Buys the token that is defined as the specific period on an ad space.
-	///      The price is decreasing as time goes by, that is defined as an Dutch Auction.
-	/// @param tokenId uint256 of the token ID
-	function buyBasedOnTime(uint256 tokenId)
-		external
-		payable
-		virtual
-		exceptYourself
-	{
-		_checkBeforeBuyBasedOnTime(tokenId);
-		periods[tokenId].sold = true;
-		_dropRight(msg.sender, tokenId);
-		_collectFees(msg.value / 10);
-		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
-		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
-	}
+	// /// @dev Buys the token that is defined as the specific period on an ad space.
+	// ///      The price is decreasing as time goes by, that is defined as an Dutch Auction.
+	// /// @param tokenId uint256 of the token ID
+	// function buyBasedOnTime(uint256 tokenId)
+	// 	external
+	// 	payable
+	// 	virtual
+	// 	exceptYourself
+	// {
+	// 	_checkBeforeBuyBasedOnTime(tokenId);
+	// 	periods[tokenId].sold = true;
+	// 	_dropRight(msg.sender, tokenId);
+	// 	_collectFees(msg.value / 10);
+	// 	_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
+	// 	_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
+	// }
 
-	/// @dev Bids to participate in an auction.
-	///      It is defined as an English Auction.
-	/// @param tokenId uint256 of the token ID
-	function bid(uint256 tokenId)
-		external
-		payable
-		virtual
-		exceptYourself
-		nonReentrant
-	{
-		_checkBeforeBid(tokenId);
-		_refundBiddingAmount(tokenId);
-		_biddingTotal += (msg.value - bidding[tokenId].price);
-		bidding[tokenId] = Sale.Bidding(tokenId, msg.sender, msg.value);
-		_eventEmitter().emitBid(tokenId, msg.value, msg.sender, _blockTimestamp());
-	}
+	// /// @dev Bids to participate in an auction.
+	// ///      It is defined as an English Auction.
+	// /// @param tokenId uint256 of the token ID
+	// function bid(uint256 tokenId)
+	// 	external
+	// 	payable
+	// 	virtual
+	// 	exceptYourself
+	// 	nonReentrant
+	// {
+	// 	_checkBeforeBid(tokenId);
+	// 	_refundBiddingAmount(tokenId);
+	// 	_biddingTotal += (msg.value - bidding[tokenId].price);
+	// 	bidding[tokenId] = Sale.Bidding(tokenId, msg.sender, msg.value);
+	// 	_eventEmitter().emitBid(tokenId, msg.value, msg.sender, _blockTimestamp());
+	// }
 
 	/// @dev Bids to participate in an auction.
 	///      It is defined as an Open Bid.
@@ -241,112 +238,112 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_eventEmitter().emitTransferCustom(address(this), appeal.sender, tokenId);
 	}
 
-	/// @dev Receives the token you bidded if you are the successful bidder.
-	/// @param tokenId uint256 of the token ID
-	function receiveToken(uint256 tokenId)
-		external
-		virtual
-		onlySuccessfulBidder(tokenId)
-	{
-		_toSuccessfulBidder(tokenId, msg.sender);
-	}
+	// /// @dev Receives the token you bidded if you are the successful bidder.
+	// /// @param tokenId uint256 of the token ID
+	// function receiveToken(uint256 tokenId)
+	// 	external
+	// 	virtual
+	// 	onlySuccessfulBidder(tokenId)
+	// {
+	// 	_toSuccessfulBidder(tokenId, msg.sender);
+	// }
 
-	/// @dev Receives the token you bidded if you are the successful bidder.
-	/// @param tokenId uint256 of the token ID
-	function pushToSuccessfulBidder(uint256 tokenId) external virtual onlyMedia {
-		_toSuccessfulBidder(tokenId, bidding[tokenId].bidder);
-	}
+	// /// @dev Receives the token you bidded if you are the successful bidder.
+	// /// @param tokenId uint256 of the token ID
+	// function pushToSuccessfulBidder(uint256 tokenId) external virtual onlyMedia {
+	// 	_toSuccessfulBidder(tokenId, bidding[tokenId].bidder);
+	// }
 
-	/// @dev Offers to buy a period that the sender requests.
-	/// @param spaceMetadata string of the space metadata
-	/// @param displayStartTimestamp uint256 of the start timestamp for the display
-	/// @param displayEndTimestamp uint256 of the end timestamp for the display
-	function offerPeriod(
-		string memory spaceMetadata,
-		uint256 displayStartTimestamp,
-		uint256 displayEndTimestamp
-	) external payable virtual exceptYourself {
-		require(spaced[spaceMetadata], "KD101");
-		require(displayStartTimestamp < displayEndTimestamp, "KD113");
-		uint256 tokenId = Ad.id(
-			spaceMetadata,
-			displayStartTimestamp,
-			displayEndTimestamp
-		);
-		offered[tokenId] = Sale.Offer(
-			spaceMetadata,
-			displayStartTimestamp,
-			displayEndTimestamp,
-			msg.sender,
-			msg.value
-		);
-		_offeredTotal += msg.value;
-		_eventEmitter().emitOfferPeriod(
-			tokenId,
-			spaceMetadata,
-			displayStartTimestamp,
-			displayEndTimestamp,
-			msg.sender,
-			msg.value
-		);
-	}
+	// /// @dev Offers to buy a period that the sender requests.
+	// /// @param spaceMetadata string of the space metadata
+	// /// @param displayStartTimestamp uint256 of the start timestamp for the display
+	// /// @param displayEndTimestamp uint256 of the end timestamp for the display
+	// function offerPeriod(
+	// 	string memory spaceMetadata,
+	// 	uint256 displayStartTimestamp,
+	// 	uint256 displayEndTimestamp
+	// ) external payable virtual exceptYourself {
+	// 	require(spaced[spaceMetadata], "KD101");
+	// 	require(displayStartTimestamp < displayEndTimestamp, "KD113");
+	// 	uint256 tokenId = Ad.id(
+	// 		spaceMetadata,
+	// 		displayStartTimestamp,
+	// 		displayEndTimestamp
+	// 	);
+	// 	offered[tokenId] = Sale.Offer(
+	// 		spaceMetadata,
+	// 		displayStartTimestamp,
+	// 		displayEndTimestamp,
+	// 		msg.sender,
+	// 		msg.value
+	// 	);
+	// 	_offeredTotal += msg.value;
+	// 	_eventEmitter().emitOfferPeriod(
+	// 		tokenId,
+	// 		spaceMetadata,
+	// 		displayStartTimestamp,
+	// 		displayEndTimestamp,
+	// 		msg.sender,
+	// 		msg.value
+	// 	);
+	// }
 
-	/// @dev Cancels an offer.
-	/// @param tokenId uint256 of the token ID
-	function cancelOffer(uint256 tokenId) external virtual exceptYourself {
-		require(offered[tokenId].sender == msg.sender, "KD116");
-		_refundOfferedAmount(tokenId);
-		_offeredTotal -= offered[tokenId].price;
-		delete offered[tokenId];
-		_eventEmitter().emitCancelOffer(tokenId);
-	}
+	// /// @dev Cancels an offer.
+	// /// @param tokenId uint256 of the token ID
+	// function cancelOffer(uint256 tokenId) external virtual exceptYourself {
+	// 	require(offered[tokenId].sender == msg.sender, "KD116");
+	// 	_refundOfferedAmount(tokenId);
+	// 	_offeredTotal -= offered[tokenId].price;
+	// 	delete offered[tokenId];
+	// 	_eventEmitter().emitCancelOffer(tokenId);
+	// }
 
-	/// @dev Accepts an offer by the Media.
-	/// @param tokenId uint256 of the token ID
-	/// @param tokenMetadata string of the NFT token metadata
-	function acceptOffer(uint256 tokenId, string memory tokenMetadata)
-		external
-		virtual
-		onlyMedia
-	{
-		Sale.Offer memory offer = offered[tokenId];
-		require(offer.sender != address(0), "KD115");
-		_checkOverlapping(
-			offer.spaceMetadata,
-			offer.displayStartTimestamp,
-			offer.displayEndTimestamp
-		);
-		Ad.Period memory period = Ad.Period(
-			offer.sender,
-			offer.spaceMetadata,
-			tokenMetadata,
-			_blockTimestamp(),
-			_blockTimestamp(),
-			offer.displayStartTimestamp,
-			offer.displayEndTimestamp,
-			Ad.Pricing.OFFER,
-			offer.price,
-			offer.price,
-			true
-		);
+	// /// @dev Accepts an offer by the Media.
+	// /// @param tokenId uint256 of the token ID
+	// /// @param tokenMetadata string of the NFT token metadata
+	// function acceptOffer(uint256 tokenId, string memory tokenMetadata)
+	// 	external
+	// 	virtual
+	// 	onlyMedia
+	// {
+	// 	Sale.Offer memory offer = offered[tokenId];
+	// 	require(offer.sender != address(0), "KD115");
+	// 	_checkOverlapping(
+	// 		offer.spaceMetadata,
+	// 		offer.displayStartTimestamp,
+	// 		offer.displayEndTimestamp
+	// 	);
+	// 	Ad.Period memory period = Ad.Period(
+	// 		offer.sender,
+	// 		offer.spaceMetadata,
+	// 		tokenMetadata,
+	// 		_blockTimestamp(),
+	// 		_blockTimestamp(),
+	// 		offer.displayStartTimestamp,
+	// 		offer.displayEndTimestamp,
+	// 		Ad.Pricing.OFFER,
+	// 		offer.price,
+	// 		offer.price,
+	// 		true
+	// 	);
 
-		_mintRight(offer.sender, tokenId, tokenMetadata);
-		_savePeriod(offer.spaceMetadata, tokenId, period);
-		_collectFees(offer.price / 10);
+	// 	_mintRight(offer.sender, tokenId, tokenMetadata);
+	// 	_savePeriod(offer.spaceMetadata, tokenId, period);
+	// 	_collectFees(offer.price / 10);
 
-		_offeredTotal -= offer.price;
-		delete offered[tokenId];
+	// 	_offeredTotal -= offer.price;
+	// 	delete offered[tokenId];
 
-		_eventEmitter().emitAcceptOffer(
-			tokenId,
-			offer.spaceMetadata,
-			tokenMetadata,
-			offer.displayStartTimestamp,
-			offer.displayEndTimestamp,
-			offer.price
-		);
-		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
-	}
+	// 	_eventEmitter().emitAcceptOffer(
+	// 		tokenId,
+	// 		offer.spaceMetadata,
+	// 		tokenMetadata,
+	// 		offer.displayStartTimestamp,
+	// 		offer.displayEndTimestamp,
+	// 		offer.price
+	// 	);
+	// 	_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
+	// }
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
 	///      If you put 0 as the amount, you can withdraw as much as possible.
@@ -462,11 +459,11 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		return ("", 0);
 	}
 
-	function _checkBeforeReceiveToken(uint256 tokenId) internal view virtual {
-		require(periods[tokenId].pricing == Ad.Pricing.ENGLISH, "KD124");
-		require(!periods[tokenId].sold, "KD121");
-		require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
-	}
+	// function _checkBeforeReceiveToken(uint256 tokenId) internal view virtual {
+	// 	require(periods[tokenId].pricing == Ad.Pricing.ENGLISH, "KD124");
+	// 	require(!periods[tokenId].sold, "KD121");
+	// 	require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
+	// }
 
 	function _refundToProposers(uint256 tokenId, uint256 successfulBidderNo)
 		internal
@@ -489,25 +486,25 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		}
 	}
 
-	function _toSuccessfulBidder(uint256 tokenId, address receiver)
-		internal
-		virtual
-	{
-		_checkBeforeReceiveToken(tokenId);
-		uint256 price = bidding[tokenId].price;
-		periods[tokenId].sold = true;
-		_biddingTotal -= price;
-		_dropRight(receiver, tokenId);
-		_collectFees(price / 10);
-		delete bidding[tokenId];
-		_eventEmitter().emitReceiveToken(
-			tokenId,
-			price,
-			receiver,
-			_blockTimestamp()
-		);
-		_eventEmitter().emitTransferCustom(address(this), receiver, tokenId);
-	}
+	// function _toSuccessfulBidder(uint256 tokenId, address receiver)
+	// 	internal
+	// 	virtual
+	// {
+	// 	_checkBeforeReceiveToken(tokenId);
+	// 	uint256 price = bidding[tokenId].price;
+	// 	periods[tokenId].sold = true;
+	// 	_biddingTotal -= price;
+	// 	_dropRight(receiver, tokenId);
+	// 	_collectFees(price / 10);
+	// 	delete bidding[tokenId];
+	// 	_eventEmitter().emitReceiveToken(
+	// 		tokenId,
+	// 		price,
+	// 		receiver,
+	// 		_blockTimestamp()
+	// 	);
+	// 	_eventEmitter().emitTransferCustom(address(this), receiver, tokenId);
+	// }
 
 	function _collectFees(uint256 value) internal virtual {
 		address vault = vaultAddress();
