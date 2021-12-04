@@ -6,6 +6,7 @@ import { getAdManagerABI } from '../scripts/common/file'
 import { newMediaWith } from './MediaFactory.spec'
 import {
   getAdManagerContract,
+  getEventEmitterContract,
   getMediaFactoryContract,
   getMediaRegistryContract,
   getNameRegistryContract,
@@ -27,6 +28,7 @@ describe('MediaProxy', async () => {
       name: await getNameRegistryContract(),
       registry: await getMediaRegistryContract(),
       vault: await getVaultContract(),
+      event: await getEventEmitterContract(),
     }
   })
   const _manager = (proxy: string) =>
@@ -34,7 +36,7 @@ describe('MediaProxy', async () => {
 
   describe('fallback', async () => {
     it('should transfer ETH to a proxy', async () => {
-      const { factory, name, vault } = await setupTests()
+      const { factory, name, vault, event } = await setupTests()
       const { proxy } = await newMediaWith(user4, factory, name)
       const manager = _manager(proxy)
 

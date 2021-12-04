@@ -79,6 +79,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 indexed tokenId
 	);
 	event PaymentFailure(address receiver, uint256 price);
+	event Received(address, uint256);
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
@@ -275,6 +276,10 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		onlyAllowedContract
 	{
 		emit PaymentFailure(receiver, price);
+	}
+
+	function emitReceived(address receiver, uint256 price) external onlyProxies {
+		emit Received(receiver, price);
 	}
 
 	/**

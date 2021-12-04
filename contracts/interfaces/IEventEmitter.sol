@@ -108,4 +108,6 @@ interface IEventEmitter {
 	) external;
 
 	function emitPaymentFailure(address receiver, uint256 price) external;
+
+	function emitReceived(address receiver, uint256 price) external;
 }

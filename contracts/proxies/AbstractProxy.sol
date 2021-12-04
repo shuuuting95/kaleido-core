@@ -4,12 +4,10 @@ pragma solidity 0.8.9;
 import "./IProxy.sol";
 import "../interfaces/IEventEmitter.sol";
 import "../accessors/NameRegistry.sol";
-import "../common/EtherPaymentFallback.sol";
-import "hardhat/console.sol";
 
 /// @title MediaProxy - do delegatecalls to the destination contract.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-abstract contract AbstractProxy is IProxy, EtherPaymentFallback {
+abstract contract AbstractProxy is IProxy {
 	/// @dev Initializer
 	/// @param nameRegistry address of NameRegistry
 	constructor(address nameRegistry) {
@@ -56,8 +54,13 @@ abstract contract AbstractProxy is IProxy, EtherPaymentFallback {
 	}
 
 	/// @dev Transfers fees to Vault when receiving Ether payments.
-	receive() external payable override {
+	receive() external payable {
 		require(msg.value != 0, "msg.value is zero");
+		address _event = NameRegistry(masterCopy()).get(
+			keccak256(abi.encodePacked("EventEmitter"))
+		);
+		IEventEmitter(_event).emitReceived(address(this), msg.value);
+
 		address vault = NameRegistry(masterCopy()).get(
 			keccak256(abi.encodePacked("Vault"))
 		);
@@ -65,12 +68,8 @@ abstract contract AbstractProxy is IProxy, EtherPaymentFallback {
 			""
 		);
 		if (!success) {
-			address _event = NameRegistry(masterCopy()).get(
-				keccak256(abi.encodePacked("EventEmitter"))
-			);
 			IEventEmitter(_event).emitPaymentFailure(vault, msg.value / 2);
 		}
-		// TODO: receved from eventemitter
 	}
 
 	/**
