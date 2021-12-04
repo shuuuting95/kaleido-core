@@ -15,6 +15,7 @@ import {
   getMediaFactoryContract,
   getMediaRegistryContract,
   getNameRegistryContract,
+  getVaultContract,
 } from './utils/setup'
 
 describe('AdManager', async () => {
@@ -39,6 +40,7 @@ describe('AdManager', async () => {
       registry: await getMediaRegistryContract(),
       pool: pool,
       event: await getEventEmitterContract(),
+      vault: await getVaultContract(),
     }
   })
   const _manager = (proxy: string) =>
@@ -648,109 +650,132 @@ describe('AdManager', async () => {
   //   })
   // })
 
-  // describe('buy', async () => {
-  //   it('should buy a period', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
+  describe('buy', async () => {
+    it('should buy a period', async () => {
+      const { now, factory, name, event, pool, vault } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const {
+        tokenId,
+        spaceMetadata,
+        tokenMetadata,
+        saleEndTimestamp,
+        displayEndTimestamp,
+        displayStartTimestamp,
+      } = await defaultPeriodProps(manager, now)
+      await manager.newSpace(spaceMetadata, option())
 
-  //     const pricing = 0
-  //     const price = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
+      const pricing = 0
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
 
-  //     expect(
-  //       await buyWith(manager.connect(user3), {
-  //         tokenId,
-  //         value: price,
-  //       })
-  //     )
-  //       .to.emit(event, 'Buy')
-  //       .withArgs(tokenId, price, user3.address, now)
-  //       .to.emit(event, 'TransferCustom')
-  //       .withArgs(manager.address, user3.address, tokenId)
-  //   })
+      expect(
+        await buyWith(manager.connect(user3), {
+          tokenId,
+          value: price,
+        })
+      )
+        .to.emit(event, 'Buy')
+        .withArgs(tokenId, price, user3.address, now)
+        .to.emit(event, 'TransferCustom')
+        .withArgs(manager.address, user3.address, tokenId)
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
+        manager.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now),
+        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        pricing,
+        price,
+        price,
+        true,
+      ])
+      expect(await manager.ownerOf(tokenId)).to.be.eq(user3.address)
+      expect(await vault.balance()).to.be.eq(price.div(10))
+    })
 
-  //   it('should revert because the pricing is not RRP', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
-  //     const pricing = 1
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing: pricing,
-  //     })
+    it('should revert because the pricing is not RRP', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const pricing = 1
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+      })
 
-  //     await expect(
-  //       buyWith(manager.connect(user3), {
-  //         tokenId,
-  //       })
-  //     ).to.be.revertedWith('KD120')
-  //   })
+      await expect(
+        buyWith(manager.connect(user3), {
+          tokenId,
+        })
+      ).to.be.revertedWith('KD120')
+    })
 
-  //   it('should revert because it has already sold', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
-  //     const pricing = 0
+    it('should revert because it has already sold', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const pricing = 0
 
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing: pricing,
-  //     })
-  //     await buyWith(manager.connect(user3), {
-  //       tokenId,
-  //     })
-  //     await expect(
-  //       buyWith(manager.connect(user4), {
-  //         tokenId,
-  //       })
-  //     ).to.be.revertedWith('KD121')
-  //   })
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+      })
+      await buyWith(manager.connect(user3), {
+        tokenId,
+      })
+      await expect(
+        buyWith(manager.connect(user4), {
+          tokenId,
+        })
+      ).to.be.revertedWith('KD121')
+    })
 
-  //   it('should revert because it has already sold', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
-  //     const pricing = 0
-  //     const price = parseEther('0.3')
+    it('should revert because it has already sold', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const pricing = 0
+      const price = parseEther('0.3')
 
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
-  //     await expect(
-  //       buyWith(manager.connect(user3), {
-  //         tokenId,
-  //         value: parseEther('0.1'),
-  //       })
-  //     ).to.be.revertedWith('KD122')
-  //   })
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
+      await expect(
+        buyWith(manager.connect(user3), {
+          tokenId,
+          value: parseEther('0.1'),
+        })
+      ).to.be.revertedWith('KD122')
+    })
 
-  //   it('should revert because the sender is the media EOA', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
-  //     const pricing = 0
-  //     const price = parseEther('0.3')
+    it('should revert because the sender is the media EOA', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
+      const pricing = 0
+      const price = parseEther('0.3')
 
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
-  //     await expect(
-  //       buyWith(manager.connect(user2), {
-  //         tokenId,
-  //         value: parseEther('0.1'),
-  //       })
-  //     ).to.be.revertedWith('KD014')
-  //   })
-  // })
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
+      await expect(
+        buyWith(manager.connect(user2), {
+          tokenId,
+          value: parseEther('0.1'),
+        })
+      ).to.be.revertedWith('KD014')
+    })
+  })
 
   // describe('buyBasedOnTime', async () => {
   //   it('should buy a period', async () => {
@@ -1428,7 +1453,7 @@ export const newPeriodWith = async (
   const defaults = await defaultPeriodProps(manager, now)
   return await manager.newPeriod(
     props?.spaceMetadata ? props.spaceMetadata : defaults.spaceMetadata,
-    props?.tokenMetadata ? props.tokenMetadata : 'poiknfknajnjaer',
+    props?.tokenMetadata ? props.tokenMetadata : defaults.tokenMetadata,
     props?.saleEndTimestamp
       ? props.saleEndTimestamp
       : defaults.saleEndTimestamp,
@@ -1446,6 +1471,7 @@ export const newPeriodWith = async (
 
 const defaultPeriodProps = async (manager: ethers.Contract, now: number) => {
   const spaceMetadata = 'abi09nadu2brasfjl'
+  const tokenMetadata = 'poiknfknajnjaer'
   const saleEndTimestamp = now + 2400
   const displayStartTimestamp = now + 3600
   const displayEndTimestamp = now + 7200
@@ -1456,6 +1482,7 @@ const defaultPeriodProps = async (manager: ethers.Contract, now: number) => {
   )
   return {
     spaceMetadata,
+    tokenMetadata,
     saleEndTimestamp,
     displayStartTimestamp,
     displayEndTimestamp,
