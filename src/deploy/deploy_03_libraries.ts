@@ -59,7 +59,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   {
-    const Parchase = await deploy('Parchase', {
+    const Purchase = await deploy('Purchase', {
       from: deployer,
       args: [],
       log: true,

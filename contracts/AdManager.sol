@@ -4,7 +4,7 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./base/PrimarySales.sol";
 import "./base/DistributionRight.sol";
-import "./libraries/Parchase.sol";
+import "./libraries/Purchase.sol";
 import "hardhat/console.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
@@ -119,7 +119,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	///      The price of the token is fixed.
 	/// @param tokenId uint256 of the token ID
 	function buy(uint256 tokenId) external payable virtual exceptYourself {
-		Parchase.checkBeforeBuy(_adPool().allPeriods(tokenId));
+		Purchase.checkBeforeBuy(_adPool().allPeriods(tokenId));
 		_adPool().sold(tokenId);
 		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
@@ -169,7 +169,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		virtual
 		exceptYourself
 	{
-		Parchase.checkBeforeBuyBasedOnTime(
+		Purchase.checkBeforeBuyBasedOnTime(
 			_adPool().allPeriods(tokenId),
 			currentPrice(tokenId)
 		);
@@ -190,7 +190,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		exceptYourself
 		nonReentrant
 	{
-		Parchase.checkBeforeBid(
+		Purchase.checkBeforeBid(
 			_adPool().allPeriods(tokenId),
 			currentPrice(tokenId),
 			_blockTimestamp()
@@ -213,7 +213,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		exceptYourself
 		nonReentrant
 	{
-		Parchase.checkBeforeBidWithProposal(
+		Purchase.checkBeforeBidWithProposal(
 			_adPool().allPeriods(tokenId),
 			_blockTimestamp()
 		);

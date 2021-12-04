@@ -10,8 +10,9 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments
   const name = await findNameRegistry(hre)
   const Ad = await deployments.get('Ad')
+  const target = hre.network.name === 'hardhat' ? 'MockTimeAdPool' : 'AdPool'
 
-  const AdPool = await deploy('AdPool', {
+  const AdPool = await deploy(target, {
     from: deployer,
     args: [name.address],
     log: true,

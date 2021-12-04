@@ -9,7 +9,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments
   const name = await findNameRegistry(hre)
   const Ad = await deployments.get('Ad')
-  const Parchase = await deployments.get('Parchase')
+  const Purchase = await deployments.get('Purchase')
 
   const target =
     hre.network.name === 'hardhat' ? 'MockTimeAdManager' : 'AdManager'
@@ -21,7 +21,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     deterministicDeployment: false,
     libraries: {
       Ad: Ad.address,
-      Parchase: Parchase.address,
+      Purchase: Purchase.address,
     },
   })
 

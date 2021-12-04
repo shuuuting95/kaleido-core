@@ -3,7 +3,7 @@ pragma solidity 0.8.9;
 
 import "./Ad.sol";
 
-library Parchase {
+library Purchase {
 	function checkBeforeBuy(Ad.Period memory period) external view {
 		require(period.pricing == Ad.Pricing.RRP, "KD120");
 		require(!period.sold, "KD121");

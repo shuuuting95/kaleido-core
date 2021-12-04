@@ -90,7 +90,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		_;
 	}
 
-	function emitNewSpace(string memory metadata) external onlyProxies {
+	function emitNewSpace(string memory metadata) external onlyAllowedContract {
 		emit NewSpace(metadata);
 	}
 

@@ -2,7 +2,7 @@
 pragma solidity 0.8.9;
 
 import "../libraries/Ad.sol";
-import "../libraries/Parchase.sol";
+import "../libraries/Purchase.sol";
 import "../accessors/NameAccessor.sol";
 import "../common/BlockTimestamp.sol";
 import "../interfaces/IAdPool.sol";
