@@ -263,7 +263,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		);
 	}
 
-
 	// /// @dev Receives the token you bidded if you are the successful bidder.
 	// /// @param tokenId uint256 of the token ID
 	// function receiveToken(uint256 tokenId)
@@ -584,28 +583,6 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	// 	require(periods[tokenId].saleEndTimestamp < _blockTimestamp(), "KD125");
 	// }
 
-	function _refundToProposers(uint256 tokenId, uint256 successfulBidderNo)
-		internal
-		virtual
-	{
-		for (uint256 i = 0; i < appealed[tokenId].length; i++) {
-			Sale.Appeal memory appeal = appealed[tokenId][i];
-			_biddingTotal -= appeal.price;
-			if (i == successfulBidderNo) {
-				_collectFees(appeal.price / 10);
-			} else {
-				(bool success, ) = payable(appeal.sender).call{
-					value: appeal.price,
-					gas: 10000
-				}("");
-				if (!success) {
-					_eventEmitter().emitPaymentFailure(appeal.sender, appeal.price);
-				}
-			}
-		}
-	}
-
-=======
 	function _checkBeforeReceiveToken(uint256 tokenId) internal view virtual {
 		Ad.Period memory period = _adPool().allPeriods(tokenId);
 		require(period.pricing == Ad.Pricing.ENGLISH, "KD124");
@@ -642,7 +619,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	// 	_checkBeforeReceiveToken(tokenId);
 	// 	uint256 price = bidding[tokenId].price;
 	// 	periods[tokenId].sold = true;
-// 	// period.sold = true;
+	// 	// period.sold = true;
 	// 	_adPool().sold(tokenId);
 	// 	_biddingTotal -= price;
 	// 	_dropRight(receiver, tokenId);

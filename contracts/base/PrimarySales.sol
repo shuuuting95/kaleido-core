@@ -35,12 +35,6 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 		revert("not exist");
 	}
 
-	function _checkBeforeBuy(uint256 tokenId) internal view virtual {
-		require(periods[tokenId].pricing == Ad.Pricing.RRP, "KD120");
-		require(!periods[tokenId].sold, "KD121");
-		require(periods[tokenId].minPrice == msg.value, "KD122");
-	}
-
 	// function _checkBeforeBuyBasedOnTime(uint256 tokenId) internal view virtual {
 	// 	require(periods[tokenId].pricing == Ad.Pricing.DUTCH, "KD123");
 	// 	require(!periods[tokenId].sold, "KD121");
@@ -53,19 +47,6 @@ abstract contract PrimarySales is ProposalManager, BlockTimestamp {
 	// 	require(currentPrice(tokenId) < msg.value, "KD122");
 	// 	require(periods[tokenId].saleEndTimestamp >= _blockTimestamp(), "KD129");
 	// }
-
-	function _checkBeforeBidWithProposal(uint256 tokenId) internal view virtual {
-		require(periods[tokenId].pricing == Ad.Pricing.OPEN, "KD127");
-		require(!periods[tokenId].sold, "KD121");
-		require(periods[tokenId].minPrice <= msg.value, "KD122");
-		require(periods[tokenId].saleEndTimestamp >= _blockTimestamp(), "KD129");
-	}
-
-	function _alreadyBid(uint256 tokenId) internal view virtual returns (bool) {
-		return appealed[tokenId].length != 0;
-		// return
-		// 	bidding[tokenId].bidder != address(0) || appealed[tokenId].length != 0;
-	}
 
 	// function _refundBiddingAmount(uint256 tokenId) internal virtual {
 	// 	if (
