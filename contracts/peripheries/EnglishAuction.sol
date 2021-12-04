@@ -8,8 +8,9 @@ import "../common/BlockTimestamp.sol";
 import "../interfaces/IAdPool.sol";
 import "../interfaces/IEventEmitter.sol";
 import "../interfaces/IEnglishAuction.sol";
+import "hardhat/console.sol";
 
-contract EnglishAuction is IEnglishAuction, NameAccessor {
+contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 	/// @dev Maps a tokenId with bidding info
 	mapping(uint256 => Sale.Bidding) internal _bidding;
 
@@ -20,30 +21,37 @@ contract EnglishAuction is IEnglishAuction, NameAccessor {
 	function bid(
 		uint256 tokenId,
 		address sender,
-		uint256 amount
+		uint256 value
 	) external override {
-		_refundBiddingAmount(tokenId);
-		_bidding[tokenId] = Sale.Bidding(tokenId, sender, amount);
+		// refunded = _refundBiddingAmount(tokenId);
+		_bidding[tokenId] = Sale.Bidding(tokenId, sender, value);
+		_eventEmitter().emitBid(tokenId, value, sender, _blockTimestamp());
 	}
 
-	function _refundBiddingAmount(uint256 tokenId) internal virtual {
-		Ad.Period memory period = _adPool().allPeriods(tokenId);
-		if (
-			period.pricing == Ad.Pricing.ENGLISH &&
-			_bidding[tokenId].bidder != address(0)
-		) {
-			(bool success, ) = payable(_bidding[tokenId].bidder).call{
-				value: _bidding[tokenId].price,
-				gas: 10000
-			}("");
-			if (!success) {
-				_eventEmitter().emitPaymentFailure(
-					_bidding[tokenId].bidder,
-					_bidding[tokenId].price
-				);
-			}
-		}
-	}
+	// function _refundBiddingAmount(uint256 tokenId)
+	// 	internal
+	// 	virtual
+	// 	returns (uint256 refunded)
+	// {
+	// 	Ad.Period memory period = _adPool().allPeriods(tokenId);
+	// 	if (
+	// 		period.pricing == Ad.Pricing.ENGLISH &&
+	// 		_bidding[tokenId].bidder != address(0)
+	// 	) {
+	// 		console.log("_bidding[tokenId].bidder", _bidding[tokenId].bidder);
+	// 		(bool success, ) = payable(_bidding[tokenId].bidder).call{
+	// 			value: _bidding[tokenId].price,
+	// 			gas: 10000
+	// 		}("");
+	// 		refunded = _bidding[tokenId].price;
+	// 		if (!success) {
+	// 			_eventEmitter().emitPaymentFailure(
+	// 				_bidding[tokenId].bidder,
+	// 				_bidding[tokenId].price
+	// 			);
+	// 		}
+	// 	}
+	// }
 
 	function bidding(uint256 tokenId)
 		public

@@ -8,8 +8,10 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts()
   const { deploy } = deployments
   const name = await findNameRegistry(hre)
+  const target =
+    hre.network.name === 'hardhat' ? 'MockTimeEnglishAuction' : 'EnglishAuction'
 
-  const EnglishAuction = await deploy('EnglishAuction', {
+  const EnglishAuction = await deploy(target, {
     from: deployer,
     args: [name.address],
     log: true,

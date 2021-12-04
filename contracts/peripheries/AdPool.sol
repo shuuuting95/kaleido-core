@@ -70,7 +70,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 			0,
 			false
 		);
-		period.startPrice = Sale._startPrice(period);
+		period.startPrice = Sale.startPrice(period);
 		periods[tokenId] = period;
 		_periodKeys[spaceMetadata].push(tokenId);
 		_eventEmitter().emitNewPeriod(

@@ -159,11 +159,9 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			currentPrice(tokenId),
 			_blockTimestamp()
 		);
-		// _refundBiddingAmount(tokenId);
-		// bidding[tokenId] = Sale.Bidding(tokenId, msg.sender, msg.value);
+		uint256 refunded = _refundBiddingAmount(tokenId);
 		_english().bid(tokenId, msg.sender, msg.value);
-		// _biddingTotal += (msg.value - bidding[tokenId].price);
-		_eventEmitter().emitBid(tokenId, msg.value, msg.sender, _blockTimestamp());
+		_processingTotal += (msg.value - refunded);
 	}
 
 	/// @dev Bids to participate in an auction.
@@ -181,7 +179,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			_adPool().allPeriods(tokenId),
 			_blockTimestamp()
 		);
-		_biddingTotal += msg.value;
+		_processingTotal += msg.value;
 		// appealed[tokenId].push(
 		// 	Sale.Appeal(tokenId, msg.sender, msg.value, proposalMetadata)
 		// );
@@ -224,6 +222,25 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			successfulBidder,
 			tokenId
 		);
+	}
+
+	function _refundBiddingAmount(uint256 tokenId)
+		internal
+		virtual
+		returns (uint256 refunded)
+	{
+		Ad.Period memory period = _adPool().allPeriods(tokenId);
+		Sale.Bidding memory _bidding = _english().bidding(tokenId);
+		if (period.pricing == Ad.Pricing.ENGLISH && _bidding.bidder != address(0)) {
+			(bool success, ) = payable(_bidding.bidder).call{
+				value: _bidding.price,
+				gas: 10000
+			}("");
+			refunded = _bidding.price;
+			if (!success) {
+				_eventEmitter().emitPaymentFailure(_bidding.bidder, _bidding.price);
+			}
+		}
 	}
 
 	// /// @dev Receives the token you bidded if you are the successful bidder.
@@ -379,7 +396,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 			msg.sender,
 			msg.value
 		);
-		_offeredTotal += msg.value;
+		_processingTotal += msg.value;
 		_eventEmitter().emitOfferPeriod(
 			tokenId,
 			spaceMetadata,
@@ -419,7 +436,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		_mintRight(sender, tokenId, tokenMetadata);
 		_collectFees(price / 10);
 
-		_offeredTotal -= price;
+		_processingTotal -= price;
 		// delete offered[tokenId];
 		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
 	}
@@ -514,7 +531,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 
 	/// @dev Returns the withdrawal amount.
 	function withdrawalAmount() public view virtual returns (uint256) {
-		return address(this).balance - _biddingTotal - _offeredTotal;
+		return address(this).balance - _processingTotal;
 	}
 
 	/// @dev Displays the ad content that is approved by the media owner.

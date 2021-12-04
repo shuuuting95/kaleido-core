@@ -57,8 +57,8 @@ export const getAdPoolContract = async () => {
 }
 
 export const getEnglishAuctionContract = async () => {
-  const Deployment = await deployments.get('EnglishAuction')
-  const contract = await hre.ethers.getContractFactory('EnglishAuction')
+  const Deployment = await deployments.get('MockTimeEnglishAuction')
+  const contract = await hre.ethers.getContractFactory('MockTimeEnglishAuction')
   return contract.attach(Deployment.address)
 }
 

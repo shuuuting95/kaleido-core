@@ -11,6 +11,7 @@ import { newMediaWith } from './MediaFactory.spec'
 import { ADDRESS_ZERO } from './utils/address'
 import {
   getAdPoolContract,
+  getEnglishAuctionContract,
   getEventEmitterContract,
   getMediaFactoryContract,
   getMediaRegistryContract,
@@ -33,12 +34,15 @@ describe('AdManager', async () => {
     await network.provider.send('evm_mine')
     const pool = await getAdPoolContract()
     await pool.setTime(now)
+    const eng = await getEnglishAuctionContract()
+    await eng.setTime(now)
     return {
       now: now,
       factory: await getMediaFactoryContract(),
       name: await getNameRegistryContract(),
       registry: await getMediaRegistryContract(),
       pool: pool,
+      eng: eng,
       event: await getEventEmitterContract(),
       vault: await getVaultContract(),
     }
@@ -835,75 +839,80 @@ describe('AdManager', async () => {
     })
   })
 
-  // describe('bid', async () => {
-  //   it('should bid', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
+  describe('bid', async () => {
+    it('should bid by English Auction', async () => {
+      const { now, factory, name, event, eng } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
-  //     const pricing = 2
-  //     const price = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
+      const pricing = 2
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
 
-  //     expect(
-  //       await manager
-  //         .connect(user3)
-  //         .bid(tokenId, option({ value: parseEther('0.3') }))
-  //     )
-  //       .to.emit(event, 'Bid')
-  //       .withArgs(tokenId, parseEther('0.3'), user3.address, now)
-  //     expect(await manager.balance()).to.be.eq(parseEther('0.3'))
-  //     expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
-  //   })
+      expect(
+        await manager
+          .connect(user3)
+          .bid(tokenId, option({ value: parseEther('0.3') }))
+      )
+        .to.emit(event, 'Bid')
+        .withArgs(tokenId, parseEther('0.3'), user3.address, now)
+      expect(await manager.balance()).to.be.eq(parseEther('0.3'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
+      expect(await eng.bidding(tokenId)).to.deep.equal([
+        tokenId,
+        user3.address,
+        parseEther('0.3'),
+      ])
+    })
 
-  //   it('should bid twice by two members', async () => {
-  //     const { now, factory, name, event } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
+    it('should bid twice by two members', async () => {
+      const { now, factory, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
-  //     const pricing = 2
-  //     const price = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
+      const pricing = 2
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
 
-  //     await manager
-  //       .connect(user3)
-  //       .bid(tokenId, option({ value: parseEther('0.3') }))
-  //     await manager
-  //       .connect(user4)
-  //       .bid(tokenId, option({ value: parseEther('0.45') }))
+      await manager
+        .connect(user3)
+        .bid(tokenId, option({ value: parseEther('0.3') }))
+      await manager
+        .connect(user4)
+        .bid(tokenId, option({ value: parseEther('0.45') }))
 
-  //     expect(await manager.balance()).to.be.eq(parseEther('0.45'))
-  //     expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
-  //   })
+      expect(await manager.balance()).to.be.eq(parseEther('0.45'))
+      expect(await manager.withdrawalAmount()).to.be.eq(parseEther('0'))
+    })
 
-  //   it('should revert because it is not bidding', async () => {
-  //     const { now, factory, name } = await setupTests()
-  //     const manager = await managerInstance(factory, name, now)
-  //     const { tokenId } = await defaultPeriodProps(manager, now)
+    it('should revert because it is not bidding', async () => {
+      const { now, factory, name } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(manager, now)
 
-  //     const pricing = 0
-  //     const price = parseEther('0.2')
-  //     await newPeriodWith(manager, {
-  //       now,
-  //       pricing: pricing,
-  //       minPrice: price,
-  //     })
+      const pricing = 0
+      const price = parseEther('0.2')
+      await newPeriodWith(manager, {
+        now,
+        pricing: pricing,
+        minPrice: price,
+      })
 
-  //     await expect(
-  //       manager
-  //         .connect(user3)
-  //         .bid(tokenId, option({ value: parseEther('0.3') }))
-  //     ).to.be.revertedWith('KD124')
-  //   })
-  // })
+      await expect(
+        manager
+          .connect(user3)
+          .bid(tokenId, option({ value: parseEther('0.3') }))
+      ).to.be.revertedWith('KD124')
+    })
+  })
 
   // describe('bidWithProposal', async () => {
   //   it('should bid with proposal', async () => {

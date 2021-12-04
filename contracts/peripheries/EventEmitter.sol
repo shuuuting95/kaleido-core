@@ -135,7 +135,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		uint256 msgValue,
 		address msgSender,
 		uint256 blockTimestamp
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit Bid(tokenId, msgValue, msgSender, blockTimestamp);
 	}
 
@@ -272,7 +272,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 
 	function emitPaymentFailure(address receiver, uint256 price)
 		external
-		onlyProxies
+		onlyAllowedContract
 	{
 		emit PaymentFailure(receiver, price);
 	}

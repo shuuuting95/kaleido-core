@@ -23,11 +23,7 @@ library Sale {
 		string content;
 	}
 
-	function _startPrice(Ad.Period memory period)
-		internal
-		pure
-		returns (uint256)
-	{
+	function startPrice(Ad.Period memory period) internal pure returns (uint256) {
 		if (period.pricing == Ad.Pricing.RRP) {
 			return period.minPrice;
 		} else if (period.pricing == Ad.Pricing.DUTCH) {
