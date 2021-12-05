@@ -13,6 +13,7 @@ import "../libraries/Schedule.sol";
 contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
 	mapping(uint256 => Ad.Period) public periods;
+
 	/// @dev Returns spaceId that is tied with space metadata.
 	mapping(string => bool) public spaced;
 

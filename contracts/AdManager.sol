@@ -32,7 +32,7 @@ contract AdManager is
 	}
 
 	/// @dev Prevents the media from calling by yourself
-	modifier exceptYourself() {
+	modifier exceptMedia() {
 		require(_mediaRegistry().ownerOf(address(this)) != msg.sender, "KD014");
 		_;
 	}
@@ -135,7 +135,7 @@ contract AdManager is
 	/// @dev Buys the token that is defined as the specific period on an ad space.
 	///      The price of the token is fixed.
 	/// @param tokenId uint256 of the token ID
-	function buy(uint256 tokenId) external payable virtual exceptYourself {
+	function buy(uint256 tokenId) external payable virtual exceptMedia {
 		Purchase.checkBeforeBuy(_adPool().allPeriods(tokenId), msg.value);
 		_adPool().sold(tokenId);
 		_dropRight(msg.sender, tokenId);
@@ -151,7 +151,7 @@ contract AdManager is
 		external
 		payable
 		virtual
-		exceptYourself
+		exceptMedia
 	{
 		Purchase.checkBeforeBuyBasedOnTime(
 			_adPool().allPeriods(tokenId),
@@ -172,7 +172,7 @@ contract AdManager is
 		external
 		payable
 		virtual
-		exceptYourself
+		exceptMedia
 		nonReentrant
 	{
 		Purchase.checkBeforeBid(
@@ -194,7 +194,7 @@ contract AdManager is
 		external
 		payable
 		virtual
-		exceptYourself
+		exceptMedia
 	{
 		Purchase.checkBeforeBidWithProposal(
 			_adPool().allPeriods(tokenId),
@@ -287,7 +287,7 @@ contract AdManager is
 		string memory spaceMetadata,
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp
-	) external payable virtual exceptYourself {
+	) external payable virtual exceptMedia {
 		_offerBid().offer(
 			spaceMetadata,
 			displayStartTimestamp,
@@ -303,7 +303,7 @@ contract AdManager is
 	function cancelOffer(uint256 tokenId)
 		external
 		virtual
-		exceptYourself
+		exceptMedia
 		nonReentrant
 	{
 		uint256 offeredPrice = _refundOfferedAmount(tokenId);
