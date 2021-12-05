@@ -90,6 +90,17 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		_;
 	}
 
+	/// @dev Throws if not called by MediaFactory.
+	modifier onlyFactory() {
+		require(msg.sender == mediaFactoryAddress(), "KD010");
+		_;
+	}
+
+	modifier onlyRegistry() {
+		require(msg.sender == mediaRegistryAddress(), "KD011");
+		_;
+	}
+
 	function emitNewSpace(string memory metadata) external onlyAllowedContract {
 		emit NewSpace(metadata);
 	}
@@ -267,7 +278,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		address proxy,
 		address mediaEOA,
 		string memory accountMetadata
-	) external onlyProxies {
+	) external onlyRegistry {
 		emit UpdateMedia(proxy, mediaEOA, accountMetadata);
 	}
 

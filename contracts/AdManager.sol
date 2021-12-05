@@ -78,7 +78,6 @@ contract AdManager is
 		onlyMedia
 	{
 		_mediaRegistry().updateMedia(newMediaEOA, newMetadata);
-		_event().emitUpdateMedia(address(this), newMediaEOA, newMetadata);
 	}
 
 	/// @dev Creates a new space for the media account.
@@ -116,7 +115,6 @@ contract AdManager is
 			minPrice
 		);
 		_mintRight(address(this), tokenId, tokenMetadata);
-		_event().emitTransferCustom(address(0), address(this), tokenId);
 	}
 
 	/// @dev Deletes a period and its token.
@@ -129,7 +127,6 @@ contract AdManager is
 		require(!_alreadyBid(tokenId), "KD128");
 		_burnRight(tokenId);
 		_adPool().deletePeriod(tokenId);
-		_event().emitTransferCustom(address(this), address(0), tokenId);
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
@@ -141,7 +138,7 @@ contract AdManager is
 		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
 		_event().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
-		_event().emitTransferCustom(address(this), msg.sender, tokenId);
+		// _event().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
@@ -162,7 +159,7 @@ contract AdManager is
 		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
 		_event().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
-		_event().emitTransferCustom(address(this), msg.sender, tokenId);
+		// _event().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
 	/// @dev Bids to participate in an auction.
@@ -217,7 +214,7 @@ contract AdManager is
 		_refundToProposers(tokenId, index);
 		address successfulBidder = _openBid().selectProposal(tokenId, index);
 		_dropRight(successfulBidder, tokenId);
-		_event().emitTransferCustom(address(this), successfulBidder, tokenId);
+		// _event().emitTransferCustom(address(this), successfulBidder, tokenId);
 	}
 
 	function _refundToProposers(uint256 tokenId, uint256 index) internal virtual {
@@ -339,7 +336,6 @@ contract AdManager is
 		_mintRight(target.sender, tokenId, tokenMetadata);
 		_collectFees(target.price / 10);
 		_processingTotal -= target.price;
-		_event().emitTransferCustom(address(0), address(this), tokenId);
 	}
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
@@ -436,9 +432,9 @@ contract AdManager is
 		(address bidder, uint256 price) = _english().receiveToken(tokenId);
 		_adPool().sold(tokenId);
 		_processingTotal -= price;
-		_dropRight(bidder, tokenId);
+		_dropRight(receiver, tokenId);
 		_collectFees(price / 10);
-		_event().emitTransferCustom(address(this), receiver, tokenId);
+		// _event().emitTransferCustom(address(this), receiver, tokenId);
 	}
 
 	function _collectFees(uint256 value) internal virtual {
@@ -485,4 +481,25 @@ contract AdManager is
 	function _review() internal view virtual returns (IProposalReview) {
 		return IProposalReview(proposalReviewAddress());
 	}
+
+	// function _mintRight(
+	// 	address reciever,
+	// 	uint256 tokenId,
+	// 	string memory metadata
+	// ) internal virtual {
+	// 	_mint(reciever, tokenId);
+	// 	_tokenURIs[tokenId] = metadata;
+	// 	_event().emitTransferCustom(address(0), reciever, tokenId);
+	// }
+
+	// function _burnRight(uint256 tokenId) internal virtual {
+	// 	_burn(tokenId);
+	// 	_tokenURIs[tokenId] = "";
+	// 	_event().emitTransferCustom(address(this), address(0), tokenId);
+	// }
+
+	// function _dropRight(address receiver, uint256 tokenId) internal virtual {
+	// 	_transfer(address(this), receiver, tokenId);
+	// 	_event().emitTransferCustom(address(this), receiver, tokenId);
+	// }
 }

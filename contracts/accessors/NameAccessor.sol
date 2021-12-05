@@ -20,12 +20,6 @@ contract NameAccessor {
 		_;
 	}
 
-	/// @dev Throws if not called by MediaFactory.
-	modifier onlyFactory() {
-		require(msg.sender == mediaFactoryAddress(), "KD010");
-		_;
-	}
-
 	/// @dev Throws if called by any account other than the owner.
 	modifier onlyOwner() {
 		require(owner() == msg.sender, "KD012");
