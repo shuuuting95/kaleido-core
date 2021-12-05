@@ -166,8 +166,8 @@ contract AdManager is
 			msg.sender,
 			msg.value
 		);
-		uint256 refunded = _refundBiddingAmount(prev);
-		_processingTotal += (msg.value - refunded);
+		_refundBiddingAmount(prev);
+		_processingTotal += (msg.value - prev.price);
 	}
 
 	/// @dev Bids to participate in an auction.
@@ -193,6 +193,7 @@ contract AdManager is
 		onlyMedia
 		nonReentrant
 	{
+		// TODO:
 		_refundToProposers(tokenId, index);
 		address successfulBidder = _openBid().selectProposal(tokenId, index);
 		_dropRight(successfulBidder, tokenId);
@@ -215,23 +216,6 @@ contract AdManager is
 				if (!success) {
 					_event().emitPaymentFailure(target.sender, target.price);
 				}
-			}
-		}
-	}
-
-	function _refundBiddingAmount(Sale.Bidding memory prev)
-		internal
-		virtual
-		returns (uint256 refunded)
-	{
-		if (prev.bidder != address(0)) {
-			(bool success, ) = payable(prev.bidder).call{
-				value: prev.price,
-				gas: 10000
-			}("");
-			refunded = prev.price;
-			if (!success) {
-				_event().emitPaymentFailure(prev.bidder, prev.price);
 			}
 		}
 	}
@@ -279,27 +263,23 @@ contract AdManager is
 		exceptMedia
 		nonReentrant
 	{
-		uint256 offeredPrice = _refundOfferedAmount(tokenId);
-		_offerBid().cancel(tokenId, msg.sender);
-		_processingTotal -= offeredPrice;
+		Sale.Offer memory prev = _offerBid().cancel(tokenId, msg.sender);
+		_refundOfferedAmount(prev);
+		_processingTotal -= prev.price;
 	}
 
-	function _refundOfferedAmount(uint256 tokenId)
-		internal
-		virtual
-		returns (uint256 offeredPrice)
-	{
-		Ad.Period memory period = _adPool().allPeriods(tokenId);
-		Sale.Offer memory _offered = _offerBid().offered(tokenId);
-		if (period.pricing == Ad.Pricing.OFFER && _offered.sender != address(0)) {
-			(bool success, ) = payable(_offered.sender).call{
-				value: _offered.price,
-				gas: 10000
-			}("");
-			offeredPrice = _offered.price;
-			if (!success) {
-				_event().emitPaymentFailure(_offered.sender, _offered.price);
-			}
+	function _refundBiddingAmount(Sale.Bidding memory prev) internal virtual {
+		_refund(prev.bidder, prev.price);
+	}
+
+	function _refundOfferedAmount(Sale.Offer memory prev) internal virtual {
+		_refund(prev.sender, prev.price);
+	}
+
+	function _refund(address receiver, uint256 price) internal virtual {
+		(bool success, ) = payable(receiver).call{ value: price, gas: 10000 }("");
+		if (!success) {
+			_event().emitPaymentFailure(receiver, price);
 		}
 	}
 

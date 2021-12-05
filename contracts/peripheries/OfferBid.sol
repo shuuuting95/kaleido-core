@@ -53,8 +53,10 @@ contract OfferBid is IOfferBid, NameAccessor {
 		external
 		virtual
 		onlyProxies
+		returns (Sale.Offer memory prev)
 	{
 		require(_offered[tokenId].sender == sender, "KD116");
+		prev = _offered[tokenId];
 		delete _offered[tokenId];
 		_event().emitCancelOffer(tokenId);
 	}
