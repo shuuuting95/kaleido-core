@@ -29,7 +29,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 	}
 
 	/// @inheritdoc IAdPool
-	function addSpace(string memory metadata) external onlyProxies {
+	function addSpace(string memory metadata) external virtual onlyProxies {
 		require(!spaced[metadata], "KD100");
 		spaced[metadata] = true;
 		_eventEmitter().emitNewSpace(metadata);
@@ -45,7 +45,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		uint256 displayEndTimestamp,
 		Ad.Pricing pricing,
 		uint256 minPrice
-	) external onlyProxies returns (uint256 tokenId) {
+	) external virtual onlyProxies returns (uint256 tokenId) {
 		require(saleEndTimestamp > _blockTimestamp(), "KD111");
 		require(saleEndTimestamp < displayStartTimestamp, "KD112");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
@@ -87,7 +87,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 	}
 
 	/// @inheritdoc IAdPool
-	function deletePeriod(uint256 tokenId) external onlyProxies {
+	function deletePeriod(uint256 tokenId) external virtual onlyProxies {
 		string memory spaceMetadata = periods[tokenId].spaceMetadata;
 		uint256 index = 0;
 		for (uint256 i = 1; i < _periodKeys[spaceMetadata].length + 1; i++) {
@@ -105,7 +105,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		uint256 tokenId,
 		string memory tokenMetadata,
 		Sale.Offer memory offer
-	) external {
+	) external virtual onlyProxies {
 		_checkOverlapping(
 			offer.spaceMetadata,
 			offer.displayStartTimestamp,

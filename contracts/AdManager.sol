@@ -333,13 +333,11 @@ contract AdManager is
 		virtual
 		onlyMedia
 	{
-		(address sender, uint256 price) = _offerBid().accept(
-			tokenId,
-			tokenMetadata
-		);
-		_mintRight(sender, tokenId, tokenMetadata);
-		_collectFees(price / 10);
-		_processingTotal -= price;
+		Sale.Offer memory target = _offerBid().accept(tokenId);
+		_adPool().acceptOffer(tokenId, tokenMetadata, target);
+		_mintRight(target.sender, tokenId, tokenMetadata);
+		_collectFees(target.price / 10);
+		_processingTotal -= target.price;
 		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
 	}
 
