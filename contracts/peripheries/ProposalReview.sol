@@ -40,7 +40,7 @@ contract ProposalReview is IProposalReview, BlockTimestamp, NameAccessor {
 		address msgSender
 	) external virtual onlyProxies {
 		proposed[tokenId] = Proposal(metadata, msgSender);
-		_eventEmitter().emitPropose(tokenId, metadata);
+		_event().emitPropose(tokenId, metadata);
 	}
 
 	/// @dev Accepts the proposal.
@@ -50,7 +50,7 @@ contract ProposalReview is IProposalReview, BlockTimestamp, NameAccessor {
 		require(bytes(metadata).length != 0, "KD130");
 		accepted[tokenId] = metadata;
 		proposed[tokenId] = Proposal("", proposed[tokenId].proposer);
-		_eventEmitter().emitAcceptProposal(tokenId, metadata);
+		_event().emitAcceptProposal(tokenId, metadata);
 	}
 
 	/// @dev Denies the submitted proposal, mentioning what is the problem.
@@ -65,7 +65,7 @@ contract ProposalReview is IProposalReview, BlockTimestamp, NameAccessor {
 		string memory metadata = proposed[tokenId].content;
 		require(bytes(metadata).length != 0, "KD130");
 		deniedReasons[tokenId].push(Denied(reason, offensive));
-		_eventEmitter().emitDenyProposal(tokenId, metadata, reason, offensive);
+		_event().emitDenyProposal(tokenId, metadata, reason, offensive);
 	}
 
 	function proposer(uint256 tokenId) external view returns (address) {
@@ -80,7 +80,7 @@ contract ProposalReview is IProposalReview, BlockTimestamp, NameAccessor {
 		return accepted[tokenId];
 	}
 
-	function _eventEmitter() internal view virtual returns (IEventEmitter) {
+	function _event() internal view virtual returns (IEventEmitter) {
 		return IEventEmitter(eventEmitterAddress());
 	}
 

@@ -30,7 +30,7 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		uint256 value
 	) external virtual onlyProxies {
 		_bidding[tokenId].push(Sale.OpenBid(tokenId, sender, value, proposal));
-		_eventEmitter().emitBidWithProposal(
+		_event().emitBidWithProposal(
 			tokenId,
 			value,
 			sender,
@@ -72,7 +72,7 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		);
 		successfulBidder = bidding(tokenId, index).sender;
 		delete _bidding[tokenId];
-		_eventEmitter().emitSelectProposal(tokenId, successfulBidder);
+		_event().emitSelectProposal(tokenId, successfulBidder);
 	}
 
 	/**
@@ -82,7 +82,7 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		return IAdPool(adPoolAddress());
 	}
 
-	function _eventEmitter() internal view virtual returns (IEventEmitter) {
+	function _event() internal view virtual returns (IEventEmitter) {
 		return IEventEmitter(eventEmitterAddress());
 	}
 

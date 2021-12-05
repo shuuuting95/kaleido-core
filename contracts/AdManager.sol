@@ -78,7 +78,7 @@ contract AdManager is
 		onlyMedia
 	{
 		_mediaRegistry().updateMedia(newMediaEOA, newMetadata);
-		_eventEmitter().emitUpdateMedia(address(this), newMediaEOA, newMetadata);
+		_event().emitUpdateMedia(address(this), newMediaEOA, newMetadata);
 	}
 
 	/// @dev Creates a new space for the media account.
@@ -116,7 +116,7 @@ contract AdManager is
 			minPrice
 		);
 		_mintRight(address(this), tokenId, tokenMetadata);
-		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
+		_event().emitTransferCustom(address(0), address(this), tokenId);
 	}
 
 	/// @dev Deletes a period and its token.
@@ -129,7 +129,7 @@ contract AdManager is
 		require(!_alreadyBid(tokenId), "KD128");
 		_burnRight(tokenId);
 		_adPool().deletePeriod(tokenId);
-		_eventEmitter().emitTransferCustom(address(this), address(0), tokenId);
+		_event().emitTransferCustom(address(this), address(0), tokenId);
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
@@ -140,8 +140,8 @@ contract AdManager is
 		_adPool().sold(tokenId);
 		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
-		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
-		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
+		_event().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
+		_event().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
@@ -155,14 +155,14 @@ contract AdManager is
 	{
 		Purchase.checkBeforeBuyBasedOnTime(
 			_adPool().allPeriods(tokenId),
-			currentPrice(tokenId),
+			_adPool().currentPrice(tokenId),
 			msg.value
 		);
 		_adPool().sold(tokenId);
 		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
-		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
-		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
+		_event().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
+		_event().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
 	/// @dev Bids to participate in an auction.
@@ -177,7 +177,7 @@ contract AdManager is
 	{
 		Purchase.checkBeforeBid(
 			_adPool().allPeriods(tokenId),
-			currentPrice(tokenId),
+			_adPool().currentPrice(tokenId),
 			_blockTimestamp(),
 			msg.value
 		);
@@ -217,11 +217,7 @@ contract AdManager is
 		_refundToProposers(tokenId, index);
 		address successfulBidder = _openBid().selectProposal(tokenId, index);
 		_dropRight(successfulBidder, tokenId);
-		_eventEmitter().emitTransferCustom(
-			address(this),
-			successfulBidder,
-			tokenId
-		);
+		_event().emitTransferCustom(address(this), successfulBidder, tokenId);
 	}
 
 	function _refundToProposers(uint256 tokenId, uint256 index) internal virtual {
@@ -238,7 +234,7 @@ contract AdManager is
 					gas: 10000
 				}("");
 				if (!success) {
-					_eventEmitter().emitPaymentFailure(target.sender, target.price);
+					_event().emitPaymentFailure(target.sender, target.price);
 				}
 			}
 		}
@@ -258,7 +254,7 @@ contract AdManager is
 			}("");
 			refunded = _bidding.price;
 			if (!success) {
-				_eventEmitter().emitPaymentFailure(_bidding.bidder, _bidding.price);
+				_event().emitPaymentFailure(_bidding.bidder, _bidding.price);
 			}
 		}
 	}
@@ -325,7 +321,7 @@ contract AdManager is
 			}("");
 			offeredPrice = _offered.price;
 			if (!success) {
-				_eventEmitter().emitPaymentFailure(_offered.sender, _offered.price);
+				_event().emitPaymentFailure(_offered.sender, _offered.price);
 			}
 		}
 	}
@@ -343,7 +339,7 @@ contract AdManager is
 		_mintRight(target.sender, tokenId, tokenMetadata);
 		_collectFees(target.price / 10);
 		_processingTotal -= target.price;
-		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
+		_event().emitTransferCustom(address(0), address(this), tokenId);
 	}
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
@@ -355,9 +351,9 @@ contract AdManager is
 			gas: 10000
 		}("");
 		if (success) {
-			_eventEmitter().emitWithdraw(withdrawal);
+			_event().emitWithdraw(withdrawal);
 		} else {
-			_eventEmitter().emitPaymentFailure(msg.sender, withdrawal);
+			_event().emitPaymentFailure(msg.sender, withdrawal);
 		}
 	}
 
@@ -397,7 +393,7 @@ contract AdManager is
 		uint256 tokenId
 	) public virtual override {
 		super.transferFrom(from, to, tokenId);
-		_eventEmitter().emitTransferCustom(from, to, tokenId);
+		_event().emitTransferCustom(from, to, tokenId);
 	}
 
 	/// @dev Overrides transferFrom to emit an event from the common emitter.
@@ -407,7 +403,7 @@ contract AdManager is
 		uint256 tokenId
 	) public virtual override {
 		super.safeTransferFrom(from, to, tokenId);
-		_eventEmitter().emitTransferCustom(from, to, tokenId);
+		_event().emitTransferCustom(from, to, tokenId);
 	}
 
 	/// @dev Returns ID based on the space metadata, display start timestamp, and
@@ -466,41 +462,15 @@ contract AdManager is
 		_processingTotal -= price;
 		_dropRight(bidder, tokenId);
 		_collectFees(price / 10);
-		_eventEmitter().emitTransferCustom(address(this), receiver, tokenId);
+		_event().emitTransferCustom(address(this), receiver, tokenId);
 	}
 
 	function _collectFees(uint256 value) internal virtual {
 		address vault = vaultAddress();
 		(bool success, ) = payable(vault).call{ value: value, gas: 10000 }("");
 		if (!success) {
-			_eventEmitter().emitPaymentFailure(vault, value);
+			_event().emitPaymentFailure(vault, value);
 		}
-	}
-
-	/// @dev Returns the current price.
-	/// @param tokenId uint256 of the token ID
-	function currentPrice(uint256 tokenId) public view virtual returns (uint256) {
-		Ad.Period memory period = _adPool().allPeriods(tokenId);
-		if (period.pricing == Ad.Pricing.RRP) {
-			return period.minPrice;
-		}
-		if (period.pricing == Ad.Pricing.DUTCH) {
-			return
-				period.startPrice -
-				((period.startPrice - period.minPrice) *
-					(_blockTimestamp() - period.saleStartTimestamp)) /
-				(period.saleEndTimestamp - period.saleStartTimestamp);
-		}
-		if (period.pricing == Ad.Pricing.ENGLISH) {
-			return _english().currentPrice(tokenId);
-		}
-		if (period.pricing == Ad.Pricing.OFFER) {
-			return _offerBid().currentPrice(tokenId);
-		}
-		if (period.pricing == Ad.Pricing.OPEN) {
-			return 0;
-		}
-		revert("not exist");
 	}
 
 	function _alreadyBid(uint256 tokenId) internal view virtual returns (bool) {
@@ -520,7 +490,7 @@ contract AdManager is
 		return IAdPool(adPoolAddress());
 	}
 
-	function _eventEmitter() internal view virtual returns (IEventEmitter) {
+	function _event() internal view virtual returns (IEventEmitter) {
 		return IEventEmitter(eventEmitterAddress());
 	}
 
