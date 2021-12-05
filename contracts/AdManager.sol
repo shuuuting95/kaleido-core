@@ -195,7 +195,6 @@ contract AdManager is
 		payable
 		virtual
 		exceptYourself
-		nonReentrant
 	{
 		Purchase.checkBeforeBidWithProposal(
 			_adPool().allPeriods(tokenId),
@@ -213,6 +212,7 @@ contract AdManager is
 		external
 		virtual
 		onlyMedia
+		nonReentrant
 	{
 		_refundToProposers(tokenId, index);
 		address successfulBidder = _openBid().selectProposal(tokenId, index);
@@ -300,7 +300,12 @@ contract AdManager is
 
 	/// @dev Cancels an offer.
 	/// @param tokenId uint256 of the token ID
-	function cancelOffer(uint256 tokenId) external virtual exceptYourself {
+	function cancelOffer(uint256 tokenId)
+		external
+		virtual
+		exceptYourself
+		nonReentrant
+	{
 		uint256 offeredPrice = _refundOfferedAmount(tokenId);
 		_offerBid().cancel(tokenId, msg.sender);
 		_processingTotal -= offeredPrice;
