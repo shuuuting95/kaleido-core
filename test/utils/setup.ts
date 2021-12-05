@@ -53,6 +53,7 @@ export const getAdPoolContract = async () => {
       Ad: (await deployments.get('Ad')).address,
       Schedule: (await deployments.get('Schedule')).address,
       Sale: (await deployments.get('Sale')).address,
+      Purchase: (await deployments.get('Purchase')).address,
     },
   })
   return contract.attach(Deployment.address)

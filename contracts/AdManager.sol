@@ -131,12 +131,10 @@ contract AdManager is
 	///      The price of the token is fixed.
 	/// @param tokenId uint256 of the token ID
 	function buy(uint256 tokenId) external payable virtual exceptMedia {
-		Purchase.checkBeforeBuy(_adPool().allPeriods(tokenId), msg.value);
-		_adPool().sold(tokenId);
+		_adPool().soldByFixedPrice(tokenId, msg.value);
 		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
 		_event().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
-		// _event().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
@@ -148,16 +146,10 @@ contract AdManager is
 		virtual
 		exceptMedia
 	{
-		Purchase.checkBeforeBuyBasedOnTime(
-			_adPool().allPeriods(tokenId),
-			_adPool().currentPrice(tokenId),
-			msg.value
-		);
-		_adPool().sold(tokenId);
+		_adPool().soldByDutchAuction(tokenId, msg.value);
 		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
 		_event().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
-		// _event().emitTransferCustom(address(this), msg.sender, tokenId);
 	}
 
 	/// @dev Bids to participate in an auction.

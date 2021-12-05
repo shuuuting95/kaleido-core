@@ -11,6 +11,7 @@ import "../interfaces/IEnglishAuction.sol";
 import "../interfaces/IProposalReview.sol";
 import "../interfaces/IOpenBid.sol";
 import "../libraries/Schedule.sol";
+import "../libraries/Purchase.sol";
 
 /// @title AdPool - stores all ads accorss every space.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
@@ -144,6 +145,26 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 	}
 
 	function sold(uint256 tokenId) external onlyProxies {
+		periods[tokenId].sold = true;
+	}
+
+	function soldByFixedPrice(uint256 tokenId, uint256 msgValue)
+		external
+		onlyProxies
+	{
+		Purchase.checkBeforeBuy(periods[tokenId], msgValue);
+		periods[tokenId].sold = true;
+	}
+
+	function soldByDutchAuction(uint256 tokenId, uint256 msgValue)
+		external
+		onlyProxies
+	{
+		Purchase.checkBeforeBuyBasedOnTime(
+			periods[tokenId],
+			currentPrice(tokenId),
+			msgValue
+		);
 		periods[tokenId].sold = true;
 	}
 

@@ -51,4 +51,8 @@ interface IAdPool {
 		external
 		view
 		returns (string memory, uint256);
+
+	function soldByFixedPrice(uint256 tokenId, uint256 msgValue) external;
+
+	function soldByDutchAuction(uint256 tokenId, uint256 msgValue) external;
 }
