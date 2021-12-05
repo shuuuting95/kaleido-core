@@ -19,9 +19,12 @@ const MEDIA_METADATA_CID = process.env.MEDIA_METADATA_CID || ''
 const adminWallet = getWallet(0)
 
 const main = async () => {
+  if (!MEDIA_EOA || !MEDIA_METADATA_CID)
+    throw new Error('media eoa and metadata are required')
   const mediaMetadata = await fetch(
     `https://ipfs.infura.io/ipfs/${MEDIA_METADATA_CID}`
   ).then((res) => res.json())
+  console.log('media metadata fetched:')
   console.log(JSON.stringify(mediaMetadata, null, 2))
   if (!mediaMetadata.name) throw new Error('invalid metadata')
   const metadata = await client.add(
@@ -30,11 +33,12 @@ const main = async () => {
       name: mediaMetadata.name,
     })
   )
+  console.log('token metadata uploaded:', metadata.path)
   const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
   const initializer = ifaceAdManager.encodeFunctionData('initialize', [
     mediaMetadata.name,
     'ipfs://',
-    metadata.cid,
+    metadata.path,
     MEDIA_EOA,
     getNameRegistryAddress(network),
   ])
