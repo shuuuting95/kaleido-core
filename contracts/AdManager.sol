@@ -162,14 +162,12 @@ contract AdManager is
 		exceptMedia
 		nonReentrant
 	{
-		Purchase.checkBeforeBid(
-			_adPool().allPeriods(tokenId),
-			_adPool().currentPrice(tokenId),
-			_blockTimestamp(),
+		Sale.Bidding memory prev = _adPool().soldByEnglishAuction(
+			tokenId,
+			msg.sender,
 			msg.value
 		);
-		uint256 refunded = _refundBiddingAmount(tokenId);
-		_english().bid(tokenId, msg.sender, msg.value);
+		uint256 refunded = _refundBiddingAmount(prev);
 		_processingTotal += (msg.value - refunded);
 	}
 
@@ -227,21 +225,19 @@ contract AdManager is
 		}
 	}
 
-	function _refundBiddingAmount(uint256 tokenId)
+	function _refundBiddingAmount(Sale.Bidding memory prev)
 		internal
 		virtual
 		returns (uint256 refunded)
 	{
-		Ad.Period memory period = _adPool().allPeriods(tokenId);
-		Sale.Bidding memory _bidding = _english().bidding(tokenId);
-		if (period.pricing == Ad.Pricing.ENGLISH && _bidding.bidder != address(0)) {
-			(bool success, ) = payable(_bidding.bidder).call{
-				value: _bidding.price,
+		if (prev.bidder != address(0)) {
+			(bool success, ) = payable(prev.bidder).call{
+				value: prev.price,
 				gas: 10000
 			}("");
-			refunded = _bidding.price;
+			refunded = prev.price;
 			if (!success) {
-				_event().emitPaymentFailure(_bidding.bidder, _bidding.price);
+				_event().emitPaymentFailure(prev.bidder, prev.price);
 			}
 		}
 	}

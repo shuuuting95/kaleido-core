@@ -10,7 +10,7 @@ interface IEnglishAuction {
 		uint256 tokenId,
 		address sender,
 		uint256 amount
-	) external;
+	) external returns (Sale.Bidding memory);
 
 	function receiveToken(uint256 tokenId) external returns (address, uint256);
 

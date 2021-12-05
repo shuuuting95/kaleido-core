@@ -19,6 +19,11 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		_;
 	}
 
+	modifier onlyAdPool() {
+		require(msg.sender == adPoolAddress(), "KD011");
+		_;
+	}
+
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
 	}
@@ -27,7 +32,8 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		uint256 tokenId,
 		address sender,
 		uint256 value
-	) external virtual override onlyProxies {
+	) external virtual override onlyAdPool returns (Sale.Bidding memory prev) {
+		prev = _bidding[tokenId];
 		_bidding[tokenId] = Sale.Bidding(tokenId, sender, value);
 		_event().emitBid(tokenId, value, sender, _blockTimestamp());
 	}

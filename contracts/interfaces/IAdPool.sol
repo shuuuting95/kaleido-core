@@ -55,4 +55,10 @@ interface IAdPool {
 	function soldByFixedPrice(uint256 tokenId, uint256 msgValue) external;
 
 	function soldByDutchAuction(uint256 tokenId, uint256 msgValue) external;
+
+	function soldByEnglishAuction(
+		uint256 tokenId,
+		address msgSender,
+		uint256 msgValue
+	) external returns (Sale.Bidding memory);
 }

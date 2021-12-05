@@ -168,6 +168,20 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		periods[tokenId].sold = true;
 	}
 
+	function soldByEnglishAuction(
+		uint256 tokenId,
+		address msgSender,
+		uint256 msgValue
+	) external onlyProxies returns (Sale.Bidding memory) {
+		Purchase.checkBeforeBid(
+			periods[tokenId],
+			currentPrice(tokenId),
+			_blockTimestamp(),
+			msgValue
+		);
+		return _english().bid(tokenId, msgSender, msgValue);
+	}
+
 	function allPeriods(uint256 tokenId)
 		external
 		view
