@@ -61,4 +61,11 @@ interface IAdPool {
 		address msgSender,
 		uint256 msgValue
 	) external returns (Sale.Bidding memory);
+
+	function bidWithProposal(
+		uint256 tokenId,
+		string memory proposalMetadata,
+		address msgSender,
+		uint256 msgValue
+	) external;
 }

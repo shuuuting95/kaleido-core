@@ -182,6 +182,20 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		return _english().bid(tokenId, msgSender, msgValue);
 	}
 
+	function bidWithProposal(
+		uint256 tokenId,
+		string memory proposalMetadata,
+		address msgSender,
+		uint256 msgValue
+	) external onlyProxies {
+		Purchase.checkBeforeBidWithProposal(
+			periods[tokenId],
+			_blockTimestamp(),
+			msgValue
+		);
+		_openBid().bid(tokenId, proposalMetadata, msgSender, msgValue);
+	}
+
 	function allPeriods(uint256 tokenId)
 		external
 		view

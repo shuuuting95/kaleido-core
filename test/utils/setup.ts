@@ -5,7 +5,6 @@ export const getAdManagerContract = async () => {
   const contract = await hre.ethers.getContractFactory('MockTimeAdManager', {
     libraries: {
       Ad: (await deployments.get('Ad')).address,
-      Purchase: (await deployments.get('Purchase')).address,
     },
   })
   return contract.attach(Deployment.address)

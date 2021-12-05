@@ -19,6 +19,11 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		_;
 	}
 
+	modifier onlyAdPool() {
+		require(msg.sender == adPoolAddress(), "KD011");
+		_;
+	}
+
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
 	}
@@ -28,7 +33,7 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		string memory proposal,
 		address sender,
 		uint256 value
-	) external virtual onlyProxies {
+	) external virtual onlyAdPool {
 		_bidding[tokenId].push(Sale.OpenBid(tokenId, sender, value, proposal));
 		_event().emitBidWithProposal(
 			tokenId,

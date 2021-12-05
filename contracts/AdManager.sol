@@ -4,7 +4,6 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./base/ERC721.sol";
 import "./base/Storage.sol";
-import "./libraries/Purchase.sol";
 import "./libraries/Sale.sol";
 import "./common/BlockTimestamp.sol";
 import "./accessors/NameAccessor.sol";
@@ -181,13 +180,8 @@ contract AdManager is
 		virtual
 		exceptMedia
 	{
-		Purchase.checkBeforeBidWithProposal(
-			_adPool().allPeriods(tokenId),
-			_blockTimestamp(),
-			msg.value
-		);
+		_adPool().bidWithProposal(tokenId, proposalMetadata, msg.sender, msg.value);
 		_processingTotal += msg.value;
-		_openBid().bid(tokenId, proposalMetadata, msg.sender, msg.value);
 	}
 
 	/// @dev Selects the best proposal bidded with.

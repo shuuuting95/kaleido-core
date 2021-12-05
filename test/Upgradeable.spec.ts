@@ -52,7 +52,6 @@ describe('Upgradeable AdManager', async () => {
       const AdManagerV2 = await ethers.getContractFactory('AdManagerV2', {
         libraries: {
           Ad: (await deployments.get('Ad')).address,
-          Purchase: (await deployments.get('Purchase')).address,
         },
       })
       const v2 = await AdManagerV2.deploy()
