@@ -18,6 +18,7 @@ import {
   getNameRegistryContract,
   getOfferBidContract,
   getOpenBidContract,
+  getProposalReviewContract,
   getVaultContract,
 } from './utils/setup'
 
@@ -49,6 +50,7 @@ describe('AdManager', async () => {
       pool: pool,
       eng: eng,
       open: open,
+      review: await getProposalReviewContract(),
       offer: await getOfferBidContract(),
       event: await getEventEmitterContract(),
       vault: await getVaultContract(),
@@ -1285,7 +1287,7 @@ describe('AdManager', async () => {
 
   describe('propose', async () => {
     it('should propose to the right you bought', async () => {
-      const { now, factory, name, event } = await setupTests()
+      const { now, factory, name, event, review } = await setupTests()
       const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
@@ -1300,7 +1302,7 @@ describe('AdManager', async () => {
       )
         .to.emit(event, 'Propose')
         .withArgs(tokenId, proposalMetadata)
-      expect(await manager.proposed(tokenId)).to.deep.equal([
+      expect(await review.proposed(tokenId)).to.deep.equal([
         proposalMetadata,
         user3.address,
       ])
@@ -1323,7 +1325,7 @@ describe('AdManager', async () => {
 
   describe('acceptProposal', async () => {
     it('should accept a proposal', async () => {
-      const { now, factory, name, event } = await setupTests()
+      const { now, factory, name, event, review } = await setupTests()
       const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
 
@@ -1335,7 +1337,7 @@ describe('AdManager', async () => {
       expect(await manager.acceptProposal(tokenId, option()))
         .to.emit(event, 'AcceptProposal')
         .withArgs(tokenId, proposalMetadata)
-      expect(await manager.proposed(tokenId)).to.deep.equal(['', user3.address])
+      expect(await review.proposed(tokenId)).to.deep.equal(['', user3.address])
       expect(await manager.ownerOf(tokenId)).to.be.eq(user3.address)
     })
 

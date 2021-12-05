@@ -2,27 +2,27 @@
 pragma solidity 0.8.9;
 
 library Schedule {
-	function _isOverlapped(
+	function isOverlapped(
 		uint256 newFromTimestamp,
 		uint256 newToTimestamp,
 		uint256 currentFromTimestamp,
 		uint256 currentToTimestamp
-	) internal pure returns (bool) {
+	) public pure returns (bool) {
 		return
-			!(_isPast(newToTimestamp, currentFromTimestamp) ||
-				_isFuture(newFromTimestamp, currentToTimestamp));
+			!(isPast(newToTimestamp, currentFromTimestamp) ||
+				isFuture(newFromTimestamp, currentToTimestamp));
 	}
 
-	function _isPast(uint256 newToTimestamp, uint256 currentFromTimestamp)
-		internal
+	function isPast(uint256 newToTimestamp, uint256 currentFromTimestamp)
+		public
 		pure
 		returns (bool)
 	{
 		return newToTimestamp < currentFromTimestamp;
 	}
 
-	function _isFuture(uint256 newFromTimestamp, uint256 currentToTimestamp)
-		internal
+	function isFuture(uint256 newFromTimestamp, uint256 currentToTimestamp)
+		public
 		pure
 		returns (bool)
 	{

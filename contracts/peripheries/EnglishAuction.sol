@@ -8,11 +8,16 @@ import "../common/BlockTimestamp.sol";
 import "../interfaces/IAdPool.sol";
 import "../interfaces/IEventEmitter.sol";
 import "../interfaces/IEnglishAuction.sol";
-import "hardhat/console.sol";
+import "../interfaces/IMediaRegistry.sol";
 
 contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 	/// @dev Maps a tokenId with bidding info
 	mapping(uint256 => Sale.Bidding) internal _bidding;
+
+	modifier onlyProxies() {
+		require(_mediaRegistry().ownerOf(msg.sender) != address(0x0), "KD011");
+		_;
+	}
 
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
@@ -22,25 +27,16 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		uint256 tokenId,
 		address sender,
 		uint256 value
-	) external override {
-		// refunded = _refundBiddingAmount(tokenId);
+	) external virtual override onlyProxies {
 		_bidding[tokenId] = Sale.Bidding(tokenId, sender, value);
 		_eventEmitter().emitBid(tokenId, value, sender, _blockTimestamp());
 	}
 
-	function _checkBeforeReceiveToken(uint256 tokenId)
-		internal
-		view
-		returns (Ad.Period memory period)
-	{
-		period = _adPool().allPeriods(tokenId);
-		require(period.pricing == Ad.Pricing.ENGLISH, "KD124");
-		require(!period.sold, "KD121");
-		require(period.saleEndTimestamp < _blockTimestamp(), "KD125");
-	}
-
 	function receiveToken(uint256 tokenId)
 		external
+		virtual
+		override
+		onlyProxies
 		returns (address bidder, uint256 price)
 	{
 		_checkBeforeReceiveToken(tokenId);
@@ -68,6 +64,17 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		return _bidding[tokenId].price;
 	}
 
+	function _checkBeforeReceiveToken(uint256 tokenId)
+		internal
+		view
+		returns (Ad.Period memory period)
+	{
+		period = _adPool().allPeriods(tokenId);
+		require(period.pricing == Ad.Pricing.ENGLISH, "KD124");
+		require(!period.sold, "KD121");
+		require(period.saleEndTimestamp < _blockTimestamp(), "KD125");
+	}
+
 	/**
 	 * Accessors
 	 */
@@ -77,5 +84,9 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 
 	function _eventEmitter() internal view virtual returns (IEventEmitter) {
 		return IEventEmitter(eventEmitterAddress());
+	}
+
+	function _mediaRegistry() internal view returns (IMediaRegistry) {
+		return IMediaRegistry(mediaRegistryAddress());
 	}
 }

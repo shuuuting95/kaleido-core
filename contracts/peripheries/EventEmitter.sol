@@ -218,14 +218,14 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 
 	function emitPropose(uint256 tokenId, string memory metadata)
 		external
-		onlyProxies
+		onlyAllowedContract
 	{
 		emit Propose(tokenId, metadata);
 	}
 
 	function emitAcceptProposal(uint256 tokenId, string memory metadata)
 		external
-		onlyProxies
+		onlyAllowedContract
 	{
 		emit AcceptProposal(tokenId, metadata);
 	}
@@ -235,7 +235,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		string memory metadata,
 		string memory reason,
 		bool offensive
-	) external onlyProxies {
+	) external onlyAllowedContract {
 		emit DenyProposal(tokenId, metadata, reason, offensive);
 	}
 
