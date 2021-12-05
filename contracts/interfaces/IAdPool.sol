@@ -46,4 +46,9 @@ interface IAdPool {
 		returns (uint256[] memory);
 
 	function currentPrice(uint256 tokenId) external view returns (uint256);
+
+	function display(string memory spaceMetadata)
+		external
+		view
+		returns (string memory, uint256);
 }

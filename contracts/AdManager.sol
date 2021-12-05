@@ -429,30 +429,6 @@ contract AdManager is
 		return address(this).balance - _processingTotal;
 	}
 
-	/// @dev Displays the ad content that is approved by the media owner.
-	/// @param spaceMetadata string of the space metadata
-	function display(string memory spaceMetadata)
-		external
-		view
-		virtual
-		returns (string memory, uint256)
-	{
-		uint256[] memory tokenIds = _adPool().tokenIdsOf(spaceMetadata);
-		for (uint256 i = 0; i < tokenIds.length; i++) {
-			if (tokenIds[i] != 0) {
-				Ad.Period memory period = _adPool().allPeriods(tokenIds[i]);
-				if (
-					period.displayStartTimestamp <= _blockTimestamp() &&
-					period.displayEndTimestamp >= _blockTimestamp()
-				) {
-					string memory content = _review().acceptedContent(tokenIds[i]);
-					return (content, tokenIds[i]);
-				}
-			}
-		}
-		return ("", 0);
-	}
-
 	function _toSuccessfulBidder(uint256 tokenId, address receiver)
 		internal
 		virtual

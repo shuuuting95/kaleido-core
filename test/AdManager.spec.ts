@@ -540,7 +540,7 @@ describe('AdManager', async () => {
       // 2400/3600 -> 66% passed
       await manager.setTime(now + 2400)
 
-      const currentPrice = await manager.currentPrice(tokenId)
+      const currentPrice = await pool.currentPrice(tokenId)
 
       // slightly passed for its operation
       await manager.setTime(now + 2460)
@@ -572,7 +572,7 @@ describe('AdManager', async () => {
     })
 
     it('should revert because the pricing is not DPBT', async () => {
-      const { now, factory, name } = await setupTests()
+      const { now, factory, name, pool } = await setupTests()
       const manager = await managerInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(manager, now)
       const pricing = 2
@@ -581,7 +581,7 @@ describe('AdManager', async () => {
         pricing: pricing,
       })
 
-      const currentPrice = await manager.currentPrice(tokenId)
+      const currentPrice = await pool.currentPrice(tokenId)
       await expect(
         manager
           .connect(user3)
@@ -1416,7 +1416,7 @@ describe('AdManager', async () => {
 
   describe('display', async () => {
     it('should display', async () => {
-      const { now, factory, name, event } = await setupTests()
+      const { now, factory, name, pool } = await setupTests()
       const manager = await managerInstance(factory, name, now)
       const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
 
@@ -1428,15 +1428,16 @@ describe('AdManager', async () => {
 
       // passed to the start of displaying
       await manager.setTime(now + 4000)
+      await pool.setTime(now + 4000)
 
-      expect(await manager.display(spaceMetadata)).to.deep.equal([
+      expect(await pool.display(spaceMetadata)).to.deep.equal([
         proposalMetadata,
         tokenId,
       ])
     })
 
     it('should not display before it starts', async () => {
-      const { now, factory, name, event } = await setupTests()
+      const { now, factory, name, pool } = await setupTests()
       const manager = await managerInstance(factory, name, now)
       const { tokenId, spaceMetadata } = await defaultPeriodProps(manager, now)
 
@@ -1446,7 +1447,7 @@ describe('AdManager', async () => {
       await manager.connect(user3).propose(tokenId, proposalMetadata)
       await manager.acceptProposal(tokenId, option())
 
-      expect(await manager.display(spaceMetadata)).to.deep.equal([
+      expect(await pool.display(spaceMetadata)).to.deep.equal([
         '',
         BigNumber.from(0),
       ])

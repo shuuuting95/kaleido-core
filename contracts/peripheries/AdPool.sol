@@ -8,6 +8,7 @@ import "../interfaces/IMediaRegistry.sol";
 import "../interfaces/IEventEmitter.sol";
 import "../interfaces/IOfferBid.sol";
 import "../interfaces/IEnglishAuction.sol";
+import "../interfaces/IProposalReview.sol";
 import "../libraries/Schedule.sol";
 
 /// @title AdPool - stores all ads accorss every space.
@@ -177,6 +178,30 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		revert("not exist");
 	}
 
+	/// @dev Displays the ad content that is approved by the media owner.
+	/// @param spaceMetadata string of the space metadata
+	function display(string memory spaceMetadata)
+		external
+		view
+		virtual
+		returns (string memory, uint256)
+	{
+		uint256[] memory tokenIds = tokenIdsOf(spaceMetadata);
+		for (uint256 i = 0; i < tokenIds.length; i++) {
+			if (tokenIds[i] != 0) {
+				Ad.Period memory period = periods[tokenIds[i]];
+				if (
+					period.displayStartTimestamp <= _blockTimestamp() &&
+					period.displayEndTimestamp >= _blockTimestamp()
+				) {
+					string memory content = _review().acceptedContent(tokenIds[i]);
+					return (content, tokenIds[i]);
+				}
+			}
+		}
+		return ("", 0);
+	}
+
 	/// @inheritdoc IAdPool
 	function mediaProxyOf(uint256 tokenId) external view returns (address) {
 		return periods[tokenId].mediaProxy;
@@ -207,9 +232,6 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		uint256 displayEndTimestamp
 	) internal view virtual {
 		for (uint256 i = 0; i < _periodKeys[metadata].length; i++) {
-			// Ad.Period memory existing = _adPool().allPeriods(
-			// 	_periodKeys[metadata][i]
-			// );
 			uint256 existDisplayStart = displayStart(_periodKeys[metadata][i]);
 			uint256 existDisplayEnd = displayEnd(_periodKeys[metadata][i]);
 
@@ -250,5 +272,9 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 
 	function _english() internal view virtual returns (IEnglishAuction) {
 		return IEnglishAuction(englishAuctionAddress());
+	}
+
+	function _review() internal view virtual returns (IProposalReview) {
+		return IProposalReview(proposalReviewAddress());
 	}
 }
