@@ -9,6 +9,7 @@ import "../interfaces/IEventEmitter.sol";
 import "../interfaces/IOfferBid.sol";
 import "../interfaces/IEnglishAuction.sol";
 import "../interfaces/IProposalReview.sol";
+import "../interfaces/IOpenBid.sol";
 import "../libraries/Schedule.sol";
 
 /// @title AdPool - stores all ads accorss every space.
@@ -92,6 +93,8 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 
 	/// @inheritdoc IAdPool
 	function deletePeriod(uint256 tokenId) external virtual onlyProxies {
+		require(periods[tokenId].mediaProxy != address(0), "KD114");
+		require(!_alreadyBid(tokenId), "KD128");
 		string memory spaceMetadata = periods[tokenId].spaceMetadata;
 		uint256 index = 0;
 		for (uint256 i = 1; i < _periodKeys[spaceMetadata].length + 1; i++) {
@@ -226,6 +229,12 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		return _periodKeys[spaceMetadata];
 	}
 
+	function _alreadyBid(uint256 tokenId) internal view virtual returns (bool) {
+		return
+			_english().bidding(tokenId).bidder != address(0) ||
+			_openBid().biddingList(tokenId).length != 0;
+	}
+
 	function _checkOverlapping(
 		string memory metadata,
 		uint256 displayStartTimestamp,
@@ -276,5 +285,9 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 
 	function _review() internal view virtual returns (IProposalReview) {
 		return IProposalReview(proposalReviewAddress());
+	}
+
+	function _openBid() internal view virtual returns (IOpenBid) {
+		return IOpenBid(openBidAddress());
 	}
 }

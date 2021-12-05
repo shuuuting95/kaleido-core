@@ -2,7 +2,7 @@
 pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./base/DistributionRight.sol";
+import "./base/ERC721.sol";
 import "./base/Storage.sol";
 import "./libraries/Purchase.sol";
 import "./libraries/Sale.sol";
@@ -19,7 +19,7 @@ import "./interfaces/IProposalReview.sol";
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdManager is
-	DistributionRight,
+	ERC721,
 	ReentrancyGuard,
 	NameAccessor,
 	BlockTimestamp,
@@ -122,11 +122,9 @@ contract AdManager is
 	///      to the user when deleting the period.
 	/// @param tokenId uint256 of the token ID
 	function deletePeriod(uint256 tokenId) external virtual onlyMedia {
-		require(_adPool().allPeriods(tokenId).mediaProxy != address(0), "KD114");
 		require(ownerOf(tokenId) == address(this), "KD121");
-		require(!_alreadyBid(tokenId), "KD128");
-		_burnRight(tokenId);
 		_adPool().deletePeriod(tokenId);
+		_burnRight(tokenId);
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
@@ -445,12 +443,6 @@ contract AdManager is
 		}
 	}
 
-	function _alreadyBid(uint256 tokenId) internal view virtual returns (bool) {
-		return
-			_english().bidding(tokenId).bidder != address(0) ||
-			_openBid().biddingList(tokenId).length != 0;
-	}
-
 	/**
 	 * Accessors
 	 */
@@ -482,24 +474,25 @@ contract AdManager is
 		return IProposalReview(proposalReviewAddress());
 	}
 
-	// function _mintRight(
-	// 	address reciever,
-	// 	uint256 tokenId,
-	// 	string memory metadata
-	// ) internal virtual {
-	// 	_mint(reciever, tokenId);
-	// 	_tokenURIs[tokenId] = metadata;
-	// 	_event().emitTransferCustom(address(0), reciever, tokenId);
-	// }
+	function _mintRight(
+		address reciever,
+		uint256 tokenId,
+		string memory metadata
+	) internal virtual {
+		_mint(reciever, tokenId);
+		_tokenURIs[tokenId] = metadata;
+		if (tokenId != 0)
+			_event().emitTransferCustom(address(0), reciever, tokenId);
+	}
 
-	// function _burnRight(uint256 tokenId) internal virtual {
-	// 	_burn(tokenId);
-	// 	_tokenURIs[tokenId] = "";
-	// 	_event().emitTransferCustom(address(this), address(0), tokenId);
-	// }
+	function _burnRight(uint256 tokenId) internal virtual {
+		_burn(tokenId);
+		_tokenURIs[tokenId] = "";
+		_event().emitTransferCustom(address(this), address(0), tokenId);
+	}
 
-	// function _dropRight(address receiver, uint256 tokenId) internal virtual {
-	// 	_transfer(address(this), receiver, tokenId);
-	// 	_event().emitTransferCustom(address(this), receiver, tokenId);
-	// }
+	function _dropRight(address receiver, uint256 tokenId) internal virtual {
+		_transfer(address(this), receiver, tokenId);
+		_event().emitTransferCustom(address(this), receiver, tokenId);
+	}
 }
