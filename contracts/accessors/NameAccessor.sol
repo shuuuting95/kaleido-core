@@ -77,6 +77,11 @@ contract NameAccessor {
 		return _nameRegistry.get(keccak256(abi.encodePacked("OfferBid")));
 	}
 
+	/// @dev Gets the address of ProposalReview.
+	function proposalReviewAddress() public view returns (address) {
+		return _nameRegistry.get(keccak256(abi.encodePacked("ProposalReview")));
+	}
+
 	/// @dev Gets the owner address.
 	function owner() public view returns (address) {
 		return _nameRegistry.deployer();

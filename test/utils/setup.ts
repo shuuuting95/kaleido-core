@@ -51,6 +51,8 @@ export const getAdPoolContract = async () => {
   const contract = await hre.ethers.getContractFactory('MockTimeAdPool', {
     libraries: {
       Ad: (await deployments.get('Ad')).address,
+      Schedule: (await deployments.get('Schedule')).address,
+      Sale: (await deployments.get('Sale')).address,
     },
   })
   return contract.attach(Deployment.address)
@@ -73,9 +75,14 @@ export const getOfferBidContract = async () => {
   const contract = await hre.ethers.getContractFactory('OfferBid', {
     libraries: {
       Ad: (await deployments.get('Ad')).address,
-      // Purchase: (await deployments.get('Purchase')).address,
     },
   })
+  return contract.attach(Deployment.address)
+}
+
+export const getProposalReviewContract = async () => {
+  const Deployment = await deployments.get('ProposalReview')
+  const contract = await hre.ethers.getContractFactory('ProposalReview')
   return contract.attach(Deployment.address)
 }
 

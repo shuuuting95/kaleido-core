@@ -2,14 +2,29 @@
 pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./base/PrimarySales.sol";
 import "./base/DistributionRight.sol";
+import "./base/Storage.sol";
 import "./libraries/Purchase.sol";
-import "hardhat/console.sol";
+import "./libraries/Sale.sol";
+import "./common/BlockTimestamp.sol";
+import "./accessors/NameAccessor.sol";
+import "./interfaces/IMediaRegistry.sol";
+import "./interfaces/IAdPool.sol";
+import "./interfaces/IEnglishAuction.sol";
+import "./interfaces/IEventEmitter.sol";
+import "./interfaces/IOpenBid.sol";
+import "./interfaces/IOfferBid.sol";
+import "./interfaces/IProposalReview.sol";
 
 /// @title AdManager - manages ad spaces and its periods to sell them to users.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
+contract AdManager is
+	DistributionRight,
+	ReentrancyGuard,
+	NameAccessor,
+	BlockTimestamp,
+	Storage
+{
 	/// @dev Can call it by only the media
 	modifier onlyMedia() {
 		require(_mediaRegistry().ownerOf(address(this)) == msg.sender, "KD012");
@@ -46,7 +61,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		string memory tokenMetadata,
 		address mediaEOA,
 		address nameRegistry
-	) external virtual {
+	) external virtual initializer {
 		_name = title;
 		_symbol = string(abi.encodePacked("Kaleido_", title));
 		_baseURI = baseURI;
@@ -121,7 +136,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	///      The price of the token is fixed.
 	/// @param tokenId uint256 of the token ID
 	function buy(uint256 tokenId) external payable virtual exceptYourself {
-		Purchase.checkBeforeBuy(_adPool().allPeriods(tokenId));
+		Purchase.checkBeforeBuy(_adPool().allPeriods(tokenId), msg.value);
 		_adPool().sold(tokenId);
 		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
@@ -140,7 +155,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	{
 		Purchase.checkBeforeBuyBasedOnTime(
 			_adPool().allPeriods(tokenId),
-			currentPrice(tokenId)
+			currentPrice(tokenId),
+			msg.value
 		);
 		_adPool().sold(tokenId);
 		_dropRight(msg.sender, tokenId);
@@ -162,7 +178,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		Purchase.checkBeforeBid(
 			_adPool().allPeriods(tokenId),
 			currentPrice(tokenId),
-			_blockTimestamp()
+			_blockTimestamp(),
+			msg.value
 		);
 		uint256 refunded = _refundBiddingAmount(tokenId);
 		_english().bid(tokenId, msg.sender, msg.value);
@@ -182,7 +199,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	{
 		Purchase.checkBeforeBidWithProposal(
 			_adPool().allPeriods(tokenId),
-			_blockTimestamp()
+			_blockTimestamp(),
+			msg.value
 		);
 		_processingTotal += msg.value;
 		_openBid().bid(tokenId, proposalMetadata, msg.sender, msg.value);
@@ -346,18 +364,15 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 	/// @param metadata string of the proposal metadata
 	function propose(uint256 tokenId, string memory metadata) external virtual {
 		require(ownerOf(tokenId) == msg.sender, "KD012");
-		_proposeToRight(tokenId, metadata);
-		_eventEmitter().emitPropose(tokenId, metadata);
+		_review().propose(tokenId, metadata, msg.sender);
 	}
 
 	/// @dev Accepts the proposal.
 	/// @param tokenId uint256 of the token ID
 	function acceptProposal(uint256 tokenId) external virtual onlyMedia {
-		string memory metadata = proposed[tokenId].content;
-		require(bytes(metadata).length != 0, "KD130");
-		require(ownerOf(tokenId) == proposed[tokenId].proposer, "KD131");
-		_acceptProposal(tokenId, metadata);
-		_eventEmitter().emitAcceptProposal(tokenId, metadata);
+		// require(ownerOf(tokenId) == proposed[tokenId].proposer, "KD131");
+		require(ownerOf(tokenId) == _review().proposer(tokenId), "KD131");
+		_review().accept(tokenId);
 	}
 
 	/// @dev Denies the submitted proposal, mentioning what is the problem.
@@ -369,10 +384,7 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		string memory reason,
 		bool offensive
 	) external virtual onlyMedia {
-		string memory metadata = proposed[tokenId].content;
-		require(bytes(metadata).length != 0, "KD130");
-		deniedReasons[tokenId].push(Draft.Denied(reason, offensive));
-		_eventEmitter().emitDenyProposal(tokenId, metadata, reason, offensive);
+		_review().denyProposal(tokenId, reason, offensive);
 	}
 
 	/// @dev Overrides transferFrom to emit an event from the common emitter.
@@ -434,7 +446,8 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 					period.displayStartTimestamp <= _blockTimestamp() &&
 					period.displayEndTimestamp >= _blockTimestamp()
 				) {
-					return (accepted[tokenIds[i]], tokenIds[i]);
+					string memory content = _review().acceptedContent(tokenIds[i]);
+					return (content, tokenIds[i]);
 				}
 			}
 		}
@@ -459,5 +472,68 @@ contract AdManager is DistributionRight, PrimarySales, ReentrancyGuard {
 		if (!success) {
 			_eventEmitter().emitPaymentFailure(vault, value);
 		}
+	}
+
+	/// @dev Returns the current price.
+	/// @param tokenId uint256 of the token ID
+	function currentPrice(uint256 tokenId) public view virtual returns (uint256) {
+		Ad.Period memory period = _adPool().allPeriods(tokenId);
+		if (period.pricing == Ad.Pricing.RRP) {
+			return period.minPrice;
+		}
+		if (period.pricing == Ad.Pricing.DUTCH) {
+			return
+				period.startPrice -
+				((period.startPrice - period.minPrice) *
+					(_blockTimestamp() - period.saleStartTimestamp)) /
+				(period.saleEndTimestamp - period.saleStartTimestamp);
+		}
+		if (period.pricing == Ad.Pricing.ENGLISH) {
+			return _english().currentPrice(tokenId);
+		}
+		if (period.pricing == Ad.Pricing.OFFER) {
+			return _offerBid().currentPrice(tokenId);
+		}
+		if (period.pricing == Ad.Pricing.OPEN) {
+			return 0;
+		}
+		revert("not exist");
+	}
+
+	function _alreadyBid(uint256 tokenId) internal view virtual returns (bool) {
+		return
+			_english().bidding(tokenId).bidder != address(0) ||
+			_openBid().biddingList(tokenId).length != 0;
+	}
+
+	/**
+	 * Accessors
+	 */
+	function _mediaRegistry() internal view virtual returns (IMediaRegistry) {
+		return IMediaRegistry(mediaRegistryAddress());
+	}
+
+	function _adPool() internal view virtual returns (IAdPool) {
+		return IAdPool(adPoolAddress());
+	}
+
+	function _eventEmitter() internal view virtual returns (IEventEmitter) {
+		return IEventEmitter(eventEmitterAddress());
+	}
+
+	function _english() internal view virtual returns (IEnglishAuction) {
+		return IEnglishAuction(englishAuctionAddress());
+	}
+
+	function _openBid() internal view virtual returns (IOpenBid) {
+		return IOpenBid(openBidAddress());
+	}
+
+	function _offerBid() internal view virtual returns (IOfferBid) {
+		return IOfferBid(offerBidAddress());
+	}
+
+	function _review() internal view virtual returns (IProposalReview) {
+		return IProposalReview(proposalReviewAddress());
 	}
 }

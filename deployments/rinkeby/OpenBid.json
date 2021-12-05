@@ -1,0 +1,448 @@
+{
+  "address": "0xc13fBC2e4ab7f20F42094eBA00a0F3F0B22A3628",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nameRegistry",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "adPoolAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "proposal",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "bid",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "bidding",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "price",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "content",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct Sale.OpenBid",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "biddingList",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "price",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "content",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct Sale.OpenBid[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "englishAuctionAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "eventEmitterAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "mediaFactoryAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "mediaRegistryAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "nameRegistryAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "offerBidAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "openBidAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "selectProposal",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "successfulBidder",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "vaultAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xb8ca86d3e2db78b8b99dd39bf134a6720f74c44b8adb08171b3a6e6c60da1025",
+  "receipt": {
+    "to": null,
+    "from": "0x9ADd84a2A0d708f46009de2b29707bfB3414ff25",
+    "contractAddress": "0xc13fBC2e4ab7f20F42094eBA00a0F3F0B22A3628",
+    "transactionIndex": 0,
+    "gasUsed": "949244",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xc06877bee68d8c6a6d37c9579df880184d9c095fdaecef6b1e93ce145b4280e2",
+    "transactionHash": "0xb8ca86d3e2db78b8b99dd39bf134a6720f74c44b8adb08171b3a6e6c60da1025",
+    "logs": [],
+    "blockNumber": 9755499,
+    "cumulativeGasUsed": "949244",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x8EBFCC98169423F9a7AA017094292A691e31BfD6"
+  ],
+  "solcInputHash": "c223bd9c030b84fabf96ddb6a85aba33",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_nameRegistry\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"adPoolAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"proposal\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"bid\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"bidding\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"content\",\"type\":\"string\"}],\"internalType\":\"struct Sale.OpenBid\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"biddingList\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"content\",\"type\":\"string\"}],\"internalType\":\"struct Sale.OpenBid[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"englishAuctionAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"eventEmitterAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"mediaFactoryAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"mediaRegistryAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nameRegistryAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offerBidAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"openBidAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"selectProposal\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"successfulBidder\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"vaultAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"adPoolAddress()\":{\"details\":\"Gets the address of AdPool.\"},\"englishAuctionAddress()\":{\"details\":\"Gets the address of EnglishAuction.\"},\"eventEmitterAddress()\":{\"details\":\"Gets the address of EventEmitter.\"},\"mediaFactoryAddress()\":{\"details\":\"Gets the address of MediaFactory.\"},\"mediaRegistryAddress()\":{\"details\":\"Gets the address of MediaRegistry.\"},\"nameRegistryAddress()\":{\"details\":\"Gets the address of NameRegistry\"},\"offerBidAddress()\":{\"details\":\"Gets the address of OfferBid.\"},\"openBidAddress()\":{\"details\":\"Gets the address of OpenBid.\"},\"owner()\":{\"details\":\"Gets the owner address.\"},\"vaultAddress()\":{\"details\":\"Gets the address of Vault.\"}},\"stateVariables\":{\"_bidding\":{\"details\":\"Maps a tokenId with appeal info\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/peripheries/OpenBid.sol\":\"OpenBid\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[]},\"sources\":{\"contracts/accessors/NameAccessor.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nimport \\\"../interfaces/INameRegistry.sol\\\";\\n\\n/// @title NameAccessor - manages the endpoints.\\n/// @author Shumpei Koike - <shumpei.koike@bridges.inc>\\ncontract NameAccessor {\\n\\tINameRegistry internal _nameRegistry;\\n\\n\\t/// @dev Sets the address of NameRegistry.\\n\\t/// @param nameRegistry address of the NameRegistry\\n\\tfunction initialize(address nameRegistry) internal {\\n\\t\\t_nameRegistry = INameRegistry(nameRegistry);\\n\\t}\\n\\n\\t/// @dev Prevents calling a function from anyone except the accepted contracts.\\n\\tmodifier onlyAllowedContract() {\\n\\t\\trequire(_nameRegistry.allowedContracts(msg.sender), \\\"KD013\\\");\\n\\t\\t_;\\n\\t}\\n\\n\\t/// @dev Throws if not called by MediaFactory.\\n\\tmodifier onlyFactory() {\\n\\t\\trequire(msg.sender == mediaFactoryAddress(), \\\"KD010\\\");\\n\\t\\t_;\\n\\t}\\n\\n\\t/// @dev Throws if called by any account other than the owner.\\n\\tmodifier onlyOwner() {\\n\\t\\trequire(owner() == msg.sender, \\\"KD012\\\");\\n\\t\\t_;\\n\\t}\\n\\n\\t/// @dev Gets the address of NameRegistry\\n\\tfunction nameRegistryAddress() public view returns (address) {\\n\\t\\treturn address(_nameRegistry);\\n\\t}\\n\\n\\t/// @dev Gets the address of AdPool.\\n\\tfunction adPoolAddress() public view returns (address) {\\n\\t\\treturn _nameRegistry.get(keccak256(abi.encodePacked(\\\"AdPool\\\")));\\n\\t}\\n\\n\\t/// @dev Gets the address of MediaFactory.\\n\\tfunction mediaFactoryAddress() public view returns (address) {\\n\\t\\treturn _nameRegistry.get(keccak256(abi.encodePacked(\\\"MediaFactory\\\")));\\n\\t}\\n\\n\\t/// @dev Gets the address of MediaRegistry.\\n\\tfunction mediaRegistryAddress() public view returns (address) {\\n\\t\\treturn _nameRegistry.get(keccak256(abi.encodePacked(\\\"MediaRegistry\\\")));\\n\\t}\\n\\n\\t/// @dev Gets the address of Vault.\\n\\tfunction vaultAddress() public view returns (address) {\\n\\t\\treturn _nameRegistry.get(keccak256(abi.encodePacked(\\\"Vault\\\")));\\n\\t}\\n\\n\\t/// @dev Gets the address of EventEmitter.\\n\\tfunction eventEmitterAddress() public view returns (address) {\\n\\t\\treturn _nameRegistry.get(keccak256(abi.encodePacked(\\\"EventEmitter\\\")));\\n\\t}\\n\\n\\t/// @dev Gets the address of EnglishAuction.\\n\\tfunction englishAuctionAddress() public view returns (address) {\\n\\t\\treturn _nameRegistry.get(keccak256(abi.encodePacked(\\\"EnglishAuction\\\")));\\n\\t}\\n\\n\\t/// @dev Gets the address of OpenBid.\\n\\tfunction openBidAddress() public view returns (address) {\\n\\t\\treturn _nameRegistry.get(keccak256(abi.encodePacked(\\\"OpenBid\\\")));\\n\\t}\\n\\n\\t/// @dev Gets the address of OfferBid.\\n\\tfunction offerBidAddress() public view returns (address) {\\n\\t\\treturn _nameRegistry.get(keccak256(abi.encodePacked(\\\"OfferBid\\\")));\\n\\t}\\n\\n\\t/// @dev Gets the owner address.\\n\\tfunction owner() public view returns (address) {\\n\\t\\treturn _nameRegistry.deployer();\\n\\t}\\n}\\n\",\"keccak256\":\"0x554bc36ca0974276664c094cab125837bde10ea06b2f3c28416679f9b5aa8804\",\"license\":\"UNLICENSED\"},\"contracts/common/BlockTimestamp.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\n/// @title BlockTimestamp - gets a block timestamp.\\n/// @author Shumpei Koike - <shumpei.koike@bridges.inc>\\nabstract contract BlockTimestamp {\\n\\t/// @dev Method that exists purely to be overridden for tests\\n\\tfunction _blockTimestamp() internal view virtual returns (uint256) {\\n\\t\\treturn block.timestamp;\\n\\t}\\n}\\n\",\"keccak256\":\"0x417bf100ecc94b19a01559e899f68e19777eae593c783d8280d13bcabc8e43a2\",\"license\":\"UNLICENSED\"},\"contracts/interfaces/IAdPool.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nimport \\\"../libraries/Ad.sol\\\";\\nimport \\\"../libraries/Sale.sol\\\";\\n\\n/// @title IAdPool - stores all ads accorss every space.\\n/// @author Shumpei Koike - <shumpei.koike@bridges.inc>\\ninterface IAdPool {\\n\\tfunction allPeriods(uint256 tokenId) external view returns (Ad.Period memory);\\n\\n\\tfunction spaced(string memory spaceMetadata) external view returns (bool);\\n\\n\\tfunction addSpace(string memory spaceMetadata) external;\\n\\n\\tfunction addPeriod(\\n\\t\\taddress proxy,\\n\\t\\tstring memory spaceMetadata,\\n\\t\\tstring memory tokenMetadata,\\n\\t\\tuint256 saleEndTimestamp,\\n\\t\\tuint256 displayStartTimestamp,\\n\\t\\tuint256 displayEndTimestamp,\\n\\t\\tAd.Pricing pricing,\\n\\t\\tuint256 minPrice\\n\\t) external returns (uint256);\\n\\n\\tfunction deletePeriod(uint256 tokenId) external;\\n\\n\\tfunction sold(uint256 tokenId) external;\\n\\n\\tfunction acceptOffer(\\n\\t\\tuint256 tokenId,\\n\\t\\tstring memory tokenMetadata,\\n\\t\\tSale.Offer memory offer\\n\\t) external;\\n\\n\\tfunction mediaProxyOf(uint256 tokenId) external view returns (address);\\n\\n\\tfunction displayStart(uint256 tokenId) external view returns (uint256);\\n\\n\\tfunction displayEnd(uint256 tokenId) external view returns (uint256);\\n\\n\\tfunction tokenIdsOf(string memory spaceMetadata)\\n\\t\\texternal\\n\\t\\tview\\n\\t\\treturns (uint256[] memory);\\n}\\n\",\"keccak256\":\"0x9db94679b25b0afc4b4b94048dd2d040fd466be2024d8849d9d1d6b667dd9b1f\",\"license\":\"UNLICENSED\"},\"contracts/interfaces/IEventEmitter.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nimport \\\"../libraries/Ad.sol\\\";\\n\\n/// @title IEventEmitter - emits events.\\n/// @author Shumpei Koike - <shumpei.koike@bridges.inc>\\ninterface IEventEmitter {\\n\\tfunction emitNewSpace(string memory metadata) external;\\n\\n\\tfunction emitNewPeriod(\\n\\t\\tuint256 tokenId,\\n\\t\\tstring memory spaceMetadata,\\n\\t\\tstring memory tokenMetadata,\\n\\t\\tuint256 saleStartTimestamp,\\n\\t\\tuint256 saleEndTimestamp,\\n\\t\\tuint256 displayStartTimestamp,\\n\\t\\tuint256 displayEndTimestamp,\\n\\t\\tAd.Pricing pricing,\\n\\t\\tuint256 minPrice\\n\\t) external;\\n\\n\\tfunction emitDeletePeriod(uint256 tokenId) external;\\n\\n\\tfunction emitBuy(\\n\\t\\tuint256 tokenId,\\n\\t\\tuint256 msgValue,\\n\\t\\taddress msgSender,\\n\\t\\tuint256 blockTimestamp\\n\\t) external;\\n\\n\\tfunction emitBid(\\n\\t\\tuint256 tokenId,\\n\\t\\tuint256 msgValue,\\n\\t\\taddress msgSender,\\n\\t\\tuint256 blockTimestamp\\n\\t) external;\\n\\n\\tfunction emitBidWithProposal(\\n\\t\\tuint256 tokenId,\\n\\t\\tuint256 msgValue,\\n\\t\\taddress msgSender,\\n\\t\\tstring memory metadata,\\n\\t\\tuint256 blockTimestamp\\n\\t) external;\\n\\n\\tfunction emitSelectProposal(uint256 tokenId, address successfulBidder)\\n\\t\\texternal;\\n\\n\\tfunction emitReceiveToken(\\n\\t\\tuint256 tokenId,\\n\\t\\tuint256 price,\\n\\t\\taddress buyer,\\n\\t\\tuint256 blockTimestamp\\n\\t) external;\\n\\n\\tfunction emitOfferPeriod(\\n\\t\\tuint256 tokenId,\\n\\t\\tstring memory spaceMetadata,\\n\\t\\tuint256 displayStartTimestamp,\\n\\t\\tuint256 displayEndTimestamp,\\n\\t\\taddress sender,\\n\\t\\tuint256 price\\n\\t) external;\\n\\n\\tfunction emitCancelOffer(uint256 tokenId) external;\\n\\n\\tfunction emitAcceptOffer(\\n\\t\\tuint256 tokenId,\\n\\t\\tstring memory spaceMetadata,\\n\\t\\tstring memory tokenMetadata,\\n\\t\\tuint256 displayStartTimestamp,\\n\\t\\tuint256 displayEndTimestamp,\\n\\t\\tuint256 price\\n\\t) external;\\n\\n\\tfunction emitWithdraw(uint256 amount) external;\\n\\n\\tfunction emitPropose(uint256 tokenId, string memory metadata) external;\\n\\n\\tfunction emitAcceptProposal(uint256 tokenId, string memory metadata) external;\\n\\n\\tfunction emitDenyProposal(\\n\\t\\tuint256 tokenId,\\n\\t\\tstring memory metadata,\\n\\t\\tstring memory reason,\\n\\t\\tbool offensive\\n\\t) external;\\n\\n\\tfunction emitTransferCustom(\\n\\t\\taddress from,\\n\\t\\taddress to,\\n\\t\\tuint256 tokenId\\n\\t) external;\\n\\n\\tfunction emitNewMedia(\\n\\t\\taddress proxy,\\n\\t\\taddress mediaEOA,\\n\\t\\tstring memory applicationMetadata,\\n\\t\\tstring memory updatableMetadata,\\n\\t\\tuint256 saltNonce\\n\\t) external;\\n\\n\\tfunction emitUpdateMedia(\\n\\t\\taddress proxy,\\n\\t\\taddress mediaEOA,\\n\\t\\tstring memory accountMetadata\\n\\t) external;\\n\\n\\tfunction emitPaymentFailure(address receiver, uint256 price) external;\\n\\n\\tfunction emitReceived(address receiver, uint256 price) external;\\n}\\n\",\"keccak256\":\"0xb8824b144c059b4b6ce8f7453a5f68fd420481e29b18a4d0e5f35fa163bc4e8a\",\"license\":\"UNLICENSED\"},\"contracts/interfaces/INameRegistry.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\n/// @title INameRegistry - saves a set of addresses used in the system.\\n/// @author Shumpei Koike - <shumpei.koike@bridges.inc>\\ninterface INameRegistry {\\n\\t/// @dev Sets the address associated with the key name.\\n\\t///      If the address is the contract, not an EOA, it is\\n\\t///      saved as the allowed contract list.\\n\\t/// @param key bytes32 of the key\\n\\t/// @param value address of the value\\n\\tfunction set(bytes32 key, address value) external;\\n\\n\\t/// @dev Gets the address associated with the key name.\\n\\t/// @param key bytes32 of the key\\n\\tfunction get(bytes32 key) external view returns (address);\\n\\n\\t/// @dev Returns whether or not the address is the one that we deployed.\\n\\t/// @param caller address of the msg.sender\\n\\tfunction allowedContracts(address caller) external returns (bool);\\n\\n\\t/// @dev Gets the deployer of NameRegistry.\\n\\tfunction deployer() external view returns (address);\\n}\\n\",\"keccak256\":\"0xb4612b34aa95a45ed84877f60adc23f5f8eb941a00a2644dc29ecea26c1c032f\",\"license\":\"UNLICENSED\"},\"contracts/interfaces/IOpenBid.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nimport \\\"../libraries/Sale.sol\\\";\\n\\n/// @title IOpenBid\\n/// @author Shumpei Koike - <shumpei.koike@bridges.inc>\\ninterface IOpenBid {\\n\\tfunction bid(\\n\\t\\tuint256 tokenId,\\n\\t\\tstring memory proposal,\\n\\t\\taddress sender,\\n\\t\\tuint256 amount\\n\\t) external;\\n\\n\\tfunction biddingList(uint256 tokenId)\\n\\t\\texternal\\n\\t\\tview\\n\\t\\treturns (Sale.OpenBid[] memory);\\n\\n\\tfunction bidding(uint256 tokenId, uint256 index)\\n\\t\\texternal\\n\\t\\tview\\n\\t\\treturns (Sale.OpenBid memory);\\n\\n\\tfunction selectProposal(uint256 tokenId, uint256 index)\\n\\t\\texternal\\n\\t\\treturns (address successfulBidder);\\n}\\n\",\"keccak256\":\"0x31cdf36b1aa003150d3d4142f7cbb7cb1796300ea394534281d22cbf01ce4ecf\",\"license\":\"UNLICENSED\"},\"contracts/libraries/Ad.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nlibrary Ad {\\n\\tuint256 private constant _ID_LENGTH = 100000000000000000000000000000000;\\n\\t// 0.RRP     : Recommended Retail Price\\n\\t// 1.DUTCH   : Dutch Auction\\n\\t// 2.ENGLISH : English Acction\\n\\t// 3.OFFER   : Offered by Others\\n\\t// 4.OPEN    : Open Bid by revealing the content\\n\\tenum Pricing {\\n\\t\\tRRP,\\n\\t\\tDUTCH,\\n\\t\\tENGLISH,\\n\\t\\tOFFER,\\n\\t\\tOPEN\\n\\t}\\n\\tstruct Period {\\n\\t\\taddress mediaProxy;\\n\\t\\tstring spaceMetadata;\\n\\t\\tstring tokenMetadata;\\n\\t\\tuint256 saleStartTimestamp;\\n\\t\\tuint256 saleEndTimestamp;\\n\\t\\tuint256 displayStartTimestamp;\\n\\t\\tuint256 displayEndTimestamp;\\n\\t\\tPricing pricing;\\n\\t\\tuint256 minPrice;\\n\\t\\tuint256 startPrice;\\n\\t\\tbool sold;\\n\\t}\\n\\n\\tfunction id(\\n\\t\\tstring memory metadata,\\n\\t\\tuint256 displayStartTimestamp,\\n\\t\\tuint256 displayEndTimestamp\\n\\t) public pure returns (uint256) {\\n\\t\\treturn\\n\\t\\t\\tuint256(\\n\\t\\t\\t\\tkeccak256(\\n\\t\\t\\t\\t\\tabi.encodePacked(metadata, displayStartTimestamp, displayEndTimestamp)\\n\\t\\t\\t\\t)\\n\\t\\t\\t) % _ID_LENGTH;\\n\\t}\\n}\\n\",\"keccak256\":\"0x98b8f7d36adbd4e0b75ef9c5a0ec7045e0661b9015a90beffa30004f35ff7039\",\"license\":\"UNLICENSED\"},\"contracts/libraries/Purchase.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nimport \\\"./Ad.sol\\\";\\n\\nlibrary Purchase {\\n\\tfunction checkBeforeBuy(Ad.Period memory period) external view {\\n\\t\\trequire(period.pricing == Ad.Pricing.RRP, \\\"KD120\\\");\\n\\t\\trequire(!period.sold, \\\"KD121\\\");\\n\\t\\trequire(period.minPrice == msg.value, \\\"KD122\\\");\\n\\t}\\n\\n\\tfunction checkBeforeBuyBasedOnTime(\\n\\t\\tAd.Period memory period,\\n\\t\\tuint256 currentPrice\\n\\t) external view {\\n\\t\\trequire(period.pricing == Ad.Pricing.DUTCH, \\\"KD123\\\");\\n\\t\\trequire(!period.sold, \\\"KD121\\\");\\n\\t\\trequire(currentPrice <= msg.value, \\\"KD122\\\");\\n\\t}\\n\\n\\tfunction checkBeforeBid(\\n\\t\\tAd.Period memory period,\\n\\t\\tuint256 currentPrice,\\n\\t\\tuint256 blockTimestamp\\n\\t) external view {\\n\\t\\trequire(period.pricing == Ad.Pricing.ENGLISH, \\\"KD124\\\");\\n\\t\\trequire(!period.sold, \\\"KD121\\\");\\n\\t\\trequire(currentPrice < msg.value, \\\"KD122\\\");\\n\\t\\trequire(period.saleEndTimestamp >= blockTimestamp, \\\"KD129\\\");\\n\\t}\\n\\n\\tfunction checkBeforeBidWithProposal(\\n\\t\\tAd.Period memory period,\\n\\t\\tuint256 blockTimestamp\\n\\t) external view {\\n\\t\\trequire(period.pricing == Ad.Pricing.OPEN, \\\"KD127\\\");\\n\\t\\trequire(!period.sold, \\\"KD121\\\");\\n\\t\\trequire(period.minPrice <= msg.value, \\\"KD122\\\");\\n\\t\\trequire(period.saleEndTimestamp >= blockTimestamp, \\\"KD129\\\");\\n\\t}\\n}\\n\",\"keccak256\":\"0x75b504f12f93fbb1be78980dad98029366c4947118eea0f232680b3c5c35123a\",\"license\":\"UNLICENSED\"},\"contracts/libraries/Sale.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nimport \\\"./Ad.sol\\\";\\n\\nlibrary Sale {\\n\\tstruct Bidding {\\n\\t\\tuint256 tokenId;\\n\\t\\taddress bidder;\\n\\t\\tuint256 price;\\n\\t}\\n\\tstruct Offer {\\n\\t\\tstring spaceMetadata;\\n\\t\\tuint256 displayStartTimestamp;\\n\\t\\tuint256 displayEndTimestamp;\\n\\t\\taddress sender;\\n\\t\\tuint256 price;\\n\\t}\\n\\tstruct OpenBid {\\n\\t\\tuint256 tokenId;\\n\\t\\taddress sender;\\n\\t\\tuint256 price;\\n\\t\\tstring content;\\n\\t}\\n\\n\\tfunction startPrice(Ad.Period memory period) internal pure returns (uint256) {\\n\\t\\tif (period.pricing == Ad.Pricing.RRP) {\\n\\t\\t\\treturn period.minPrice;\\n\\t\\t} else if (period.pricing == Ad.Pricing.DUTCH) {\\n\\t\\t\\treturn period.minPrice * 10;\\n\\t\\t} else if (period.pricing == Ad.Pricing.ENGLISH) {\\n\\t\\t\\treturn period.minPrice;\\n\\t\\t} else if (period.pricing == Ad.Pricing.OFFER) {\\n\\t\\t\\treturn period.minPrice;\\n\\t\\t} else if (period.pricing == Ad.Pricing.OPEN) {\\n\\t\\t\\treturn period.minPrice;\\n\\t\\t} else {\\n\\t\\t\\treturn 0;\\n\\t\\t}\\n\\t}\\n}\\n\",\"keccak256\":\"0xca0cdc93d02c3a99fecd2c6166f58afd44a84fd03e0821737f2a36181706fc08\",\"license\":\"UNLICENSED\"},\"contracts/peripheries/OpenBid.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.9;\\n\\nimport \\\"../libraries/Ad.sol\\\";\\nimport \\\"../libraries/Purchase.sol\\\";\\nimport \\\"../accessors/NameAccessor.sol\\\";\\nimport \\\"../common/BlockTimestamp.sol\\\";\\nimport \\\"../interfaces/IAdPool.sol\\\";\\nimport \\\"../interfaces/IEventEmitter.sol\\\";\\nimport \\\"../interfaces/IOpenBid.sol\\\";\\n\\ncontract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {\\n\\t/// @dev Maps a tokenId with appeal info\\n\\tmapping(uint256 => Sale.OpenBid[]) internal _bidding;\\n\\n\\tconstructor(address _nameRegistry) {\\n\\t\\tinitialize(_nameRegistry);\\n\\t}\\n\\n\\tfunction bid(\\n\\t\\tuint256 tokenId,\\n\\t\\tstring memory proposal,\\n\\t\\taddress sender,\\n\\t\\tuint256 value\\n\\t) external {\\n\\t\\t_bidding[tokenId].push(Sale.OpenBid(tokenId, sender, value, proposal));\\n\\t\\t_eventEmitter().emitBidWithProposal(\\n\\t\\t\\ttokenId,\\n\\t\\t\\tvalue,\\n\\t\\t\\tsender,\\n\\t\\t\\tproposal,\\n\\t\\t\\t_blockTimestamp()\\n\\t\\t);\\n\\t}\\n\\n\\tfunction biddingList(uint256 tokenId)\\n\\t\\tpublic\\n\\t\\tview\\n\\t\\treturns (Sale.OpenBid[] memory)\\n\\t{\\n\\t\\treturn _bidding[tokenId];\\n\\t}\\n\\n\\tfunction bidding(uint256 tokenId, uint256 index)\\n\\t\\tpublic\\n\\t\\tview\\n\\t\\treturns (Sale.OpenBid memory)\\n\\t{\\n\\t\\trequire(\\n\\t\\t\\t_bidding[tokenId].length >= index &&\\n\\t\\t\\t\\t_bidding[tokenId][index].sender != address(0),\\n\\t\\t\\t\\\"KD114\\\"\\n\\t\\t);\\n\\t\\treturn _bidding[tokenId][index];\\n\\t}\\n\\n\\tfunction selectProposal(uint256 tokenId, uint256 index)\\n\\t\\texternal\\n\\t\\treturns (address successfulBidder)\\n\\t{\\n\\t\\trequire(\\n\\t\\t\\t_adPool().allPeriods(tokenId).saleEndTimestamp < _blockTimestamp(),\\n\\t\\t\\t\\\"KD129\\\"\\n\\t\\t);\\n\\t\\tsuccessfulBidder = bidding(tokenId, index).sender;\\n\\t\\tdelete _bidding[tokenId];\\n\\t\\t_eventEmitter().emitSelectProposal(tokenId, successfulBidder);\\n\\t}\\n\\n\\t/**\\n\\t * Accessors\\n\\t */\\n\\tfunction _adPool() internal view returns (IAdPool) {\\n\\t\\treturn IAdPool(adPoolAddress());\\n\\t}\\n\\n\\tfunction _eventEmitter() internal view virtual returns (IEventEmitter) {\\n\\t\\treturn IEventEmitter(eventEmitterAddress());\\n\\t}\\n}\\n\",\"keccak256\":\"0xc840b6f2260f15c02741709b43da97e35f12023bdf6b3b52367f846c5cb0cedf\",\"license\":\"UNLICENSED\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161105538038061105583398101604081905261002f91610050565b600080546001600160a01b0319166001600160a01b03831617905550610080565b60006020828403121561006257600080fd5b81516001600160a01b038116811461007957600080fd5b9392505050565b610fc68061008f6000396000f3fe608060405234801561001057600080fd5b50600436106100ba5760003560e01c80630106d8eb146100bf5780632231c1eb146100e457806327b7a2f5146100ec57806332b18f6d146100fd578063389ad90e14610110578063430bf08a146101255780636a58767e1461012d578063761ce95d146101355780637cf175fb1461015557806387fe412c1461015d5780638da5cb5b1461017d5780638f6059d614610185578063c9cd71b51461018d578063f072629114610195575b600080fd5b6100c761019d565b6040516001600160a01b0390911681526020015b60405180910390f35b6100c761025a565b6000546001600160a01b03166100c7565b6100c761010b366004610ac4565b61028b565b61012361011e366004610b91565b6103f1565b005b6100c76104f4565b6100c7610523565b610148610143366004610c34565b61055a565b6040516100db9190610cec565b6100c7610689565b61017061016b366004610ac4565b6106bb565b6040516100db9190610d4e565b6100c7610892565b6100c76108e1565b6100c7610917565b6100c7610947565b600080546040516d22b733b634b9b420bab1ba34b7b760911b60208201526001600160a01b0390911690638eaa6ac090602e015b604051602081830303815290604052805190602001206040518263ffffffff1660e01b815260040161020591815260200190565b60206040518083038186803b15801561021d57600080fd5b505afa158015610231573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102559190610d78565b905090565b600080546040516613dc195b909a5960ca1b60208201526001600160a01b0390911690638eaa6ac0906027016101d1565b60004261029661097d565b6001600160a01b031663b3a0ebc9856040518263ffffffff1660e01b81526004016102c391815260200190565b60006040518083038186803b1580156102db57600080fd5b505afa1580156102ef573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f191682016040526103179190810190610df9565b60800151106103555760405162461bcd60e51b81526020600482015260056024820152644b4431323960d81b60448201526064015b60405180910390fd5b61035f83836106bb565b602090810151600085815260019092526040822090925061037f91610991565b610387610987565b604051630249d31960e51b8152600481018590526001600160a01b038381166024830152919091169063493a632090604401600060405180830381600087803b1580156103d357600080fd5b505af11580156103e7573d6000803e3d6000fd5b5050505092915050565b600084815260016020818152604080842081516080810183528981526001600160a01b03888116828601908152938201888152606083018b815284548089018655948952978690208351600490950201938455935195830180546001600160a01b0319169690911695909517909455905160028201559251805192939261047e92600385019201906109b5565b505050610489610987565b6001600160a01b0316630d2657bf85838587426040518663ffffffff1660e01b81526004016104bc959493929190610f00565b600060405180830381600087803b1580156104d657600080fd5b505af11580156104ea573d6000803e3d6000fd5b5050505050505050565b600080546040516415985d5b1d60da1b60208201526001600160a01b0390911690638eaa6ac0906025016101d1565b600080546040516c4d65646961526567697374727960981b60208201526001600160a01b0390911690638eaa6ac090602d016101d1565b606060016000838152602001908152602001600020805480602002602001604051908101604052809291908181526020016000905b8282101561067e57600084815260209081902060408051608081018252600486029092018054835260018101546001600160a01b0316938301939093526002830154908201526003820180549192916060840191906105ed90610f3f565b80601f016020809104026020016040519081016040528092919081815260200182805461061990610f3f565b80156106665780601f1061063b57610100808354040283529160200191610666565b820191906000526020600020905b81548152906001019060200180831161064957829003601f168201915b5050505050815250508152602001906001019061058f565b505050509050919050565b600080546040516713d999995c909a5960c21b60208201526001600160a01b0390911690638eaa6ac0906028016101d1565b6106ef60405180608001604052806000815260200160006001600160a01b0316815260200160008152602001606081525090565b60008381526001602052604090205482118015906107485750600083815260016020526040812080548490811061072857610728610f7a565b60009182526020909120600160049092020101546001600160a01b031614155b61077c5760405162461bcd60e51b815260206004820152600560248201526412d10c4c4d60da1b604482015260640161034c565b600083815260016020526040902080548390811061079c5761079c610f7a565b9060005260206000209060040201604051806080016040529081600082015481526020016001820160009054906101000a90046001600160a01b03166001600160a01b03166001600160a01b031681526020016002820154815260200160038201805461080890610f3f565b80601f016020809104026020016040519081016040528092919081815260200182805461083490610f3f565b80156108815780601f1061085657610100808354040283529160200191610881565b820191906000526020600020905b81548152906001019060200180831161086457829003601f168201915b505050505081525050905092915050565b60008060009054906101000a90046001600160a01b03166001600160a01b031663d5f394886040518163ffffffff1660e01b815260040160206040518083038186803b15801561021d57600080fd5b600080546040516b4d65646961466163746f727960a01b60208201526001600160a01b0390911690638eaa6ac090602c016101d1565b60008054604051651059141bdbdb60d21b60208201526001600160a01b0390911690638eaa6ac0906026016101d1565b600080546040516b22bb32b73a22b6b4ba3a32b960a11b60208201526001600160a01b0390911690638eaa6ac090602c016101d1565b6000610255610917565b6000610255610947565b50805460008255600402906000526020600020908101906109b29190610a39565b50565b8280546109c190610f3f565b90600052602060002090601f0160209004810192826109e35760008555610a29565b82601f106109fc57805160ff1916838001178555610a29565b82800160010185558215610a29579182015b82811115610a29578251825591602001919060010190610a0e565b50610a35929150610a75565b5090565b80821115610a355760008082556001820180546001600160a01b031916905560028201819055610a6c6003830182610a8a565b50600401610a39565b5b80821115610a355760008155600101610a76565b508054610a9690610f3f565b6000825580601f10610aa6575050565b601f0160209004906000526020600020908101906109b29190610a75565b60008060408385031215610ad757600080fd5b50508035926020909101359150565b634e487b7160e01b600052604160045260246000fd5b60405161016081016001600160401b0381118282101715610b1f57610b1f610ae6565b60405290565b604051601f8201601f191681016001600160401b0381118282101715610b4d57610b4d610ae6565b604052919050565b60006001600160401b03821115610b6e57610b6e610ae6565b50601f01601f191660200190565b6001600160a01b03811681146109b257600080fd5b60008060008060808587031215610ba757600080fd5b8435935060208501356001600160401b03811115610bc457600080fd5b8501601f81018713610bd557600080fd5b8035610be8610be382610b55565b610b25565b818152886020838501011115610bfd57600080fd5b816020840160208301376000602083830101528095505050506040850135610c2481610b7c565b9396929550929360600135925050565b600060208284031215610c4657600080fd5b5035919050565b60005b83811015610c68578181015183820152602001610c50565b83811115610c77576000848401525b50505050565b60008151808452610c95816020860160208601610c4d565b601f01601f19169290920160200192915050565b8051825260018060a01b036020820151166020830152604081015160408301526000606082015160806060850152610ce46080850182610c7d565b949350505050565b6000602080830181845280855180835260408601915060408160051b870101925083870160005b82811015610d4157603f19888603018452610d2f858351610ca9565b94509285019290850190600101610d13565b5092979650505050505050565b602081526000610d616020830184610ca9565b9392505050565b8051610d7381610b7c565b919050565b600060208284031215610d8a57600080fd5b8151610d6181610b7c565b600082601f830112610da657600080fd5b8151610db4610be382610b55565b818152846020838601011115610dc957600080fd5b610ce4826020830160208701610c4d565b805160058110610d7357600080fd5b80518015158114610d7357600080fd5b600060208284031215610e0b57600080fd5b81516001600160401b0380821115610e2257600080fd5b908301906101608286031215610e3757600080fd5b610e3f610afc565b610e4883610d68565b8152602083015182811115610e5c57600080fd5b610e6887828601610d95565b602083015250604083015182811115610e8057600080fd5b610e8c87828601610d95565b604083015250606083015160608201526080830151608082015260a083015160a082015260c083015160c0820152610ec660e08401610dda565b60e0820152610100838101519082015261012080840151908201526101409150610ef1828401610de9565b91810191909152949350505050565b85815284602082015260018060a01b038416604082015260a060608201526000610f2d60a0830185610c7d565b90508260808301529695505050505050565b600181811c90821680610f5357607f821691505b60208210811415610f7457634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052603260045260246000fdfea2646970667358221220ccf7732297a4795b5ea301a5d5e3c3b3fe60c1016f17b3a96f8e95bb03e5dbf364736f6c63430008090033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100ba5760003560e01c80630106d8eb146100bf5780632231c1eb146100e457806327b7a2f5146100ec57806332b18f6d146100fd578063389ad90e14610110578063430bf08a146101255780636a58767e1461012d578063761ce95d146101355780637cf175fb1461015557806387fe412c1461015d5780638da5cb5b1461017d5780638f6059d614610185578063c9cd71b51461018d578063f072629114610195575b600080fd5b6100c761019d565b6040516001600160a01b0390911681526020015b60405180910390f35b6100c761025a565b6000546001600160a01b03166100c7565b6100c761010b366004610ac4565b61028b565b61012361011e366004610b91565b6103f1565b005b6100c76104f4565b6100c7610523565b610148610143366004610c34565b61055a565b6040516100db9190610cec565b6100c7610689565b61017061016b366004610ac4565b6106bb565b6040516100db9190610d4e565b6100c7610892565b6100c76108e1565b6100c7610917565b6100c7610947565b600080546040516d22b733b634b9b420bab1ba34b7b760911b60208201526001600160a01b0390911690638eaa6ac090602e015b604051602081830303815290604052805190602001206040518263ffffffff1660e01b815260040161020591815260200190565b60206040518083038186803b15801561021d57600080fd5b505afa158015610231573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102559190610d78565b905090565b600080546040516613dc195b909a5960ca1b60208201526001600160a01b0390911690638eaa6ac0906027016101d1565b60004261029661097d565b6001600160a01b031663b3a0ebc9856040518263ffffffff1660e01b81526004016102c391815260200190565b60006040518083038186803b1580156102db57600080fd5b505afa1580156102ef573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f191682016040526103179190810190610df9565b60800151106103555760405162461bcd60e51b81526020600482015260056024820152644b4431323960d81b60448201526064015b60405180910390fd5b61035f83836106bb565b602090810151600085815260019092526040822090925061037f91610991565b610387610987565b604051630249d31960e51b8152600481018590526001600160a01b038381166024830152919091169063493a632090604401600060405180830381600087803b1580156103d357600080fd5b505af11580156103e7573d6000803e3d6000fd5b5050505092915050565b600084815260016020818152604080842081516080810183528981526001600160a01b03888116828601908152938201888152606083018b815284548089018655948952978690208351600490950201938455935195830180546001600160a01b0319169690911695909517909455905160028201559251805192939261047e92600385019201906109b5565b505050610489610987565b6001600160a01b0316630d2657bf85838587426040518663ffffffff1660e01b81526004016104bc959493929190610f00565b600060405180830381600087803b1580156104d657600080fd5b505af11580156104ea573d6000803e3d6000fd5b5050505050505050565b600080546040516415985d5b1d60da1b60208201526001600160a01b0390911690638eaa6ac0906025016101d1565b600080546040516c4d65646961526567697374727960981b60208201526001600160a01b0390911690638eaa6ac090602d016101d1565b606060016000838152602001908152602001600020805480602002602001604051908101604052809291908181526020016000905b8282101561067e57600084815260209081902060408051608081018252600486029092018054835260018101546001600160a01b0316938301939093526002830154908201526003820180549192916060840191906105ed90610f3f565b80601f016020809104026020016040519081016040528092919081815260200182805461061990610f3f565b80156106665780601f1061063b57610100808354040283529160200191610666565b820191906000526020600020905b81548152906001019060200180831161064957829003601f168201915b5050505050815250508152602001906001019061058f565b505050509050919050565b600080546040516713d999995c909a5960c21b60208201526001600160a01b0390911690638eaa6ac0906028016101d1565b6106ef60405180608001604052806000815260200160006001600160a01b0316815260200160008152602001606081525090565b60008381526001602052604090205482118015906107485750600083815260016020526040812080548490811061072857610728610f7a565b60009182526020909120600160049092020101546001600160a01b031614155b61077c5760405162461bcd60e51b815260206004820152600560248201526412d10c4c4d60da1b604482015260640161034c565b600083815260016020526040902080548390811061079c5761079c610f7a565b9060005260206000209060040201604051806080016040529081600082015481526020016001820160009054906101000a90046001600160a01b03166001600160a01b03166001600160a01b031681526020016002820154815260200160038201805461080890610f3f565b80601f016020809104026020016040519081016040528092919081815260200182805461083490610f3f565b80156108815780601f1061085657610100808354040283529160200191610881565b820191906000526020600020905b81548152906001019060200180831161086457829003601f168201915b505050505081525050905092915050565b60008060009054906101000a90046001600160a01b03166001600160a01b031663d5f394886040518163ffffffff1660e01b815260040160206040518083038186803b15801561021d57600080fd5b600080546040516b4d65646961466163746f727960a01b60208201526001600160a01b0390911690638eaa6ac090602c016101d1565b60008054604051651059141bdbdb60d21b60208201526001600160a01b0390911690638eaa6ac0906026016101d1565b600080546040516b22bb32b73a22b6b4ba3a32b960a11b60208201526001600160a01b0390911690638eaa6ac090602c016101d1565b6000610255610917565b6000610255610947565b50805460008255600402906000526020600020908101906109b29190610a39565b50565b8280546109c190610f3f565b90600052602060002090601f0160209004810192826109e35760008555610a29565b82601f106109fc57805160ff1916838001178555610a29565b82800160010185558215610a29579182015b82811115610a29578251825591602001919060010190610a0e565b50610a35929150610a75565b5090565b80821115610a355760008082556001820180546001600160a01b031916905560028201819055610a6c6003830182610a8a565b50600401610a39565b5b80821115610a355760008155600101610a76565b508054610a9690610f3f565b6000825580601f10610aa6575050565b601f0160209004906000526020600020908101906109b29190610a75565b60008060408385031215610ad757600080fd5b50508035926020909101359150565b634e487b7160e01b600052604160045260246000fd5b60405161016081016001600160401b0381118282101715610b1f57610b1f610ae6565b60405290565b604051601f8201601f191681016001600160401b0381118282101715610b4d57610b4d610ae6565b604052919050565b60006001600160401b03821115610b6e57610b6e610ae6565b50601f01601f191660200190565b6001600160a01b03811681146109b257600080fd5b60008060008060808587031215610ba757600080fd5b8435935060208501356001600160401b03811115610bc457600080fd5b8501601f81018713610bd557600080fd5b8035610be8610be382610b55565b610b25565b818152886020838501011115610bfd57600080fd5b816020840160208301376000602083830101528095505050506040850135610c2481610b7c565b9396929550929360600135925050565b600060208284031215610c4657600080fd5b5035919050565b60005b83811015610c68578181015183820152602001610c50565b83811115610c77576000848401525b50505050565b60008151808452610c95816020860160208601610c4d565b601f01601f19169290920160200192915050565b8051825260018060a01b036020820151166020830152604081015160408301526000606082015160806060850152610ce46080850182610c7d565b949350505050565b6000602080830181845280855180835260408601915060408160051b870101925083870160005b82811015610d4157603f19888603018452610d2f858351610ca9565b94509285019290850190600101610d13565b5092979650505050505050565b602081526000610d616020830184610ca9565b9392505050565b8051610d7381610b7c565b919050565b600060208284031215610d8a57600080fd5b8151610d6181610b7c565b600082601f830112610da657600080fd5b8151610db4610be382610b55565b818152846020838601011115610dc957600080fd5b610ce4826020830160208701610c4d565b805160058110610d7357600080fd5b80518015158114610d7357600080fd5b600060208284031215610e0b57600080fd5b81516001600160401b0380821115610e2257600080fd5b908301906101608286031215610e3757600080fd5b610e3f610afc565b610e4883610d68565b8152602083015182811115610e5c57600080fd5b610e6887828601610d95565b602083015250604083015182811115610e8057600080fd5b610e8c87828601610d95565b604083015250606083015160608201526080830151608082015260a083015160a082015260c083015160c0820152610ec660e08401610dda565b60e0820152610100838101519082015261012080840151908201526101409150610ef1828401610de9565b91810191909152949350505050565b85815284602082015260018060a01b038416604082015260a060608201526000610f2d60a0830185610c7d565b90508260808301529695505050505050565b600181811c90821680610f5357607f821691505b60208210811415610f7457634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052603260045260246000fdfea2646970667358221220ccf7732297a4795b5ea301a5d5e3c3b3fe60c1016f17b3a96f8e95bb03e5dbf364736f6c63430008090033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "adPoolAddress()": {
+        "details": "Gets the address of AdPool."
+      },
+      "englishAuctionAddress()": {
+        "details": "Gets the address of EnglishAuction."
+      },
+      "eventEmitterAddress()": {
+        "details": "Gets the address of EventEmitter."
+      },
+      "mediaFactoryAddress()": {
+        "details": "Gets the address of MediaFactory."
+      },
+      "mediaRegistryAddress()": {
+        "details": "Gets the address of MediaRegistry."
+      },
+      "nameRegistryAddress()": {
+        "details": "Gets the address of NameRegistry"
+      },
+      "offerBidAddress()": {
+        "details": "Gets the address of OfferBid."
+      },
+      "openBidAddress()": {
+        "details": "Gets the address of OpenBid."
+      },
+      "owner()": {
+        "details": "Gets the owner address."
+      },
+      "vaultAddress()": {
+        "details": "Gets the address of Vault."
+      }
+    },
+    "stateVariables": {
+      "_bidding": {
+        "details": "Maps a tokenId with appeal info"
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 2131,
+        "contract": "contracts/peripheries/OpenBid.sol:OpenBid",
+        "label": "_nameRegistry",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_contract(INameRegistry)4553"
+      },
+      {
+        "astId": 7227,
+        "contract": "contracts/peripheries/OpenBid.sol:OpenBid",
+        "label": "_bidding",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_uint256,t_array(t_struct(OpenBid)4981_storage)dyn_storage)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_struct(OpenBid)4981_storage)dyn_storage": {
+        "base": "t_struct(OpenBid)4981_storage",
+        "encoding": "dynamic_array",
+        "label": "struct Sale.OpenBid[]",
+        "numberOfBytes": "32"
+      },
+      "t_contract(INameRegistry)4553": {
+        "encoding": "inplace",
+        "label": "contract INameRegistry",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_uint256,t_array(t_struct(OpenBid)4981_storage)dyn_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct Sale.OpenBid[])",
+        "numberOfBytes": "32",
+        "value": "t_array(t_struct(OpenBid)4981_storage)dyn_storage"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_struct(OpenBid)4981_storage": {
+        "encoding": "inplace",
+        "label": "struct Sale.OpenBid",
+        "members": [
+          {
+            "astId": 4974,
+            "contract": "contracts/peripheries/OpenBid.sol:OpenBid",
+            "label": "tokenId",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 4976,
+            "contract": "contracts/peripheries/OpenBid.sol:OpenBid",
+            "label": "sender",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address"
+          },
+          {
+            "astId": 4978,
+            "contract": "contracts/peripheries/OpenBid.sol:OpenBid",
+            "label": "price",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 4980,
+            "contract": "contracts/peripheries/OpenBid.sol:OpenBid",
+            "label": "content",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_string_storage"
+          }
+        ],
+        "numberOfBytes": "128"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

@@ -185,7 +185,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 			uint256 existDisplayEnd = displayEnd(_periodKeys[metadata][i]);
 
 			if (
-				Schedule._isOverlapped(
+				Schedule.isOverlapped(
 					displayStartTimestamp,
 					displayEndTimestamp,
 					existDisplayStart,
