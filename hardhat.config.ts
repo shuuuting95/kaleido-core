@@ -1,4 +1,6 @@
 import '@nomiclabs/hardhat-waffle'
+import dotenv from 'dotenv'
+import fs from 'fs'
 import 'hardhat-abi-exporter'
 import 'hardhat-contract-sizer'
 import 'hardhat-deploy'
@@ -7,10 +9,10 @@ import 'hardhat-gas-reporter'
 import { HardhatUserConfig } from 'hardhat/types/config'
 import './src/tasks/deploy_contracts'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config()
-
 const NETWORK = process.env.NETWORK || ''
+const envFilePath = `.env.${NETWORK}`
+dotenv.config(fs.existsSync(envFilePath) ? { path: `.env.${NETWORK}` } : {})
+
 const INFURA_KEY = process.env.INFURA_KEY || ''
 const PRIVATE_KEY = process.env.PRIVATE_KEY || ''
 const POLYGON_RPC_URL = process.env.POLYGON_RPC
