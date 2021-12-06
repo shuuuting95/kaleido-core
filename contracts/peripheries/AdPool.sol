@@ -132,6 +132,46 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		periods[tokenId].sold = true;
 	}
 
+	/// @inheritdoc IAdPool
+	function bidByEnglishAuction(
+		uint256 tokenId,
+		address msgSender,
+		uint256 msgValue
+	) external onlyProxies returns (Sale.Bidding memory) {
+		Purchase.checkBeforeBid(
+			periods[tokenId],
+			currentPrice(tokenId),
+			_blockTimestamp(),
+			msgValue
+		);
+		return _english().bid(tokenId, msgSender, msgValue);
+	}
+
+	/// @inheritdoc IAdPool
+	function soldByEnglishAuction(uint256 tokenId)
+		external
+		onlyProxies
+		returns (address bidder, uint256 price)
+	{
+		(bidder, price) = _english().receiveToken(tokenId);
+		periods[tokenId].sold = true;
+	}
+
+	/// @inheritdoc IAdPool
+	function bidWithProposal(
+		uint256 tokenId,
+		string memory proposalMetadata,
+		address msgSender,
+		uint256 msgValue
+	) external onlyProxies {
+		Purchase.checkBeforeBidWithProposal(
+			periods[tokenId],
+			_blockTimestamp(),
+			msgValue
+		);
+		_openBid().bid(tokenId, proposalMetadata, msgSender, msgValue);
+	}
+
 	function acceptOffer(
 		uint256 tokenId,
 		string memory tokenMetadata,
@@ -165,43 +205,6 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 			offer.displayEndTimestamp,
 			offer.price
 		);
-	}
-
-	function bidByEnglishAuction(
-		uint256 tokenId,
-		address msgSender,
-		uint256 msgValue
-	) external onlyProxies returns (Sale.Bidding memory) {
-		Purchase.checkBeforeBid(
-			periods[tokenId],
-			currentPrice(tokenId),
-			_blockTimestamp(),
-			msgValue
-		);
-		return _english().bid(tokenId, msgSender, msgValue);
-	}
-
-	function soldByEnglishAuction(uint256 tokenId)
-		external
-		onlyProxies
-		returns (address bidder, uint256 price)
-	{
-		(bidder, price) = _english().receiveToken(tokenId);
-		periods[tokenId].sold = true;
-	}
-
-	function bidWithProposal(
-		uint256 tokenId,
-		string memory proposalMetadata,
-		address msgSender,
-		uint256 msgValue
-	) external onlyProxies {
-		Purchase.checkBeforeBidWithProposal(
-			periods[tokenId],
-			_blockTimestamp(),
-			msgValue
-		);
-		_openBid().bid(tokenId, proposalMetadata, msgSender, msgValue);
 	}
 
 	function allPeriods(uint256 tokenId)

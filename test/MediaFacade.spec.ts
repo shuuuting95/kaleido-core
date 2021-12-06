@@ -1203,9 +1203,15 @@ describe('MediaFacade', async () => {
 
   describe('receiveToken', async () => {
     it('should receive token by the successful bidder', async () => {
-      const { now, factory, name, event, eng } = await setupTests()
+      const { now, factory, name, event, eng, pool } = await setupTests()
       const facade = await facadeInstance(factory, name, now)
-      const { tokenId } = await defaultPeriodProps(facade, now)
+      const {
+        tokenId,
+        spaceMetadata,
+        tokenMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp,
+      } = await defaultPeriodProps(facade, now)
 
       const saleEndTimestamp = now + 2400
       const pricing = 2
@@ -1232,6 +1238,20 @@ describe('MediaFacade', async () => {
         .withArgs(tokenId, parseEther('0.3'), user3.address, now + 2410)
         .to.emit(event, 'TransferCustom')
         .withArgs(facade.address, user3.address, tokenId)
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
+        facade.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now),
+        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        pricing,
+        price,
+        price,
+        true,
+      ])
+      expect(await facade.ownerOf(tokenId)).to.be.eq(user3.address)
       expect(await facade.balance()).to.be.eq(parseEther('0.27'))
       expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0.27'))
     })

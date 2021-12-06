@@ -54,6 +54,36 @@ interface IAdPool {
 	/// @param msgValue uint256 of the price
 	function soldByDutchAuction(uint256 tokenId, uint256 msgValue) external;
 
+	/// @dev Bids to participate in an auction.
+	///      It is defined as an English Auction.
+	/// @param tokenId uint256 of the token ID
+	/// @param msgSender address of the sender
+	/// @param msgValue uint256 of the price
+	function bidByEnglishAuction(
+		uint256 tokenId,
+		address msgSender,
+		uint256 msgValue
+	) external returns (Sale.Bidding memory);
+
+	/// @dev Receives the token you bidded if you are the successful bidder.
+	/// @param tokenId uint256 of the token ID
+	function soldByEnglishAuction(uint256 tokenId)
+		external
+		returns (address, uint256);
+
+	/// @dev Bids to participate in an auction.
+	///      It is defined as an Open Bid.
+	/// @param tokenId uint256 of the token ID
+	/// @param proposalMetadata string of the metadata hash
+	/// @param msgSender address of the sender
+	/// @param msgValue uint256 of the price
+	function bidWithProposal(
+		uint256 tokenId,
+		string memory proposalMetadata,
+		address msgSender,
+		uint256 msgValue
+	) external;
+
 	function acceptOffer(
 		uint256 tokenId,
 		string memory tokenMetadata,
@@ -77,21 +107,4 @@ interface IAdPool {
 		external
 		view
 		returns (string memory, uint256);
-
-	function bidByEnglishAuction(
-		uint256 tokenId,
-		address msgSender,
-		uint256 msgValue
-	) external returns (Sale.Bidding memory);
-
-	function soldByEnglishAuction(uint256 tokenId)
-		external
-		returns (address, uint256);
-
-	function bidWithProposal(
-		uint256 tokenId,
-		string memory proposalMetadata,
-		address msgSender,
-		uint256 msgValue
-	) external;
 }

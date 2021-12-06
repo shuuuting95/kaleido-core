@@ -44,6 +44,24 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		);
 	}
 
+	/// @inheritdoc IOpenBid
+	function selectProposal(uint256 tokenId, uint256 index)
+		external
+		virtual
+		onlyProxies
+		returns (Sale.OpenBid memory selected, Sale.OpenBid[] memory nonSelected)
+	{
+		require(
+			_adPool().allPeriods(tokenId).saleEndTimestamp < _blockTimestamp(),
+			"KD129"
+		);
+		selected = bidding(tokenId, index);
+		delete _bidding[tokenId][index];
+		nonSelected = _bidding[tokenId];
+		delete _bidding[tokenId];
+		_event().emitSelectProposal(tokenId, selected.sender);
+	}
+
 	function biddingList(uint256 tokenId)
 		public
 		view
@@ -63,23 +81,6 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 			"KD114"
 		);
 		return _bidding[tokenId][index];
-	}
-
-	function selectProposal(uint256 tokenId, uint256 index)
-		external
-		virtual
-		onlyProxies
-		returns (Sale.OpenBid memory selected, Sale.OpenBid[] memory nonSelected)
-	{
-		require(
-			_adPool().allPeriods(tokenId).saleEndTimestamp < _blockTimestamp(),
-			"KD129"
-		);
-		selected = bidding(tokenId, index);
-		delete _bidding[tokenId][index];
-		nonSelected = _bidding[tokenId];
-		delete _bidding[tokenId];
-		_event().emitSelectProposal(tokenId, selected.sender);
 	}
 
 	/**

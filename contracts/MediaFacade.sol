@@ -203,17 +203,6 @@ contract MediaFacade is
 		_refundToProposers(nonSelected);
 	}
 
-	function _refundToProposers(Sale.OpenBid[] memory nonSelected)
-		internal
-		virtual
-	{
-		for (uint256 i = 0; i < nonSelected.length; i++) {
-			Sale.OpenBid memory target = nonSelected[i];
-			_processingTotal -= target.price;
-			_pay(target.sender, target.price);
-		}
-	}
-
 	/// @dev Receives the token you bidded if you are the successful bidder.
 	/// @param tokenId uint256 of the token ID
 	function receiveToken(uint256 tokenId)
@@ -260,25 +249,6 @@ contract MediaFacade is
 		Sale.Offer memory prev = _offerBid().cancel(tokenId, msg.sender);
 		_refundOfferedAmount(prev);
 		_processingTotal -= prev.price;
-	}
-
-	function _refundBiddingAmount(Sale.Bidding memory prev) internal virtual {
-		_pay(prev.bidder, prev.price);
-	}
-
-	function _refundOfferedAmount(Sale.Offer memory prev) internal virtual {
-		_pay(prev.sender, prev.price);
-	}
-
-	function _pay(address receiver, uint256 price)
-		internal
-		virtual
-		returns (bool success)
-	{
-		(success, ) = payable(receiver).call{ value: price, gas: 10000 }("");
-		if (!success) {
-			_event().emitPaymentFailure(receiver, price);
-		}
 	}
 
 	/// @dev Accepts an offer by the Media.
@@ -376,6 +346,58 @@ contract MediaFacade is
 		return address(this).balance - _processingTotal;
 	}
 
+	function _mintRight(
+		address reciever,
+		uint256 tokenId,
+		string memory metadata
+	) internal virtual {
+		_mint(reciever, tokenId);
+		_tokenURIs[tokenId] = metadata;
+		if (tokenId != 0)
+			_event().emitTransferCustom(address(0), reciever, tokenId);
+	}
+
+	function _burnRight(uint256 tokenId) internal virtual {
+		_burn(tokenId);
+		_tokenURIs[tokenId] = "";
+		_event().emitTransferCustom(address(this), address(0), tokenId);
+	}
+
+	function _dropRight(address receiver, uint256 tokenId) internal virtual {
+		_transfer(address(this), receiver, tokenId);
+		_event().emitTransferCustom(address(this), receiver, tokenId);
+	}
+
+	function _refundBiddingAmount(Sale.Bidding memory prev) internal virtual {
+		_pay(prev.bidder, prev.price);
+	}
+
+	function _refundOfferedAmount(Sale.Offer memory prev) internal virtual {
+		_pay(prev.sender, prev.price);
+	}
+
+	function _refundToProposers(Sale.OpenBid[] memory nonSelected)
+		internal
+		virtual
+	{
+		for (uint256 i = 0; i < nonSelected.length; i++) {
+			Sale.OpenBid memory target = nonSelected[i];
+			_processingTotal -= target.price;
+			_pay(target.sender, target.price);
+		}
+	}
+
+	function _pay(address receiver, uint256 price)
+		internal
+		virtual
+		returns (bool success)
+	{
+		(success, ) = payable(receiver).call{ value: price, gas: 10000 }("");
+		if (!success) {
+			_event().emitPaymentFailure(receiver, price);
+		}
+	}
+
 	function _toSuccessfulBidder(uint256 tokenId, address receiver)
 		internal
 		virtual
@@ -419,27 +441,5 @@ contract MediaFacade is
 
 	function _review() internal view virtual returns (IProposalReview) {
 		return IProposalReview(proposalReviewAddress());
-	}
-
-	function _mintRight(
-		address reciever,
-		uint256 tokenId,
-		string memory metadata
-	) internal virtual {
-		_mint(reciever, tokenId);
-		_tokenURIs[tokenId] = metadata;
-		if (tokenId != 0)
-			_event().emitTransferCustom(address(0), reciever, tokenId);
-	}
-
-	function _burnRight(uint256 tokenId) internal virtual {
-		_burn(tokenId);
-		_tokenURIs[tokenId] = "";
-		_event().emitTransferCustom(address(this), address(0), tokenId);
-	}
-
-	function _dropRight(address receiver, uint256 tokenId) internal virtual {
-		_transfer(address(this), receiver, tokenId);
-		_event().emitTransferCustom(address(this), receiver, tokenId);
 	}
 }
