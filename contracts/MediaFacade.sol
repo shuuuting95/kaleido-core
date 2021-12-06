@@ -267,7 +267,6 @@ contract MediaFacade is
 	}
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
-	///      If you put 0 as the amount, you can withdraw as much as possible.
 	function withdraw() external virtual onlyMedia {
 		uint256 withdrawal = withdrawalAmount();
 		bool success = _pay(msg.sender, withdrawal);
@@ -381,8 +380,11 @@ contract MediaFacade is
 	{
 		for (uint256 i = 0; i < nonSelected.length; i++) {
 			Sale.OpenBid memory target = nonSelected[i];
-			_processingTotal -= target.price;
-			_pay(target.sender, target.price);
+			// TODO: test
+			if (target.price != 0) {
+				_processingTotal -= target.price;
+				_pay(target.sender, target.price);
+			}
 		}
 	}
 

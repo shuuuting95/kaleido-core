@@ -1394,6 +1394,25 @@ describe('MediaFacade', async () => {
       ])
     })
 
+    it('should propose multiple times', async () => {
+      const { now, factory, name, event, review } = await setupTests()
+      const facade = await facadeInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(facade, now)
+
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      const proposalMetadata2 = 'sfko4tesrgjskrwjiwtd'
+      await newPeriodWith(facade, { now })
+      await buyWith(facade.connect(user3), { tokenId })
+
+      await facade.connect(user3).propose(tokenId, proposalMetadata, option())
+      await facade.connect(user3).propose(tokenId, proposalMetadata2, option())
+
+      expect(await review.proposed(tokenId)).to.deep.equal([
+        proposalMetadata2,
+        user3.address,
+      ])
+    })
+
     it('should revert because the token is not yours', async () => {
       const { now, factory, name, event } = await setupTests()
       const facade = await facadeInstance(factory, name, now)
@@ -1406,6 +1425,22 @@ describe('MediaFacade', async () => {
       await expect(
         facade.connect(user4).propose(tokenId, proposalMetadata, option())
       ).to.be.revertedWith('KD012')
+    })
+
+    it('should revert because the proposal was accepted', async () => {
+      const { now, factory, name } = await setupTests()
+      const facade = await facadeInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(facade, now)
+
+      const proposalMetadata = 'asfdjakjajk3rq35jqwejrqk'
+      await newPeriodWith(facade, { now })
+      await buyWith(facade.connect(user3), { tokenId })
+      await facade.connect(user3).propose(tokenId, proposalMetadata)
+      await facade.acceptProposal(tokenId, option())
+
+      await expect(
+        facade.connect(user3).propose(tokenId, proposalMetadata)
+      ).to.be.revertedWith('KD132')
     })
   })
 

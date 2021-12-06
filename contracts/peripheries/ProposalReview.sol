@@ -35,6 +35,7 @@ contract ProposalReview is IProposalReview, BlockTimestamp, NameAccessor {
 		string memory metadata,
 		address msgSender
 	) external virtual onlyProxies {
+		require(bytes(accepted[tokenId]).length == 0, "KD132");
 		proposed[tokenId] = Proposal(metadata, msgSender);
 		_event().emitPropose(tokenId, metadata);
 	}
