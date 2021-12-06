@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.9;
+pragma solidity 0.8.10;
 
 import "../interfaces/IERC721Metadata.sol";
 import "../interfaces/IERC721Receiver.sol";

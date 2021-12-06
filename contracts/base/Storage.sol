@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.9;
+pragma solidity 0.8.10;
 
 /// @title Storage - saves state values. Note that the order of the state values
 ///                  should not be reordered when upgrading because the slot would be shifted.

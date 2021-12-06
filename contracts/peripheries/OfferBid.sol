@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.9;
+pragma solidity 0.8.10;
 
 import "../libraries/Ad.sol";
 import "../libraries/Purchase.sol";
@@ -22,6 +22,7 @@ contract OfferBid is IOfferBid, NameAccessor {
 		initialize(_nameRegistry);
 	}
 
+	/// @inheritdoc IOfferBid
 	function offer(
 		string memory spaceMetadata,
 		uint256 displayStartTimestamp,
@@ -49,6 +50,7 @@ contract OfferBid is IOfferBid, NameAccessor {
 		);
 	}
 
+	/// @inheritdoc IOfferBid
 	function cancel(uint256 tokenId, address sender)
 		external
 		virtual
@@ -61,6 +63,7 @@ contract OfferBid is IOfferBid, NameAccessor {
 		_event().emitCancelOffer(tokenId);
 	}
 
+	/// @inheritdoc IOfferBid
 	function accept(uint256 tokenId)
 		external
 		virtual
@@ -73,6 +76,7 @@ contract OfferBid is IOfferBid, NameAccessor {
 		return target;
 	}
 
+	/// @inheritdoc IOfferBid
 	function currentPrice(uint256 tokenId)
 		public
 		view

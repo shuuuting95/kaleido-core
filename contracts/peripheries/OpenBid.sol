@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.9;
+pragma solidity 0.8.10;
 
 import "../libraries/Ad.sol";
 import "../libraries/Purchase.sol";
@@ -28,6 +28,7 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		initialize(_nameRegistry);
 	}
 
+	/// @inheritdoc IOpenBid
 	function bid(
 		uint256 tokenId,
 		string memory proposal,

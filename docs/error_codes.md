@@ -45,6 +45,7 @@
 
 - `KD130`: `Not proposed yet`
 - `KD131`: `Proposer does not have the token`
+- `KD132`: `Already accepted`
 
 ## Withdraw related
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.9;
+pragma solidity 0.8.10;
 
 library Ad {
 	uint256 private constant _ID_LENGTH = 100000000000000000000000000000000;
