@@ -84,6 +84,10 @@ interface IAdPool {
 		uint256 msgValue
 	) external;
 
+	/// @dev Accepts an offer by the Media.
+	/// @param tokenId uint256 of the token ID
+	/// @param tokenMetadata string of the NFT token metadata
+	/// @param offer Sale.Offer
 	function acceptOffer(
 		uint256 tokenId,
 		string memory tokenMetadata,
@@ -92,17 +96,19 @@ interface IAdPool {
 
 	function mediaProxyOf(uint256 tokenId) external view returns (address);
 
-	function displayStart(uint256 tokenId) external view returns (uint256);
-
-	function displayEnd(uint256 tokenId) external view returns (uint256);
-
+	/// @dev Returns tokenIds tied with the space metadata
+	/// @param spaceMetadata string of the space metadata
 	function tokenIdsOf(string memory spaceMetadata)
 		external
 		view
 		returns (uint256[] memory);
 
+	/// @dev Returns the current price.
+	/// @param tokenId uint256 of the token ID
 	function currentPrice(uint256 tokenId) external view returns (uint256);
 
+	/// @dev Displays the ad content that is approved by the media owner.
+	/// @param spaceMetadata string of the space metadata
 	function display(string memory spaceMetadata)
 		external
 		view

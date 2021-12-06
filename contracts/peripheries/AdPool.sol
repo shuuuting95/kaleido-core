@@ -172,6 +172,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		_openBid().bid(tokenId, proposalMetadata, msgSender, msgValue);
 	}
 
+	/// @inheritdoc IAdPool
 	function acceptOffer(
 		uint256 tokenId,
 		string memory tokenMetadata,
@@ -215,8 +216,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		return periods[tokenId];
 	}
 
-	/// @dev Returns the current price.
-	/// @param tokenId uint256 of the token ID
+	/// @inheritdoc IAdPool
 	function currentPrice(uint256 tokenId) public view virtual returns (uint256) {
 		Ad.Period memory period = periods[tokenId];
 		if (period.pricing == Ad.Pricing.RRP) {
@@ -241,8 +241,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		revert("not exist");
 	}
 
-	/// @dev Displays the ad content that is approved by the media owner.
-	/// @param spaceMetadata string of the space metadata
+	/// @inheritdoc IAdPool
 	function display(string memory spaceMetadata)
 		external
 		view
@@ -270,16 +269,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		return periods[tokenId].mediaProxy;
 	}
 
-	function displayStart(uint256 tokenId) public view returns (uint256) {
-		return periods[tokenId].displayStartTimestamp;
-	}
-
-	function displayEnd(uint256 tokenId) public view returns (uint256) {
-		return periods[tokenId].displayEndTimestamp;
-	}
-
-	/// @dev Returns tokenIds tied with the space metadata
-	/// @param spaceMetadata string of the space metadata
+	/// @inheritdoc IAdPool
 	function tokenIdsOf(string memory spaceMetadata)
 		public
 		view
@@ -301,8 +291,10 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		uint256 displayEndTimestamp
 	) internal view virtual {
 		for (uint256 i = 0; i < _periodKeys[metadata].length; i++) {
-			uint256 existDisplayStart = displayStart(_periodKeys[metadata][i]);
-			uint256 existDisplayEnd = displayEnd(_periodKeys[metadata][i]);
+			uint256 existDisplayStart = periods[_periodKeys[metadata][i]]
+				.displayStartTimestamp;
+			uint256 existDisplayEnd = periods[_periodKeys[metadata][i]]
+				.displayEndTimestamp;
 
 			if (
 				Schedule.isOverlapped(
