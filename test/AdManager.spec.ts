@@ -78,6 +78,25 @@ describe('AdManager', async () => {
       expect(await manager.name()).to.be.eq('BridgesMedia')
       expect(await manager.symbol()).to.be.eq('Kaleido_BridgesMedia')
       expect(await manager.nameRegistryAddress()).to.be.eq(name.address)
+      expect(await manager.ownerOf(0)).to.be.eq(user2.address)
+      expect(await manager.tokenURI(0)).to.be.eq(
+        `ipfs://asfajijij3rjiajwefjajkj;afsj`
+      )
+    })
+
+    it('should not initialize twice', async () => {
+      const { now, factory, registry, name, event } = await setupTests()
+      const manager = await managerInstance(factory, name, now)
+
+      await expect(
+        manager.initialize(
+          'BridgesMedia',
+          'ipfs://',
+          'asfajijij3rjiajwefjajkj;afsj',
+          user2.address,
+          name.address
+        )
+      ).to.be.revertedWith('AR000')
     })
   })
 
