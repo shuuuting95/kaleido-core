@@ -7,7 +7,7 @@ import "../peripheries/AdPool.sol";
 import "../peripheries/Vault.sol";
 import "../libraries/Integers.sol";
 import "../libraries/Substrings.sol";
-import "../AdManager.sol";
+import "../MediaFacade.sol";
 import "hardhat/console.sol";
 
 // TODO: needed to be updated for production
@@ -37,7 +37,7 @@ contract Bundler is ERC721, NameAccessor {
 			);
 			uint256 tokenId = Integers.parseInt(sliced);
 			address payable proxy = payable(_adPool().mediaProxyOf(tokenId));
-			AdManager manager = AdManager(proxy);
+			MediaFacade manager = MediaFacade(proxy);
 			// manager.transferToBundle(msg.sender, address(this), tokenId);
 		}
 		tokenIds[nextBundleId] = concatenated;

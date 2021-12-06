@@ -15,9 +15,9 @@ import "./interfaces/IOpenBid.sol";
 import "./interfaces/IOfferBid.sol";
 import "./interfaces/IProposalReview.sol";
 
-/// @title AdManager - manages ad spaces and its periods to sell them to users.
+/// @title MediaFacade - A root contract that calls the processes of each media.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is
+contract MediaFacade is
 	ERC721,
 	ReentrancyGuard,
 	NameAccessor,

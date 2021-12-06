@@ -1,6 +1,6 @@
 import { parseEther } from '@ethersproject/units'
 import { ethers } from 'ethers'
-import { getAdManagerABI } from '../common/file'
+import { getMediaFacadeABI } from '../common/file'
 import { getWallet } from '../common/wallet'
 import { gasLimit } from './../common/wallet'
 
@@ -15,7 +15,7 @@ const main = async () => {
   const tokenId = 235237116874136
   /////////////////////////////////
 
-  const manager = new ethers.Contract(proxy, getAdManagerABI(), adminWallet)
+  const manager = new ethers.Contract(proxy, getMediaFacadeABI(), adminWallet)
 
   const tx = await manager.buy(tokenId, {
     value: parseEther('0.1'),

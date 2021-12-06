@@ -1,6 +1,6 @@
 import { parseEther } from '@ethersproject/units'
 import { ethers } from 'ethers'
-import { getAdManagerABI } from '../common/file'
+import { getMediaFacadeABI } from '../common/file'
 import { getWallet } from '../common/wallet'
 
 const network = process.env.NETWORK || 'ganache'
@@ -13,7 +13,7 @@ const main = async () => {
   const proxy = '0x987d858343237f0CD1A791ad5F4bC5DB0ae1085A'
   /////////////////////////////////
 
-  const manager = new ethers.Contract(proxy, getAdManagerABI(), adminWallet)
+  const manager = new ethers.Contract(proxy, getMediaFacadeABI(), adminWallet)
 
   const now = Date.now()
   const tx = await manager.newPeriod(

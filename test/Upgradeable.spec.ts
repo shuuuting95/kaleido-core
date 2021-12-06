@@ -2,8 +2,8 @@ import { expect } from 'chai'
 import { utils } from 'ethers'
 import { deployments, ethers, network, waffle } from 'hardhat'
 import {
-  getAdManagerV2ABI,
-  getMockTimeAdManagerABI,
+  getMediaFacadeV2ABI,
+  getMockTimeMediaFacadeABI,
 } from '../scripts/common/file'
 import { option } from '../scripts/common/wallet'
 import { newMediaWith } from './MediaFactory.spec'
@@ -15,7 +15,7 @@ import {
   getVaultContract,
 } from './utils/setup'
 
-describe('Upgradeable AdManager', async () => {
+describe('Upgradeable MediaFacade', async () => {
   const [user1, user2, user3, user4] = waffle.provider.getWallets()
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {
@@ -35,9 +35,9 @@ describe('Upgradeable AdManager', async () => {
     }
   })
   const _manager = (proxy: string) =>
-    new ethers.Contract(proxy, getMockTimeAdManagerABI(), user1)
+    new ethers.Contract(proxy, getMockTimeMediaFacadeABI(), user1)
 
-  describe('AdManager V2', async () => {
+  describe('MediaFacade V2', async () => {
     it('should update newSpace', async () => {
       const { factory, name, pool, vault } = await setupTests()
       const { proxy } = await newMediaWith(user2, factory, name)
@@ -49,17 +49,17 @@ describe('Upgradeable AdManager', async () => {
       expect(await pool.spaced(spaceMetadata)).to.be.true
       expect(await pool.spaced(spaceMetadata2)).to.be.false
 
-      const AdManagerV2 = await ethers.getContractFactory('AdManagerV2', {
+      const MediaFacadeV2 = await ethers.getContractFactory('MediaFacadeV2', {
         libraries: {
           Ad: (await deployments.get('Ad')).address,
         },
       })
-      const v2 = await AdManagerV2.deploy()
+      const v2 = await MediaFacadeV2.deploy()
       await name.set(
-        utils.solidityKeccak256(['string'], ['AdManager']),
+        utils.solidityKeccak256(['string'], ['MediaFacade']),
         v2.address
       )
-      const managerV2 = new ethers.Contract(proxy, getAdManagerV2ABI(), user1)
+      const managerV2 = new ethers.Contract(proxy, getMediaFacadeV2ABI(), user1)
       expect(await pool.spaced(spaceMetadata)).to.be.true
 
       const spaceMetadata3 = 't34ijri3wjrfkjdsfasjf;l'

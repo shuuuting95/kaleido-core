@@ -3,7 +3,7 @@ import { create } from 'ipfs-http-client'
 import fetch from 'node-fetch'
 import { getMediaFactoryInstance } from '../common/contracts'
 import {
-  getAdManagerABI,
+  getMediaFacadeABI,
   getMediaFactoryAddress,
   getNameRegistryAddress,
 } from '../common/file'
@@ -34,8 +34,8 @@ const main = async () => {
     })
   )
   console.log('token metadata uploaded:', metadata.path)
-  const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
-  const initializer = ifaceAdManager.encodeFunctionData('initialize', [
+  const ifaceMediaFacade = new ethers.utils.Interface(getMediaFacadeABI())
+  const initializer = ifaceMediaFacade.encodeFunctionData('initialize', [
     mediaMetadata.name,
     'ipfs://',
     metadata.path,

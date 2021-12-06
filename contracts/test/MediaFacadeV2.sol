@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "../AdManager.sol";
+import "../MediaFacade.sol";
 
-contract AdManagerV2 is AdManager {
+contract MediaFacadeV2 is MediaFacade {
 	string public spaceDataV2;
 	uint256 public time;
 

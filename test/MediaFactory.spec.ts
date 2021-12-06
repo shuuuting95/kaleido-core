@@ -1,9 +1,9 @@
 import { expect } from 'chai'
 import { ethers } from 'ethers'
 import { deployments, network, waffle } from 'hardhat'
-import { getAdManagerABI } from '../scripts/common/file'
+import { getMediaFacadeABI } from '../scripts/common/file'
 import {
-  getAdManagerContract,
+  getMediaFacadeContract,
   getMediaFactoryContract,
   getMediaRegistryContract,
   getNameRegistryContract,
@@ -20,7 +20,7 @@ describe('MediaFactory', async () => {
     return {
       now: now,
       factory: await getMediaFactoryContract(),
-      manager: await getAdManagerContract(),
+      manager: await getMediaFacadeContract(),
       name: await getNameRegistryContract(),
       registry: await getMediaRegistryContract(),
     }
@@ -93,8 +93,8 @@ export const newMediaWith = async (
 }
 
 const defaultInitializer = (name: string, eoa: string) => {
-  const ifaceAdManager = new ethers.utils.Interface(getAdManagerABI())
-  const initializer = ifaceAdManager.encodeFunctionData('initialize', [
+  const ifaceMediaFacade = new ethers.utils.Interface(getMediaFacadeABI())
+  const initializer = ifaceMediaFacade.encodeFunctionData('initialize', [
     'BridgesMedia',
     'ipfs://',
     'asfajijij3rjiajwefjajkj;afsj',

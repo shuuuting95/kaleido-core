@@ -8,23 +8,23 @@ export const getMediaFactoryABI = () => {
   return compiled.abi
 }
 
-export const getAdManagerABI = () => {
+export const getMediaFacadeABI = () => {
   const compiled = JSON.parse(
-    fs.readFileSync(getCompiledAdManagerPath()).toString()
+    fs.readFileSync(getCompiledMediaFacadePath()).toString()
   )
   return compiled.abi
 }
 
-export const getMockTimeAdManagerABI = () => {
+export const getMockTimeMediaFacadeABI = () => {
   const compiled = JSON.parse(
-    fs.readFileSync(getCompiledMockTimeAdManagerPath()).toString()
+    fs.readFileSync(getCompiledMockTimeMediaFacadePath()).toString()
   )
   return compiled.abi
 }
 
-export const getAdManagerV2ABI = () => {
+export const getMediaFacadeV2ABI = () => {
   const compiled = JSON.parse(
-    fs.readFileSync(getCompiledAdManagerV2Path()).toString()
+    fs.readFileSync(getCompiledMediaFacadeV2Path()).toString()
   )
   return compiled.abi
 }
@@ -77,7 +77,7 @@ export const getCompiledMediaFactoryPath = () =>
     'MediaFactory.json'
   )
 
-export const getCompiledAdManagerPath = () =>
+export const getCompiledMediaFacadePath = () =>
   path.join(
     __dirname,
     '..',
@@ -85,11 +85,11 @@ export const getCompiledAdManagerPath = () =>
     'build',
     'artifacts',
     'contracts',
-    'AdManager.sol',
-    'AdManager.json'
+    'MediaFacade.sol',
+    'MediaFacade.json'
   )
 
-export const getCompiledMockTimeAdManagerPath = () =>
+export const getCompiledMockTimeMediaFacadePath = () =>
   path.join(
     __dirname,
     '..',
@@ -98,11 +98,11 @@ export const getCompiledMockTimeAdManagerPath = () =>
     'artifacts',
     'contracts',
     'test',
-    'MockTimeAdManager.sol',
-    'MockTimeAdManager.json'
+    'MockTimeMediaFacade.sol',
+    'MockTimeMediaFacade.json'
   )
 
-export const getCompiledAdManagerV2Path = () =>
+export const getCompiledMediaFacadeV2Path = () =>
   path.join(
     __dirname,
     '..',
@@ -111,8 +111,8 @@ export const getCompiledAdManagerV2Path = () =>
     'artifacts',
     'contracts',
     'test',
-    'AdManagerV2.sol',
-    'AdManagerV2.json'
+    'MediaFacadeV2.sol',
+    'MediaFacadeV2.json'
   )
 
 // export const getCompiledVoucherPath = () =>
