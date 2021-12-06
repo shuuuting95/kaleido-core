@@ -13,6 +13,13 @@ interface IOpenBid {
 		uint256 amount
 	) external;
 
+	/// @dev Selects the best proposal bidded with.
+	/// @param tokenId uint256 of the token ID
+	/// @param index uint256 of the index number
+	function selectProposal(uint256 tokenId, uint256 index)
+		external
+		returns (Sale.OpenBid memory selected, Sale.OpenBid[] memory nonSelected);
+
 	function biddingList(uint256 tokenId)
 		external
 		view
@@ -22,8 +29,4 @@ interface IOpenBid {
 		external
 		view
 		returns (Sale.OpenBid memory);
-
-	function selectProposal(uint256 tokenId, uint256 index)
-		external
-		returns (Sale.OpenBid memory selected, Sale.OpenBid[] memory nonSelected);
 }

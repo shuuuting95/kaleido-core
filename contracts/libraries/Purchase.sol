@@ -16,11 +16,13 @@ library Purchase {
 	function checkBeforeBuyBasedOnTime(
 		Ad.Period memory period,
 		uint256 currentPrice,
+		uint256 blockTimestamp,
 		uint256 msgValue
 	) public pure {
 		require(period.pricing == Ad.Pricing.DUTCH, "KD123");
 		require(!period.sold, "KD121");
 		require(currentPrice <= msgValue, "KD122");
+		require(period.saleEndTimestamp >= blockTimestamp, "KD129");
 	}
 
 	function checkBeforeBid(

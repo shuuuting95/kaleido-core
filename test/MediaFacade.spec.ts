@@ -106,11 +106,23 @@ describe('MediaFacade', async () => {
       const facade = await facadeInstance(factory, name, now)
       const newMetadata = 'sfjjrtjwjtkljwlejr;tfjk'
 
+      expect(await registry.allAccounts(facade.address)).to.deep.equal([
+        facade.address,
+        user2.address,
+        'abi09nadu2brasfjl',
+        '1eqe23kerfkamfka',
+      ])
       expect(
         await facade.connect(user2).updateMedia(user4.address, newMetadata)
       )
         .to.emit(event, 'UpdateMedia')
         .withArgs(facade.address, user4.address, newMetadata)
+      expect(await registry.allAccounts(facade.address)).to.deep.equal([
+        facade.address,
+        user4.address,
+        'abi09nadu2brasfjl',
+        newMetadata,
+      ])
     })
 
     it('should revert because the sender is not the media EOA', async () => {
@@ -120,6 +132,17 @@ describe('MediaFacade', async () => {
 
       await expect(
         facade.connect(user4).updateMedia(user4.address, newMetadata)
+      ).to.be.revertedWith('KD012')
+    })
+
+    it('should revert because the EOA has changed to others', async () => {
+      const { now, factory, registry, name, event } = await setupTests()
+      const facade = await facadeInstance(factory, name, now)
+      const newMetadata = 'sfjjrtjwjtkljwlejr;tfjk'
+      await facade.connect(user2).updateMedia(user4.address, newMetadata)
+
+      await expect(
+        facade.connect(user2).updateMedia(user4.address, newMetadata)
       ).to.be.revertedWith('KD012')
     })
   })
@@ -492,7 +515,7 @@ describe('MediaFacade', async () => {
       ).to.be.revertedWith('KD121')
     })
 
-    it('should revert because it has already sold', async () => {
+    it('should revert because the price is wrong', async () => {
       const { now, factory, name } = await setupTests()
       const facade = await facadeInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(facade, now)
@@ -541,7 +564,6 @@ describe('MediaFacade', async () => {
         tokenId,
         spaceMetadata,
         tokenMetadata,
-        saleEndTimestamp,
         displayEndTimestamp,
         displayStartTimestamp,
       } = await defaultPeriodProps(facade, now)
@@ -550,17 +572,20 @@ describe('MediaFacade', async () => {
       const price = parseEther('0.2')
       await newPeriodWith(facade, {
         now,
+        saleEndTimestamp: now + 3600,
         pricing: pricing,
         minPrice: price,
       })
 
       // 2400/3600 -> 66% passed
       await facade.setTime(now + 2400)
+      await pool.setTime(now + 2400)
 
       const currentPrice = await pool.currentPrice(tokenId)
 
       // slightly passed for its operation
       await facade.setTime(now + 2460)
+      await pool.setTime(now + 2460)
 
       expect(
         await facade
@@ -576,7 +601,7 @@ describe('MediaFacade', async () => {
         spaceMetadata,
         tokenMetadata,
         BigNumber.from(now),
-        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(now + 3600),
         BigNumber.from(displayStartTimestamp),
         BigNumber.from(displayEndTimestamp),
         pricing,
@@ -604,6 +629,32 @@ describe('MediaFacade', async () => {
           .connect(user3)
           .buyBasedOnTime(tokenId, option({ value: currentPrice }))
       ).to.be.revertedWith('KD123')
+    })
+
+    it('should revert because the sale has ended', async () => {
+      const { now, factory, name, event, pool, vault } = await setupTests()
+      const facade = await facadeInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(facade, now)
+
+      const pricing = 1
+      const price = parseEther('0.2')
+      await newPeriodWith(facade, {
+        now,
+        saleEndTimestamp: now + 3600,
+        pricing: pricing,
+        minPrice: price,
+      })
+
+      // 4000/3600 -> over 100% passed
+      await facade.setTime(now + 4000)
+      await pool.setTime(now + 4000)
+
+      const currentPrice = await pool.currentPrice(tokenId)
+      await expect(
+        facade
+          .connect(user3)
+          .buyBasedOnTime(tokenId, option({ value: currentPrice }))
+      ).to.be.revertedWith('KD129')
     })
   })
 
@@ -1152,9 +1203,15 @@ describe('MediaFacade', async () => {
 
   describe('receiveToken', async () => {
     it('should receive token by the successful bidder', async () => {
-      const { now, factory, name, event, eng } = await setupTests()
+      const { now, factory, name, event, eng, pool } = await setupTests()
       const facade = await facadeInstance(factory, name, now)
-      const { tokenId } = await defaultPeriodProps(facade, now)
+      const {
+        tokenId,
+        spaceMetadata,
+        tokenMetadata,
+        displayStartTimestamp,
+        displayEndTimestamp,
+      } = await defaultPeriodProps(facade, now)
 
       const saleEndTimestamp = now + 2400
       const pricing = 2
@@ -1181,6 +1238,20 @@ describe('MediaFacade', async () => {
         .withArgs(tokenId, parseEther('0.3'), user3.address, now + 2410)
         .to.emit(event, 'TransferCustom')
         .withArgs(facade.address, user3.address, tokenId)
+      expect(await pool.allPeriods(tokenId)).to.deep.equal([
+        facade.address,
+        spaceMetadata,
+        tokenMetadata,
+        BigNumber.from(now),
+        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(displayStartTimestamp),
+        BigNumber.from(displayEndTimestamp),
+        pricing,
+        price,
+        price,
+        true,
+      ])
+      expect(await facade.ownerOf(tokenId)).to.be.eq(user3.address)
       expect(await facade.balance()).to.be.eq(parseEther('0.27'))
       expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0.27'))
     })
@@ -1292,12 +1363,14 @@ describe('MediaFacade', async () => {
         value: price,
       })
 
+      expect(await facade.balance()).to.be.eq(parseEther('0.18'))
+      expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0.18'))
       expect(await facade.withdraw())
         .to.emit(event, 'Withdraw')
         .withArgs(parseEther('0.18'))
+      expect(await facade.balance()).to.be.eq(parseEther('0'))
+      expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0'))
     })
-
-    // TODO: withdarawal amount
   })
 
   describe('propose', async () => {

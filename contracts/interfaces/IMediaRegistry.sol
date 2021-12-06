@@ -13,6 +13,8 @@ interface IMediaRegistry {
 		string updatableMetadata;
 	}
 
+	/// @dev Returns account info.
+	/// @param proxy address of the proxy contract address
 	function allAccounts(address proxy)
 		external
 		view
