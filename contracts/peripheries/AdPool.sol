@@ -144,9 +144,9 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		);
 	}
 
-	function sold(uint256 tokenId) external onlyProxies {
-		periods[tokenId].sold = true;
-	}
+	// function sold(uint256 tokenId) external onlyProxies {
+	// 	periods[tokenId].sold = true;
+	// }
 
 	function soldByFixedPrice(uint256 tokenId, uint256 msgValue)
 		external
@@ -168,7 +168,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		periods[tokenId].sold = true;
 	}
 
-	function soldByEnglishAuction(
+	function bidByEnglishAuction(
 		uint256 tokenId,
 		address msgSender,
 		uint256 msgValue
@@ -180,6 +180,15 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 			msgValue
 		);
 		return _english().bid(tokenId, msgSender, msgValue);
+	}
+
+	function soldByEnglishAuction(uint256 tokenId)
+		external
+		onlyProxies
+		returns (address bidder, uint256 price)
+	{
+		(bidder, price) = _english().receiveToken(tokenId);
+		periods[tokenId].sold = true;
 	}
 
 	function bidWithProposal(

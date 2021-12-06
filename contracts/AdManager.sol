@@ -161,7 +161,7 @@ contract AdManager is
 		exceptMedia
 		nonReentrant
 	{
-		Sale.Bidding memory prev = _adPool().soldByEnglishAuction(
+		Sale.Bidding memory prev = _adPool().bidByEnglishAuction(
 			tokenId,
 			msg.sender,
 			msg.value
@@ -270,8 +270,12 @@ contract AdManager is
 		_pay(prev.sender, prev.price);
 	}
 
-	function _pay(address receiver, uint256 price) internal virtual {
-		(bool success, ) = payable(receiver).call{ value: price, gas: 10000 }("");
+	function _pay(address receiver, uint256 price)
+		internal
+		virtual
+		returns (bool success)
+	{
+		(success, ) = payable(receiver).call{ value: price, gas: 10000 }("");
 		if (!success) {
 			_event().emitPaymentFailure(receiver, price);
 		}
@@ -296,15 +300,8 @@ contract AdManager is
 	///      If you put 0 as the amount, you can withdraw as much as possible.
 	function withdraw() external virtual onlyMedia {
 		uint256 withdrawal = withdrawalAmount();
-		(bool success, ) = payable(msg.sender).call{
-			value: withdrawal,
-			gas: 10000
-		}("");
-		if (success) {
-			_event().emitWithdraw(withdrawal);
-		} else {
-			_event().emitPaymentFailure(msg.sender, withdrawal);
-		}
+		bool success = _pay(msg.sender, withdrawal);
+		if (success) _event().emitWithdraw(withdrawal);
 	}
 
 	/// @dev Proposes the metadata to the token you bought.
@@ -383,12 +380,10 @@ contract AdManager is
 		internal
 		virtual
 	{
-		(address bidder, uint256 price) = _english().receiveToken(tokenId);
-		_adPool().sold(tokenId);
+		(, uint256 price) = _adPool().soldByEnglishAuction(tokenId);
 		_processingTotal -= price;
 		_dropRight(receiver, tokenId);
 		_collectFees(price / 10);
-		// _event().emitTransferCustom(address(this), receiver, tokenId);
 	}
 
 	function _collectFees(uint256 value) internal virtual {

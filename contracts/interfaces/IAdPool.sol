@@ -26,8 +26,6 @@ interface IAdPool {
 
 	function deletePeriod(uint256 tokenId) external;
 
-	function sold(uint256 tokenId) external;
-
 	function acceptOffer(
 		uint256 tokenId,
 		string memory tokenMetadata,
@@ -56,11 +54,15 @@ interface IAdPool {
 
 	function soldByDutchAuction(uint256 tokenId, uint256 msgValue) external;
 
-	function soldByEnglishAuction(
+	function bidByEnglishAuction(
 		uint256 tokenId,
 		address msgSender,
 		uint256 msgValue
 	) external returns (Sale.Bidding memory);
+
+	function soldByEnglishAuction(uint256 tokenId)
+		external
+		returns (address, uint256);
 
 	function bidWithProposal(
 		uint256 tokenId,

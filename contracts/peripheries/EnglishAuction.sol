@@ -42,7 +42,7 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		external
 		virtual
 		override
-		onlyProxies
+		onlyAdPool
 		returns (address bidder, uint256 price)
 	{
 		_checkBeforeReceiveToken(tokenId);
