@@ -36,7 +36,23 @@ interface IAdPool {
 		uint256 minPrice
 	) external returns (uint256);
 
+	/// @dev Deletes a period and its token.
+	///      If there is any users locking the fund for the sale, the amount would be transfered
+	///      to the user when deleting the period.
+	/// @param tokenId uint256 of the token ID
 	function deletePeriod(uint256 tokenId) external;
+
+	/// @dev Buys the token that is defined as the specific period on an ad space.
+	///      The price of the token is fixed.
+	/// @param tokenId uint256 of the token ID
+	/// @param msgValue uint256 of the price
+	function soldByFixedPrice(uint256 tokenId, uint256 msgValue) external;
+
+	/// @dev Buys the token that is defined as the specific period on an ad space.
+	///      The price is decreasing as time goes by, that is defined as an Dutch Auction.
+	/// @param tokenId uint256 of the token ID
+	/// @param msgValue uint256 of the price
+	function soldByDutchAuction(uint256 tokenId, uint256 msgValue) external;
 
 	function acceptOffer(
 		uint256 tokenId,
@@ -61,10 +77,6 @@ interface IAdPool {
 		external
 		view
 		returns (string memory, uint256);
-
-	function soldByFixedPrice(uint256 tokenId, uint256 msgValue) external;
-
-	function soldByDutchAuction(uint256 tokenId, uint256 msgValue) external;
 
 	function bidByEnglishAuction(
 		uint256 tokenId,

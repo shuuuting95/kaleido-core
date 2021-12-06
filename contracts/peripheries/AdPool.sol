@@ -53,7 +53,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		uint256 minPrice
 	) external virtual onlyProxies returns (uint256 tokenId) {
 		require(saleEndTimestamp > _blockTimestamp(), "KD111");
-		require(saleEndTimestamp < displayStartTimestamp, "KD112");
+		require(saleEndTimestamp <= displayStartTimestamp, "KD112");
 		require(displayStartTimestamp < displayEndTimestamp, "KD113");
 
 		_addSpaceIfNot(spaceMetadata);
@@ -109,6 +109,29 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		_event().emitDeletePeriod(tokenId);
 	}
 
+	/// @inheritdoc IAdPool
+	function soldByFixedPrice(uint256 tokenId, uint256 msgValue)
+		external
+		onlyProxies
+	{
+		Purchase.checkBeforeBuy(periods[tokenId], msgValue);
+		periods[tokenId].sold = true;
+	}
+
+	/// @inheritdoc IAdPool
+	function soldByDutchAuction(uint256 tokenId, uint256 msgValue)
+		external
+		onlyProxies
+	{
+		Purchase.checkBeforeBuyBasedOnTime(
+			periods[tokenId],
+			currentPrice(tokenId),
+			_blockTimestamp(),
+			msgValue
+		);
+		periods[tokenId].sold = true;
+	}
+
 	function acceptOffer(
 		uint256 tokenId,
 		string memory tokenMetadata,
@@ -142,30 +165,6 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 			offer.displayEndTimestamp,
 			offer.price
 		);
-	}
-
-	// function sold(uint256 tokenId) external onlyProxies {
-	// 	periods[tokenId].sold = true;
-	// }
-
-	function soldByFixedPrice(uint256 tokenId, uint256 msgValue)
-		external
-		onlyProxies
-	{
-		Purchase.checkBeforeBuy(periods[tokenId], msgValue);
-		periods[tokenId].sold = true;
-	}
-
-	function soldByDutchAuction(uint256 tokenId, uint256 msgValue)
-		external
-		onlyProxies
-	{
-		Purchase.checkBeforeBuyBasedOnTime(
-			periods[tokenId],
-			currentPrice(tokenId),
-			msgValue
-		);
-		periods[tokenId].sold = true;
 	}
 
 	function bidByEnglishAuction(

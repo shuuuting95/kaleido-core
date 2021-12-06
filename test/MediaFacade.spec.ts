@@ -515,7 +515,7 @@ describe('MediaFacade', async () => {
       ).to.be.revertedWith('KD121')
     })
 
-    it('should revert because it has already sold', async () => {
+    it('should revert because the price is wrong', async () => {
       const { now, factory, name } = await setupTests()
       const facade = await facadeInstance(factory, name, now)
       const { tokenId } = await defaultPeriodProps(facade, now)
@@ -564,7 +564,6 @@ describe('MediaFacade', async () => {
         tokenId,
         spaceMetadata,
         tokenMetadata,
-        saleEndTimestamp,
         displayEndTimestamp,
         displayStartTimestamp,
       } = await defaultPeriodProps(facade, now)
@@ -573,17 +572,20 @@ describe('MediaFacade', async () => {
       const price = parseEther('0.2')
       await newPeriodWith(facade, {
         now,
+        saleEndTimestamp: now + 3600,
         pricing: pricing,
         minPrice: price,
       })
 
       // 2400/3600 -> 66% passed
       await facade.setTime(now + 2400)
+      await pool.setTime(now + 2400)
 
       const currentPrice = await pool.currentPrice(tokenId)
 
       // slightly passed for its operation
       await facade.setTime(now + 2460)
+      await pool.setTime(now + 2460)
 
       expect(
         await facade
@@ -599,7 +601,7 @@ describe('MediaFacade', async () => {
         spaceMetadata,
         tokenMetadata,
         BigNumber.from(now),
-        BigNumber.from(saleEndTimestamp),
+        BigNumber.from(now + 3600),
         BigNumber.from(displayStartTimestamp),
         BigNumber.from(displayEndTimestamp),
         pricing,
@@ -627,6 +629,32 @@ describe('MediaFacade', async () => {
           .connect(user3)
           .buyBasedOnTime(tokenId, option({ value: currentPrice }))
       ).to.be.revertedWith('KD123')
+    })
+
+    it('should revert because the sale has ended', async () => {
+      const { now, factory, name, event, pool, vault } = await setupTests()
+      const facade = await facadeInstance(factory, name, now)
+      const { tokenId } = await defaultPeriodProps(facade, now)
+
+      const pricing = 1
+      const price = parseEther('0.2')
+      await newPeriodWith(facade, {
+        now,
+        saleEndTimestamp: now + 3600,
+        pricing: pricing,
+        minPrice: price,
+      })
+
+      // 4000/3600 -> over 100% passed
+      await facade.setTime(now + 4000)
+      await pool.setTime(now + 4000)
+
+      const currentPrice = await pool.currentPrice(tokenId)
+      await expect(
+        facade
+          .connect(user3)
+          .buyBasedOnTime(tokenId, option({ value: currentPrice }))
+      ).to.be.revertedWith('KD129')
     })
   })
 
