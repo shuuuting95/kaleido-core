@@ -19,6 +19,11 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		_;
 	}
 
+	modifier onlyAdPool() {
+		require(msg.sender == adPoolAddress(), "KD011");
+		_;
+	}
+
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
 	}
@@ -27,23 +32,24 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		uint256 tokenId,
 		address sender,
 		uint256 value
-	) external virtual override onlyProxies {
+	) external virtual override onlyAdPool returns (Sale.Bidding memory prev) {
+		prev = _bidding[tokenId];
 		_bidding[tokenId] = Sale.Bidding(tokenId, sender, value);
-		_eventEmitter().emitBid(tokenId, value, sender, _blockTimestamp());
+		_event().emitBid(tokenId, value, sender, _blockTimestamp());
 	}
 
 	function receiveToken(uint256 tokenId)
 		external
 		virtual
 		override
-		onlyProxies
+		onlyAdPool
 		returns (address bidder, uint256 price)
 	{
 		_checkBeforeReceiveToken(tokenId);
 		bidder = _bidding[tokenId].bidder;
 		price = _bidding[tokenId].price;
 		delete _bidding[tokenId];
-		_eventEmitter().emitReceiveToken(tokenId, price, bidder, _blockTimestamp());
+		_event().emitReceiveToken(tokenId, price, bidder, _blockTimestamp());
 	}
 
 	function bidding(uint256 tokenId)
@@ -82,7 +88,7 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		return IAdPool(adPoolAddress());
 	}
 
-	function _eventEmitter() internal view virtual returns (IEventEmitter) {
+	function _event() internal view virtual returns (IEventEmitter) {
 		return IEventEmitter(eventEmitterAddress());
 	}
 

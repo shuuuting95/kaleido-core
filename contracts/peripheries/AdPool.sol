@@ -6,13 +6,19 @@ import "../common/BlockTimestamp.sol";
 import "../interfaces/IAdPool.sol";
 import "../interfaces/IMediaRegistry.sol";
 import "../interfaces/IEventEmitter.sol";
+import "../interfaces/IOfferBid.sol";
+import "../interfaces/IEnglishAuction.sol";
+import "../interfaces/IProposalReview.sol";
+import "../interfaces/IOpenBid.sol";
 import "../libraries/Schedule.sol";
+import "../libraries/Purchase.sol";
 
 /// @title AdPool - stores all ads accorss every space.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 	/// @dev tokenId <- metadata * displayStartTimestamp * displayEndTimestamp
 	mapping(uint256 => Ad.Period) public periods;
+
 	/// @dev Returns spaceId that is tied with space metadata.
 	mapping(string => bool) public spaced;
 
@@ -32,7 +38,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 	function addSpace(string memory metadata) external virtual onlyProxies {
 		require(!spaced[metadata], "KD100");
 		spaced[metadata] = true;
-		_eventEmitter().emitNewSpace(metadata);
+		_event().emitNewSpace(metadata);
 	}
 
 	/// @inheritdoc IAdPool
@@ -73,7 +79,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		period.startPrice = Sale.startPrice(period);
 		periods[tokenId] = period;
 		_periodKeys[spaceMetadata].push(tokenId);
-		_eventEmitter().emitNewPeriod(
+		_event().emitNewPeriod(
 			tokenId,
 			spaceMetadata,
 			tokenMetadata,
@@ -88,6 +94,8 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 
 	/// @inheritdoc IAdPool
 	function deletePeriod(uint256 tokenId) external virtual onlyProxies {
+		require(periods[tokenId].mediaProxy != address(0), "KD114");
+		require(!_alreadyBid(tokenId), "KD128");
 		string memory spaceMetadata = periods[tokenId].spaceMetadata;
 		uint256 index = 0;
 		for (uint256 i = 1; i < _periodKeys[spaceMetadata].length + 1; i++) {
@@ -98,7 +106,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		require(index != 0, "No deletable keys");
 		delete _periodKeys[spaceMetadata][index - 1];
 		delete periods[tokenId];
-		_eventEmitter().emitDeletePeriod(tokenId);
+		_event().emitDeletePeriod(tokenId);
 	}
 
 	function acceptOffer(
@@ -126,7 +134,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		);
 		periods[tokenId] = period;
 		_periodKeys[offer.spaceMetadata].push(tokenId);
-		_eventEmitter().emitAcceptOffer(
+		_event().emitAcceptOffer(
 			tokenId,
 			offer.spaceMetadata,
 			tokenMetadata,
@@ -136,8 +144,65 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		);
 	}
 
-	function sold(uint256 tokenId) external onlyProxies {
+	// function sold(uint256 tokenId) external onlyProxies {
+	// 	periods[tokenId].sold = true;
+	// }
+
+	function soldByFixedPrice(uint256 tokenId, uint256 msgValue)
+		external
+		onlyProxies
+	{
+		Purchase.checkBeforeBuy(periods[tokenId], msgValue);
 		periods[tokenId].sold = true;
+	}
+
+	function soldByDutchAuction(uint256 tokenId, uint256 msgValue)
+		external
+		onlyProxies
+	{
+		Purchase.checkBeforeBuyBasedOnTime(
+			periods[tokenId],
+			currentPrice(tokenId),
+			msgValue
+		);
+		periods[tokenId].sold = true;
+	}
+
+	function bidByEnglishAuction(
+		uint256 tokenId,
+		address msgSender,
+		uint256 msgValue
+	) external onlyProxies returns (Sale.Bidding memory) {
+		Purchase.checkBeforeBid(
+			periods[tokenId],
+			currentPrice(tokenId),
+			_blockTimestamp(),
+			msgValue
+		);
+		return _english().bid(tokenId, msgSender, msgValue);
+	}
+
+	function soldByEnglishAuction(uint256 tokenId)
+		external
+		onlyProxies
+		returns (address bidder, uint256 price)
+	{
+		(bidder, price) = _english().receiveToken(tokenId);
+		periods[tokenId].sold = true;
+	}
+
+	function bidWithProposal(
+		uint256 tokenId,
+		string memory proposalMetadata,
+		address msgSender,
+		uint256 msgValue
+	) external onlyProxies {
+		Purchase.checkBeforeBidWithProposal(
+			periods[tokenId],
+			_blockTimestamp(),
+			msgValue
+		);
+		_openBid().bid(tokenId, proposalMetadata, msgSender, msgValue);
 	}
 
 	function allPeriods(uint256 tokenId)
@@ -146,6 +211,56 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		returns (Ad.Period memory)
 	{
 		return periods[tokenId];
+	}
+
+	/// @dev Returns the current price.
+	/// @param tokenId uint256 of the token ID
+	function currentPrice(uint256 tokenId) public view virtual returns (uint256) {
+		Ad.Period memory period = periods[tokenId];
+		if (period.pricing == Ad.Pricing.RRP) {
+			return period.minPrice;
+		}
+		if (period.pricing == Ad.Pricing.DUTCH) {
+			return
+				period.startPrice -
+				((period.startPrice - period.minPrice) *
+					(_blockTimestamp() - period.saleStartTimestamp)) /
+				(period.saleEndTimestamp - period.saleStartTimestamp);
+		}
+		if (period.pricing == Ad.Pricing.ENGLISH) {
+			return _english().currentPrice(tokenId);
+		}
+		if (period.pricing == Ad.Pricing.OFFER) {
+			return _offerBid().currentPrice(tokenId);
+		}
+		if (period.pricing == Ad.Pricing.OPEN) {
+			return 0;
+		}
+		revert("not exist");
+	}
+
+	/// @dev Displays the ad content that is approved by the media owner.
+	/// @param spaceMetadata string of the space metadata
+	function display(string memory spaceMetadata)
+		external
+		view
+		virtual
+		returns (string memory, uint256)
+	{
+		uint256[] memory tokenIds = tokenIdsOf(spaceMetadata);
+		for (uint256 i = 0; i < tokenIds.length; i++) {
+			if (tokenIds[i] != 0) {
+				Ad.Period memory period = periods[tokenIds[i]];
+				if (
+					period.displayStartTimestamp <= _blockTimestamp() &&
+					period.displayEndTimestamp >= _blockTimestamp()
+				) {
+					string memory content = _review().acceptedContent(tokenIds[i]);
+					return (content, tokenIds[i]);
+				}
+			}
+		}
+		return ("", 0);
 	}
 
 	/// @inheritdoc IAdPool
@@ -172,15 +287,18 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		return _periodKeys[spaceMetadata];
 	}
 
+	function _alreadyBid(uint256 tokenId) internal view virtual returns (bool) {
+		return
+			_english().bidding(tokenId).bidder != address(0) ||
+			_openBid().biddingList(tokenId).length != 0;
+	}
+
 	function _checkOverlapping(
 		string memory metadata,
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp
 	) internal view virtual {
 		for (uint256 i = 0; i < _periodKeys[metadata].length; i++) {
-			// Ad.Period memory existing = _adPool().allPeriods(
-			// 	_periodKeys[metadata][i]
-			// );
 			uint256 existDisplayStart = displayStart(_periodKeys[metadata][i]);
 			uint256 existDisplayEnd = displayEnd(_periodKeys[metadata][i]);
 
@@ -200,7 +318,7 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 	function _addSpaceIfNot(string memory metadata) internal {
 		if (!spaced[metadata]) {
 			spaced[metadata] = true;
-			_eventEmitter().emitNewSpace(metadata);
+			_event().emitNewSpace(metadata);
 		}
 	}
 
@@ -211,7 +329,23 @@ contract AdPool is IAdPool, BlockTimestamp, NameAccessor {
 		return IMediaRegistry(mediaRegistryAddress());
 	}
 
-	function _eventEmitter() internal view virtual returns (IEventEmitter) {
+	function _event() internal view virtual returns (IEventEmitter) {
 		return IEventEmitter(eventEmitterAddress());
+	}
+
+	function _offerBid() internal view virtual returns (IOfferBid) {
+		return IOfferBid(offerBidAddress());
+	}
+
+	function _english() internal view virtual returns (IEnglishAuction) {
+		return IEnglishAuction(englishAuctionAddress());
+	}
+
+	function _review() internal view virtual returns (IProposalReview) {
+		return IProposalReview(proposalReviewAddress());
+	}
+
+	function _openBid() internal view virtual returns (IOpenBid) {
+		return IOpenBid(openBidAddress());
 	}
 }

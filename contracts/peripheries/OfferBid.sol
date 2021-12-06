@@ -39,7 +39,7 @@ contract OfferBid is IOfferBid, NameAccessor {
 			sender,
 			value
 		);
-		_eventEmitter().emitOfferPeriod(
+		_event().emitOfferPeriod(
 			tokenId,
 			spaceMetadata,
 			displayStartTimestamp,
@@ -53,10 +53,12 @@ contract OfferBid is IOfferBid, NameAccessor {
 		external
 		virtual
 		onlyProxies
+		returns (Sale.Offer memory prev)
 	{
 		require(_offered[tokenId].sender == sender, "KD116");
+		prev = _offered[tokenId];
 		delete _offered[tokenId];
-		_eventEmitter().emitCancelOffer(tokenId);
+		_event().emitCancelOffer(tokenId);
 	}
 
 	function accept(uint256 tokenId)
@@ -91,7 +93,7 @@ contract OfferBid is IOfferBid, NameAccessor {
 		return IAdPool(adPoolAddress());
 	}
 
-	function _eventEmitter() internal view virtual returns (IEventEmitter) {
+	function _event() internal view virtual returns (IEventEmitter) {
 		return IEventEmitter(eventEmitterAddress());
 	}
 

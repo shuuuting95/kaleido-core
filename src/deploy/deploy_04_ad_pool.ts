@@ -12,6 +12,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const Ad = await deployments.get('Ad')
   const Schedule = await deployments.get('Schedule')
   const Sale = await deployments.get('Sale')
+  const Purchase = await deployments.get('Purchase')
 
   const target = hre.network.name === 'hardhat' ? 'MockTimeAdPool' : 'AdPool'
 
@@ -24,6 +25,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       Ad: Ad.address,
       Schedule: Schedule.address,
       Sale: Sale.address,
+      Purchase: Purchase.address,
     },
   })
 

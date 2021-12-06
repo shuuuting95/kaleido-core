@@ -19,6 +19,11 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		_;
 	}
 
+	modifier onlyAdPool() {
+		require(msg.sender == adPoolAddress(), "KD011");
+		_;
+	}
+
 	constructor(address _nameRegistry) {
 		initialize(_nameRegistry);
 	}
@@ -28,9 +33,9 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		string memory proposal,
 		address sender,
 		uint256 value
-	) external virtual onlyProxies {
+	) external virtual onlyAdPool {
 		_bidding[tokenId].push(Sale.OpenBid(tokenId, sender, value, proposal));
-		_eventEmitter().emitBidWithProposal(
+		_event().emitBidWithProposal(
 			tokenId,
 			value,
 			sender,
@@ -64,15 +69,17 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		external
 		virtual
 		onlyProxies
-		returns (address successfulBidder)
+		returns (Sale.OpenBid memory selected, Sale.OpenBid[] memory nonSelected)
 	{
 		require(
 			_adPool().allPeriods(tokenId).saleEndTimestamp < _blockTimestamp(),
 			"KD129"
 		);
-		successfulBidder = bidding(tokenId, index).sender;
+		selected = bidding(tokenId, index);
+		delete _bidding[tokenId][index];
+		nonSelected = _bidding[tokenId];
 		delete _bidding[tokenId];
-		_eventEmitter().emitSelectProposal(tokenId, successfulBidder);
+		_event().emitSelectProposal(tokenId, selected.sender);
 	}
 
 	/**
@@ -82,7 +89,7 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		return IAdPool(adPoolAddress());
 	}
 
-	function _eventEmitter() internal view virtual returns (IEventEmitter) {
+	function _event() internal view virtual returns (IEventEmitter) {
 		return IEventEmitter(eventEmitterAddress());
 	}
 

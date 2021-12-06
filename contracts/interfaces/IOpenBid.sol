@@ -25,5 +25,5 @@ interface IOpenBid {
 
 	function selectProposal(uint256 tokenId, uint256 index)
 		external
-		returns (address successfulBidder);
+		returns (Sale.OpenBid memory selected, Sale.OpenBid[] memory nonSelected);
 }

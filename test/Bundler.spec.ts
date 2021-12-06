@@ -1,11 +1,11 @@
 // import { expect } from 'chai'
 // import { ethers } from 'ethers'
 // import { deployments, network, waffle } from 'hardhat'
-// import { getAdManagerABI } from '../scripts/common/file'
-// import { buyWith, newPeriodWith } from './AdManager.spec'
+// import { getMediaFacadeABI } from '../scripts/common/file'
+// import { buyWith, newPeriodWith } from './MediaFacade.spec'
 // import { newMediaWith } from './MediaFactory.spec'
 // import {
-//   getAdManagerContract,
+//   getMediaFacadeContract,
 //   getBundlerContract,
 //   getMediaFactoryContract,
 //   getMediaRegistryContract,
@@ -23,7 +23,7 @@ describe('Bundler', async () => {
   //     return {
   //       now: now,
   //       factory: await getMediaFactoryContract(),
-  //       manager: await getAdManagerContract(),
+  //       manager: await getMediaFacadeContract(),
   //       name: await getNameRegistryContract(),
   //       registry: await getMediaRegistryContract(),
   //       vault: await getVaultContract(),
@@ -31,7 +31,7 @@ describe('Bundler', async () => {
   //     }
   //   })
   //   const _manager = (proxy: string) =>
-  //     new ethers.Contract(proxy, getAdManagerABI(), user1)
+  //     new ethers.Contract(proxy, getMediaFacadeABI(), user1)
   //   describe('bundleToken', async () => {
   //     it('should bundle', async () => {
   //       const { now, factory, name, vault, bundler } = await setupTests()

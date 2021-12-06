@@ -14,7 +14,9 @@ interface IOfferBid {
 		uint256 value
 	) external returns (uint256);
 
-	function cancel(uint256 tokenId, address sender) external;
+	function cancel(uint256 tokenId, address sender)
+		external
+		returns (Sale.Offer memory);
 
 	function accept(uint256 tokenId) external returns (Sale.Offer memory);
 

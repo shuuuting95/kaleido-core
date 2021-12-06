@@ -1,11 +1,10 @@
 import hre, { deployments } from 'hardhat'
 
-export const getAdManagerContract = async () => {
-  const Deployment = await deployments.get('MockTimeAdManager')
-  const contract = await hre.ethers.getContractFactory('MockTimeAdManager', {
+export const getMediaFacadeContract = async () => {
+  const Deployment = await deployments.get('MockTimeMediaFacade')
+  const contract = await hre.ethers.getContractFactory('MockTimeMediaFacade', {
     libraries: {
       Ad: (await deployments.get('Ad')).address,
-      Purchase: (await deployments.get('Purchase')).address,
     },
   })
   return contract.attach(Deployment.address)
@@ -53,6 +52,7 @@ export const getAdPoolContract = async () => {
       Ad: (await deployments.get('Ad')).address,
       Schedule: (await deployments.get('Schedule')).address,
       Sale: (await deployments.get('Sale')).address,
+      Purchase: (await deployments.get('Purchase')).address,
     },
   })
   return contract.attach(Deployment.address)

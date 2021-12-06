@@ -29,7 +29,7 @@ abstract contract AbstractProxy is IProxy {
 
 	function _fallback() internal {
 		address _singleton = NameRegistry(masterCopy()).get(
-			keccak256(abi.encodePacked("AdManager"))
+			keccak256(abi.encodePacked("MediaFacade"))
 		);
 		// solhint-disable-next-line no-inline-assembly
 		assembly {

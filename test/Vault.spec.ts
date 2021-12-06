@@ -2,11 +2,11 @@ import { parseEther } from '@ethersproject/units'
 import { expect } from 'chai'
 import { ethers } from 'ethers'
 import { deployments, network, waffle } from 'hardhat'
-import { getAdManagerABI } from '../scripts/common/file'
+import { getMediaFacadeABI } from '../scripts/common/file'
 import { option } from '../scripts/common/wallet'
 import { newMediaWith } from './MediaFactory.spec'
 import {
-  getAdManagerContract,
+  getMediaFacadeContract,
   getMediaFactoryContract,
   getMediaRegistryContract,
   getNameRegistryContract,
@@ -24,14 +24,14 @@ describe('Vault', async () => {
     return {
       now: now,
       factory: await getMediaFactoryContract(),
-      manager: await getAdManagerContract(),
+      manager: await getMediaFacadeContract(),
       name: await getNameRegistryContract(),
       registry: await getMediaRegistryContract(),
       vault: await getVaultContract(),
     }
   })
   const _manager = (proxy: string) =>
-    new ethers.Contract(proxy, getAdManagerABI(), user1)
+    new ethers.Contract(proxy, getMediaFacadeABI(), user1)
 
   describe('withdraw', async () => {
     it('should withdraw fees', async () => {

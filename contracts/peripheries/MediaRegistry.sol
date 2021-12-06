@@ -4,7 +4,7 @@ pragma solidity 0.8.9;
 import "../accessors/NameAccessor.sol";
 import "../common/BlockTimestamp.sol";
 import "../interfaces/IMediaRegistry.sol";
-import "hardhat/console.sol";
+import "../interfaces/IEventEmitter.sol";
 
 /// @title MediaRegistry - registers a list of media accounts.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
@@ -13,6 +13,12 @@ contract MediaRegistry is IMediaRegistry, BlockTimestamp, NameAccessor {
 
 	modifier onlyProxies() {
 		require(ownerOf(msg.sender) != address(0), "KD011");
+		_;
+	}
+
+	/// @dev Throws if not called by MediaFactory.
+	modifier onlyFactory() {
+		require(msg.sender == mediaFactoryAddress(), "KD010");
 		_;
 	}
 
@@ -50,6 +56,7 @@ contract MediaRegistry is IMediaRegistry, BlockTimestamp, NameAccessor {
 	{
 		allAccounts[msg.sender].mediaEOA = mediaEOA;
 		allAccounts[msg.sender].updatableMetadata = metadata;
+		_event().emitUpdateMedia(msg.sender, mediaEOA, metadata);
 	}
 
 	function updateApplicationMetadata(address proxy, string memory metadata)
@@ -69,5 +76,9 @@ contract MediaRegistry is IMediaRegistry, BlockTimestamp, NameAccessor {
 	/// @param proxy address of the proxy contract that represents an account.
 	function ownerOf(address proxy) public view returns (address) {
 		return allAccounts[proxy].mediaEOA;
+	}
+
+	function _event() internal view virtual returns (IEventEmitter) {
+		return IEventEmitter(eventEmitterAddress());
 	}
 }

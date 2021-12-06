@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.9;
 
-import "../AdManager.sol";
+import "../MediaFacade.sol";
 
-contract MockTimeAdManager is AdManager {
+contract MockTimeMediaFacade is MediaFacade {
 	uint256 public time;
 
 	function _blockTimestamp() internal view override returns (uint256) {

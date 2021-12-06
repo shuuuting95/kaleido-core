@@ -2,9 +2,8 @@
 pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./base/DistributionRight.sol";
+import "./base/ERC721.sol";
 import "./base/Storage.sol";
-import "./libraries/Purchase.sol";
 import "./libraries/Sale.sol";
 import "./common/BlockTimestamp.sol";
 import "./accessors/NameAccessor.sol";
@@ -16,10 +15,10 @@ import "./interfaces/IOpenBid.sol";
 import "./interfaces/IOfferBid.sol";
 import "./interfaces/IProposalReview.sol";
 
-/// @title AdManager - manages ad spaces and its periods to sell them to users.
+/// @title MediaFacade - A root contract that calls the processes of each media.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
-contract AdManager is
-	DistributionRight,
+contract MediaFacade is
+	ERC721,
 	ReentrancyGuard,
 	NameAccessor,
 	BlockTimestamp,
@@ -32,7 +31,7 @@ contract AdManager is
 	}
 
 	/// @dev Prevents the media from calling by yourself
-	modifier exceptYourself() {
+	modifier exceptMedia() {
 		require(_mediaRegistry().ownerOf(address(this)) != msg.sender, "KD014");
 		_;
 	}
@@ -78,7 +77,6 @@ contract AdManager is
 		onlyMedia
 	{
 		_mediaRegistry().updateMedia(newMediaEOA, newMetadata);
-		_eventEmitter().emitUpdateMedia(address(this), newMediaEOA, newMetadata);
 	}
 
 	/// @dev Creates a new space for the media account.
@@ -116,7 +114,6 @@ contract AdManager is
 			minPrice
 		);
 		_mintRight(address(this), tokenId, tokenMetadata);
-		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
 	}
 
 	/// @dev Deletes a period and its token.
@@ -124,24 +121,19 @@ contract AdManager is
 	///      to the user when deleting the period.
 	/// @param tokenId uint256 of the token ID
 	function deletePeriod(uint256 tokenId) external virtual onlyMedia {
-		require(_adPool().allPeriods(tokenId).mediaProxy != address(0), "KD114");
 		require(ownerOf(tokenId) == address(this), "KD121");
-		require(!_alreadyBid(tokenId), "KD128");
-		_burnRight(tokenId);
 		_adPool().deletePeriod(tokenId);
-		_eventEmitter().emitTransferCustom(address(this), address(0), tokenId);
+		_burnRight(tokenId);
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
 	///      The price of the token is fixed.
 	/// @param tokenId uint256 of the token ID
-	function buy(uint256 tokenId) external payable virtual exceptYourself {
-		Purchase.checkBeforeBuy(_adPool().allPeriods(tokenId), msg.value);
-		_adPool().sold(tokenId);
+	function buy(uint256 tokenId) external payable virtual exceptMedia {
+		_adPool().soldByFixedPrice(tokenId, msg.value);
 		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
-		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
-		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
+		_event().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
 	/// @dev Buys the token that is defined as the specific period on an ad space.
@@ -151,18 +143,12 @@ contract AdManager is
 		external
 		payable
 		virtual
-		exceptYourself
+		exceptMedia
 	{
-		Purchase.checkBeforeBuyBasedOnTime(
-			_adPool().allPeriods(tokenId),
-			currentPrice(tokenId),
-			msg.value
-		);
-		_adPool().sold(tokenId);
+		_adPool().soldByDutchAuction(tokenId, msg.value);
 		_dropRight(msg.sender, tokenId);
 		_collectFees(msg.value / 10);
-		_eventEmitter().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
-		_eventEmitter().emitTransferCustom(address(this), msg.sender, tokenId);
+		_event().emitBuy(tokenId, msg.value, msg.sender, _blockTimestamp());
 	}
 
 	/// @dev Bids to participate in an auction.
@@ -172,18 +158,16 @@ contract AdManager is
 		external
 		payable
 		virtual
-		exceptYourself
+		exceptMedia
 		nonReentrant
 	{
-		Purchase.checkBeforeBid(
-			_adPool().allPeriods(tokenId),
-			currentPrice(tokenId),
-			_blockTimestamp(),
+		Sale.Bidding memory prev = _adPool().bidByEnglishAuction(
+			tokenId,
+			msg.sender,
 			msg.value
 		);
-		uint256 refunded = _refundBiddingAmount(tokenId);
-		_english().bid(tokenId, msg.sender, msg.value);
-		_processingTotal += (msg.value - refunded);
+		_refundBiddingAmount(prev);
+		_processingTotal += (msg.value - prev.price);
 	}
 
 	/// @dev Bids to participate in an auction.
@@ -194,16 +178,10 @@ contract AdManager is
 		external
 		payable
 		virtual
-		exceptYourself
-		nonReentrant
+		exceptMedia
 	{
-		Purchase.checkBeforeBidWithProposal(
-			_adPool().allPeriods(tokenId),
-			_blockTimestamp(),
-			msg.value
-		);
+		_adPool().bidWithProposal(tokenId, proposalMetadata, msg.sender, msg.value);
 		_processingTotal += msg.value;
-		_openBid().bid(tokenId, proposalMetadata, msg.sender, msg.value);
 	}
 
 	/// @dev Selects the best proposal bidded with.
@@ -213,53 +191,26 @@ contract AdManager is
 		external
 		virtual
 		onlyMedia
+		nonReentrant
 	{
-		_refundToProposers(tokenId, index);
-		address successfulBidder = _openBid().selectProposal(tokenId, index);
-		_dropRight(successfulBidder, tokenId);
-		_eventEmitter().emitTransferCustom(
-			address(this),
-			successfulBidder,
-			tokenId
-		);
+		(
+			Sale.OpenBid memory selected,
+			Sale.OpenBid[] memory nonSelected
+		) = _openBid().selectProposal(tokenId, index);
+		_dropRight(selected.sender, tokenId);
+		_processingTotal -= selected.price;
+		_collectFees(selected.price / 10);
+		_refundToProposers(nonSelected);
 	}
 
-	function _refundToProposers(uint256 tokenId, uint256 index) internal virtual {
-		Sale.OpenBid[] memory _biddings = _openBid().biddingList(tokenId);
-
-		for (uint256 i = 0; i < _biddings.length; i++) {
-			Sale.OpenBid memory target = _biddings[i];
-			_processingTotal -= target.price;
-			if (i == index) {
-				_collectFees(target.price / 10);
-			} else {
-				(bool success, ) = payable(target.sender).call{
-					value: target.price,
-					gas: 10000
-				}("");
-				if (!success) {
-					_eventEmitter().emitPaymentFailure(target.sender, target.price);
-				}
-			}
-		}
-	}
-
-	function _refundBiddingAmount(uint256 tokenId)
+	function _refundToProposers(Sale.OpenBid[] memory nonSelected)
 		internal
 		virtual
-		returns (uint256 refunded)
 	{
-		Ad.Period memory period = _adPool().allPeriods(tokenId);
-		Sale.Bidding memory _bidding = _english().bidding(tokenId);
-		if (period.pricing == Ad.Pricing.ENGLISH && _bidding.bidder != address(0)) {
-			(bool success, ) = payable(_bidding.bidder).call{
-				value: _bidding.price,
-				gas: 10000
-			}("");
-			refunded = _bidding.price;
-			if (!success) {
-				_eventEmitter().emitPaymentFailure(_bidding.bidder, _bidding.price);
-			}
+		for (uint256 i = 0; i < nonSelected.length; i++) {
+			Sale.OpenBid memory target = nonSelected[i];
+			_processingTotal -= target.price;
+			_pay(target.sender, target.price);
 		}
 	}
 
@@ -287,7 +238,7 @@ contract AdManager is
 		string memory spaceMetadata,
 		uint256 displayStartTimestamp,
 		uint256 displayEndTimestamp
-	) external payable virtual exceptYourself {
+	) external payable virtual exceptMedia {
 		_offerBid().offer(
 			spaceMetadata,
 			displayStartTimestamp,
@@ -300,28 +251,33 @@ contract AdManager is
 
 	/// @dev Cancels an offer.
 	/// @param tokenId uint256 of the token ID
-	function cancelOffer(uint256 tokenId) external virtual exceptYourself {
-		uint256 offeredPrice = _refundOfferedAmount(tokenId);
-		_offerBid().cancel(tokenId, msg.sender);
-		_processingTotal -= offeredPrice;
+	function cancelOffer(uint256 tokenId)
+		external
+		virtual
+		exceptMedia
+		nonReentrant
+	{
+		Sale.Offer memory prev = _offerBid().cancel(tokenId, msg.sender);
+		_refundOfferedAmount(prev);
+		_processingTotal -= prev.price;
 	}
 
-	function _refundOfferedAmount(uint256 tokenId)
+	function _refundBiddingAmount(Sale.Bidding memory prev) internal virtual {
+		_pay(prev.bidder, prev.price);
+	}
+
+	function _refundOfferedAmount(Sale.Offer memory prev) internal virtual {
+		_pay(prev.sender, prev.price);
+	}
+
+	function _pay(address receiver, uint256 price)
 		internal
 		virtual
-		returns (uint256 offeredPrice)
+		returns (bool success)
 	{
-		Ad.Period memory period = _adPool().allPeriods(tokenId);
-		Sale.Offer memory _offered = _offerBid().offered(tokenId);
-		if (period.pricing == Ad.Pricing.OFFER && _offered.sender != address(0)) {
-			(bool success, ) = payable(_offered.sender).call{
-				value: _offered.price,
-				gas: 10000
-			}("");
-			offeredPrice = _offered.price;
-			if (!success) {
-				_eventEmitter().emitPaymentFailure(_offered.sender, _offered.price);
-			}
+		(success, ) = payable(receiver).call{ value: price, gas: 10000 }("");
+		if (!success) {
+			_event().emitPaymentFailure(receiver, price);
 		}
 	}
 
@@ -338,22 +294,14 @@ contract AdManager is
 		_mintRight(target.sender, tokenId, tokenMetadata);
 		_collectFees(target.price / 10);
 		_processingTotal -= target.price;
-		_eventEmitter().emitTransferCustom(address(0), address(this), tokenId);
 	}
 
 	/// @dev Withdraws the fund deposited to the proxy contract.
 	///      If you put 0 as the amount, you can withdraw as much as possible.
 	function withdraw() external virtual onlyMedia {
 		uint256 withdrawal = withdrawalAmount();
-		(bool success, ) = payable(msg.sender).call{
-			value: withdrawal,
-			gas: 10000
-		}("");
-		if (success) {
-			_eventEmitter().emitWithdraw(withdrawal);
-		} else {
-			_eventEmitter().emitPaymentFailure(msg.sender, withdrawal);
-		}
+		bool success = _pay(msg.sender, withdrawal);
+		if (success) _event().emitWithdraw(withdrawal);
 	}
 
 	/// @dev Proposes the metadata to the token you bought.
@@ -392,7 +340,7 @@ contract AdManager is
 		uint256 tokenId
 	) public virtual override {
 		super.transferFrom(from, to, tokenId);
-		_eventEmitter().emitTransferCustom(from, to, tokenId);
+		_event().emitTransferCustom(from, to, tokenId);
 	}
 
 	/// @dev Overrides transferFrom to emit an event from the common emitter.
@@ -402,7 +350,7 @@ contract AdManager is
 		uint256 tokenId
 	) public virtual override {
 		super.safeTransferFrom(from, to, tokenId);
-		_eventEmitter().emitTransferCustom(from, to, tokenId);
+		_event().emitTransferCustom(from, to, tokenId);
 	}
 
 	/// @dev Returns ID based on the space metadata, display start timestamp, and
@@ -428,80 +376,18 @@ contract AdManager is
 		return address(this).balance - _processingTotal;
 	}
 
-	/// @dev Displays the ad content that is approved by the media owner.
-	/// @param spaceMetadata string of the space metadata
-	function display(string memory spaceMetadata)
-		external
-		view
-		virtual
-		returns (string memory, uint256)
-	{
-		uint256[] memory tokenIds = _adPool().tokenIdsOf(spaceMetadata);
-		for (uint256 i = 0; i < tokenIds.length; i++) {
-			if (tokenIds[i] != 0) {
-				Ad.Period memory period = _adPool().allPeriods(tokenIds[i]);
-				if (
-					period.displayStartTimestamp <= _blockTimestamp() &&
-					period.displayEndTimestamp >= _blockTimestamp()
-				) {
-					string memory content = _review().acceptedContent(tokenIds[i]);
-					return (content, tokenIds[i]);
-				}
-			}
-		}
-		return ("", 0);
-	}
-
 	function _toSuccessfulBidder(uint256 tokenId, address receiver)
 		internal
 		virtual
 	{
-		(address bidder, uint256 price) = _english().receiveToken(tokenId);
-		_adPool().sold(tokenId);
+		(, uint256 price) = _adPool().soldByEnglishAuction(tokenId);
 		_processingTotal -= price;
-		_dropRight(bidder, tokenId);
+		_dropRight(receiver, tokenId);
 		_collectFees(price / 10);
-		_eventEmitter().emitTransferCustom(address(this), receiver, tokenId);
 	}
 
 	function _collectFees(uint256 value) internal virtual {
-		address vault = vaultAddress();
-		(bool success, ) = payable(vault).call{ value: value, gas: 10000 }("");
-		if (!success) {
-			_eventEmitter().emitPaymentFailure(vault, value);
-		}
-	}
-
-	/// @dev Returns the current price.
-	/// @param tokenId uint256 of the token ID
-	function currentPrice(uint256 tokenId) public view virtual returns (uint256) {
-		Ad.Period memory period = _adPool().allPeriods(tokenId);
-		if (period.pricing == Ad.Pricing.RRP) {
-			return period.minPrice;
-		}
-		if (period.pricing == Ad.Pricing.DUTCH) {
-			return
-				period.startPrice -
-				((period.startPrice - period.minPrice) *
-					(_blockTimestamp() - period.saleStartTimestamp)) /
-				(period.saleEndTimestamp - period.saleStartTimestamp);
-		}
-		if (period.pricing == Ad.Pricing.ENGLISH) {
-			return _english().currentPrice(tokenId);
-		}
-		if (period.pricing == Ad.Pricing.OFFER) {
-			return _offerBid().currentPrice(tokenId);
-		}
-		if (period.pricing == Ad.Pricing.OPEN) {
-			return 0;
-		}
-		revert("not exist");
-	}
-
-	function _alreadyBid(uint256 tokenId) internal view virtual returns (bool) {
-		return
-			_english().bidding(tokenId).bidder != address(0) ||
-			_openBid().biddingList(tokenId).length != 0;
+		_pay(vaultAddress(), value);
 	}
 
 	/**
@@ -515,7 +401,7 @@ contract AdManager is
 		return IAdPool(adPoolAddress());
 	}
 
-	function _eventEmitter() internal view virtual returns (IEventEmitter) {
+	function _event() internal view virtual returns (IEventEmitter) {
 		return IEventEmitter(eventEmitterAddress());
 	}
 
@@ -533,5 +419,27 @@ contract AdManager is
 
 	function _review() internal view virtual returns (IProposalReview) {
 		return IProposalReview(proposalReviewAddress());
+	}
+
+	function _mintRight(
+		address reciever,
+		uint256 tokenId,
+		string memory metadata
+	) internal virtual {
+		_mint(reciever, tokenId);
+		_tokenURIs[tokenId] = metadata;
+		if (tokenId != 0)
+			_event().emitTransferCustom(address(0), reciever, tokenId);
+	}
+
+	function _burnRight(uint256 tokenId) internal virtual {
+		_burn(tokenId);
+		_tokenURIs[tokenId] = "";
+		_event().emitTransferCustom(address(this), address(0), tokenId);
+	}
+
+	function _dropRight(address receiver, uint256 tokenId) internal virtual {
+		_transfer(address(this), receiver, tokenId);
+		_event().emitTransferCustom(address(this), receiver, tokenId);
 	}
 }
