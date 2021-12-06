@@ -30,10 +30,7 @@ contract ProposalReview is IProposalReview, BlockTimestamp, NameAccessor {
 		initialize(_nameRegistry);
 	}
 
-	/// @dev Proposes the metadata to the token you bought.
-	///      Users can propose many times as long as it is accepted.
-	/// @param tokenId uint256 of the token ID
-	/// @param metadata string of the proposal metadata
+	/// @inheritdoc IProposalReview
 	function propose(
 		uint256 tokenId,
 		string memory metadata,
@@ -43,8 +40,7 @@ contract ProposalReview is IProposalReview, BlockTimestamp, NameAccessor {
 		_event().emitPropose(tokenId, metadata);
 	}
 
-	/// @dev Accepts the proposal.
-	/// @param tokenId uint256 of the token ID
+	/// @inheritdoc IProposalReview
 	function accept(uint256 tokenId) external virtual onlyProxies {
 		string memory metadata = proposed[tokenId].content;
 		require(bytes(metadata).length != 0, "KD130");
@@ -53,10 +49,7 @@ contract ProposalReview is IProposalReview, BlockTimestamp, NameAccessor {
 		_event().emitAcceptProposal(tokenId, metadata);
 	}
 
-	/// @dev Denies the submitted proposal, mentioning what is the problem.
-	/// @param tokenId uint256 of the token ID
-	/// @param reason string of the reason why it is rejected
-	/// @param offensive bool if the content would offend somebody
+	/// @inheritdoc IProposalReview
 	function denyProposal(
 		uint256 tokenId,
 		string memory reason,
@@ -68,10 +61,12 @@ contract ProposalReview is IProposalReview, BlockTimestamp, NameAccessor {
 		_event().emitDenyProposal(tokenId, metadata, reason, offensive);
 	}
 
+	/// @inheritdoc IProposalReview
 	function proposer(uint256 tokenId) external view returns (address) {
 		return proposed[tokenId].proposer;
 	}
 
+	/// @inheritdoc IProposalReview
 	function acceptedContent(uint256 tokenId)
 		external
 		view

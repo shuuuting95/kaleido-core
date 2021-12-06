@@ -286,7 +286,6 @@ contract MediaFacade is
 	/// @dev Accepts the proposal.
 	/// @param tokenId uint256 of the token ID
 	function acceptProposal(uint256 tokenId) external virtual onlyMedia {
-		// require(ownerOf(tokenId) == proposed[tokenId].proposer, "KD131");
 		require(ownerOf(tokenId) == _review().proposer(tokenId), "KD131");
 		_review().accept(tokenId);
 	}

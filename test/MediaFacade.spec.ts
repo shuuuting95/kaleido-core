@@ -1363,12 +1363,14 @@ describe('MediaFacade', async () => {
         value: price,
       })
 
+      expect(await facade.balance()).to.be.eq(parseEther('0.18'))
+      expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0.18'))
       expect(await facade.withdraw())
         .to.emit(event, 'Withdraw')
         .withArgs(parseEther('0.18'))
+      expect(await facade.balance()).to.be.eq(parseEther('0'))
+      expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0'))
     })
-
-    // TODO: withdarawal amount
   })
 
   describe('propose', async () => {
