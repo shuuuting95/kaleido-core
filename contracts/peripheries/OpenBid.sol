@@ -28,6 +28,7 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		initialize(_nameRegistry);
 	}
 
+	/// @inheritdoc IOpenBid
 	function bid(
 		uint256 tokenId,
 		string memory proposal,

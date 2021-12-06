@@ -28,6 +28,7 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		initialize(_nameRegistry);
 	}
 
+	/// @inheritdoc IEnglishAuction
 	function bid(
 		uint256 tokenId,
 		address sender,
@@ -38,6 +39,7 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		_event().emitBid(tokenId, value, sender, _blockTimestamp());
 	}
 
+	/// @inheritdoc IEnglishAuction
 	function receiveToken(uint256 tokenId)
 		external
 		virtual
@@ -61,6 +63,7 @@ contract EnglishAuction is IEnglishAuction, BlockTimestamp, NameAccessor {
 		return _bidding[tokenId];
 	}
 
+	/// @inheritdoc IEnglishAuction
 	function currentPrice(uint256 tokenId)
 		public
 		view
