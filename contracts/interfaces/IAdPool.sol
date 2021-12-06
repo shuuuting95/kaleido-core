@@ -11,8 +11,20 @@ interface IAdPool {
 
 	function spaced(string memory spaceMetadata) external view returns (bool);
 
+	/// @dev Creates a new space for the media account.
+	/// @param spaceMetadata string of the space metadata
 	function addSpace(string memory spaceMetadata) external;
 
+	/// @dev Create a new period for a space. This function requires some params
+	///      to decide which kinds of pricing way and how much price to get started.
+	/// @param proxy address of the media proxy
+	/// @param spaceMetadata string of the space metadata
+	/// @param tokenMetadata string of the token metadata
+	/// @param saleEndTimestamp uint256 of the end timestamp for the sale
+	/// @param displayStartTimestamp uint256 of the start timestamp for the display
+	/// @param displayEndTimestamp uint256 of the end timestamp for the display
+	/// @param pricing uint256 of the pricing way
+	/// @param minPrice uint256 of the minimum price to sell it out
 	function addPeriod(
 		address proxy,
 		string memory spaceMetadata,
