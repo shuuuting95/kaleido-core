@@ -193,30 +193,24 @@ contract AdManager is
 		onlyMedia
 		nonReentrant
 	{
-		// TODO:
-		_refundToProposers(tokenId, index);
-		address successfulBidder = _openBid().selectProposal(tokenId, index);
-		_dropRight(successfulBidder, tokenId);
-		// _event().emitTransferCustom(address(this), successfulBidder, tokenId);
+		(
+			Sale.OpenBid memory selected,
+			Sale.OpenBid[] memory nonSelected
+		) = _openBid().selectProposal(tokenId, index);
+		_dropRight(selected.sender, tokenId);
+		_processingTotal -= selected.price;
+		_collectFees(selected.price / 10);
+		_refundToProposers(nonSelected);
 	}
 
-	function _refundToProposers(uint256 tokenId, uint256 index) internal virtual {
-		Sale.OpenBid[] memory _biddings = _openBid().biddingList(tokenId);
-
-		for (uint256 i = 0; i < _biddings.length; i++) {
-			Sale.OpenBid memory target = _biddings[i];
+	function _refundToProposers(Sale.OpenBid[] memory nonSelected)
+		internal
+		virtual
+	{
+		for (uint256 i = 0; i < nonSelected.length; i++) {
+			Sale.OpenBid memory target = nonSelected[i];
 			_processingTotal -= target.price;
-			if (i == index) {
-				_collectFees(target.price / 10);
-			} else {
-				(bool success, ) = payable(target.sender).call{
-					value: target.price,
-					gas: 10000
-				}("");
-				if (!success) {
-					_event().emitPaymentFailure(target.sender, target.price);
-				}
-			}
+			_pay(target.sender, target.price);
 		}
 	}
 
@@ -269,14 +263,14 @@ contract AdManager is
 	}
 
 	function _refundBiddingAmount(Sale.Bidding memory prev) internal virtual {
-		_refund(prev.bidder, prev.price);
+		_pay(prev.bidder, prev.price);
 	}
 
 	function _refundOfferedAmount(Sale.Offer memory prev) internal virtual {
-		_refund(prev.sender, prev.price);
+		_pay(prev.sender, prev.price);
 	}
 
-	function _refund(address receiver, uint256 price) internal virtual {
+	function _pay(address receiver, uint256 price) internal virtual {
 		(bool success, ) = payable(receiver).call{ value: price, gas: 10000 }("");
 		if (!success) {
 			_event().emitPaymentFailure(receiver, price);
@@ -398,11 +392,7 @@ contract AdManager is
 	}
 
 	function _collectFees(uint256 value) internal virtual {
-		address vault = vaultAddress();
-		(bool success, ) = payable(vault).call{ value: value, gas: 10000 }("");
-		if (!success) {
-			_event().emitPaymentFailure(vault, value);
-		}
+		_pay(vaultAddress(), value);
 	}
 
 	/**

@@ -69,15 +69,17 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		external
 		virtual
 		onlyProxies
-		returns (address successfulBidder)
+		returns (Sale.OpenBid memory selected, Sale.OpenBid[] memory nonSelected)
 	{
 		require(
 			_adPool().allPeriods(tokenId).saleEndTimestamp < _blockTimestamp(),
 			"KD129"
 		);
-		successfulBidder = bidding(tokenId, index).sender;
+		selected = bidding(tokenId, index);
+		delete _bidding[tokenId][index];
+		nonSelected = _bidding[tokenId];
 		delete _bidding[tokenId];
-		_event().emitSelectProposal(tokenId, successfulBidder);
+		_event().emitSelectProposal(tokenId, selected.sender);
 	}
 
 	/**
