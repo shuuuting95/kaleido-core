@@ -877,6 +877,66 @@ describe('MediaFacade', async () => {
       expect(await open.biddingList(tokenId)).to.deep.equal([])
     })
 
+    it('should select a proposal with 3 members', async () => {
+      const { now, factory, name, event, open } = await setupTests()
+      const facade = await facadeInstance(factory, name, now)
+      const { tokenId, saleEndTimestamp } = await defaultPeriodProps(
+        facade,
+        now
+      )
+      const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
+      const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
+      const proposalMetadata3 = 'trkjsdfaj3aksjfaifasijfaji'
+
+      const pricing = 4
+      const minPrice = parseEther('0.2')
+      await newPeriodWith(facade, {
+        now,
+        pricing,
+        minPrice,
+        saleEndTimestamp,
+      })
+      await facade
+        .connect(user3)
+        .bidWithProposal(
+          tokenId,
+          proposalMetadata,
+          option({ value: parseEther('0.3') })
+        )
+      await facade
+        .connect(user4)
+        .bidWithProposal(
+          tokenId,
+          proposalMetadata2,
+          option({ value: parseEther('0.4') })
+        )
+
+      const user5BeforeBid = await user5.getBalance()
+      await facade
+        .connect(user5)
+        .bidWithProposal(
+          tokenId,
+          proposalMetadata3,
+          option({ value: parseEther('0.2') })
+        )
+      const user5AfterBid = await user5.getBalance()
+      expect(user5BeforeBid.sub(user5AfterBid)).to.be.gt(parseEther('0.20'))
+      expect(user5BeforeBid.sub(user5AfterBid)).to.be.lt(parseEther('0.21'))
+
+      await facade.setTime(saleEndTimestamp + 1)
+      await open.setTime(saleEndTimestamp + 1)
+
+      expect(await facade.balance()).to.be.eq(parseEther('0.9'))
+      expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0'))
+
+      await facade.connect(user2).selectProposal(tokenId, 1, option())
+      const user5AfterRefunded = await user5.getBalance()
+      expect(user5AfterRefunded.sub(user5AfterBid)).to.be.eq(parseEther('0.2'))
+      expect(await facade.balance()).to.be.eq(parseEther('0.36'))
+      expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0.36'))
+      expect(await open.biddingList(tokenId)).to.deep.equal([])
+    })
+
     it('should not select a proposal because the auction still continues', async () => {
       const { now, factory, name, event, open } = await setupTests()
       const facade = await facadeInstance(factory, name, now)

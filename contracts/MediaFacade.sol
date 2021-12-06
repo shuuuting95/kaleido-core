@@ -380,7 +380,6 @@ contract MediaFacade is
 	{
 		for (uint256 i = 0; i < nonSelected.length; i++) {
 			Sale.OpenBid memory target = nonSelected[i];
-			// TODO: test
 			if (target.price != 0) {
 				_processingTotal -= target.price;
 				_pay(target.sender, target.price);
