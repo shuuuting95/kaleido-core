@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.9;
+pragma solidity 0.8.10;
 
 import "../proxies/MediaProxy.sol";
 import "../accessors/NameAccessor.sol";
 import "../interfaces/IEventEmitter.sol";
 import "../interfaces/IMediaRegistry.sol";
-import "hardhat/console.sol";
 
 /// @title MediaFactory - creates proxy contracts for media accounts.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>

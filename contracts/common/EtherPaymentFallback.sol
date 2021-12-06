@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.9;
+pragma solidity 0.8.10;
 
 /// @title EtherPaymentFallback - A contract that has a fallback to accept ether payments.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>

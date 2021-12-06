@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.9;
+pragma solidity 0.8.10;
 
 import "../libraries/Ad.sol";
 import "../libraries/Purchase.sol";
@@ -9,7 +9,6 @@ import "../interfaces/IProposalReview.sol";
 import "../interfaces/IEventEmitter.sol";
 import "../interfaces/IEnglishAuction.sol";
 import "../interfaces/IMediaRegistry.sol";
-import "hardhat/console.sol";
 
 contract ProposalReview is IProposalReview, BlockTimestamp, NameAccessor {
 	/// @dev Maps a tokenId with the proposal content.
