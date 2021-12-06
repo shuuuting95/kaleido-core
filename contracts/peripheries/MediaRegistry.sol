@@ -9,8 +9,10 @@ import "../interfaces/IEventEmitter.sol";
 /// @title MediaRegistry - registers a list of media accounts.
 /// @author Shumpei Koike - <shumpei.koike@bridges.inc>
 contract MediaRegistry is IMediaRegistry, BlockTimestamp, NameAccessor {
+	/// @inheritdoc IMediaRegistry
 	mapping(address => Account) public override allAccounts;
 
+	/// @dev Throws if not called by MediaFacade proxies.
 	modifier onlyProxies() {
 		require(ownerOf(msg.sender) != address(0), "KD011");
 		_;
@@ -47,7 +49,7 @@ contract MediaRegistry is IMediaRegistry, BlockTimestamp, NameAccessor {
 		);
 	}
 
-	/// @dev Updates media account.
+	/// @dev Updates media account. It can be called by media proxies.
 	/// @param metadata string of the account metadata
 	/// @param mediaEOA address of the media account
 	function updateMedia(address mediaEOA, string memory metadata)
@@ -59,6 +61,9 @@ contract MediaRegistry is IMediaRegistry, BlockTimestamp, NameAccessor {
 		_event().emitUpdateMedia(msg.sender, mediaEOA, metadata);
 	}
 
+	/// @dev Updates media account. It can only be called by the deployer as it is an application info.
+	/// @param proxy string of the account metadata
+	/// @param metadata address of the media account
 	function updateApplicationMetadata(address proxy, string memory metadata)
 		external
 		onlyOwner

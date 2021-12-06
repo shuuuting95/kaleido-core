@@ -106,11 +106,23 @@ describe('MediaFacade', async () => {
       const facade = await facadeInstance(factory, name, now)
       const newMetadata = 'sfjjrtjwjtkljwlejr;tfjk'
 
+      expect(await registry.allAccounts(facade.address)).to.deep.equal([
+        facade.address,
+        user2.address,
+        'abi09nadu2brasfjl',
+        '1eqe23kerfkamfka',
+      ])
       expect(
         await facade.connect(user2).updateMedia(user4.address, newMetadata)
       )
         .to.emit(event, 'UpdateMedia')
         .withArgs(facade.address, user4.address, newMetadata)
+      expect(await registry.allAccounts(facade.address)).to.deep.equal([
+        facade.address,
+        user4.address,
+        'abi09nadu2brasfjl',
+        newMetadata,
+      ])
     })
 
     it('should revert because the sender is not the media EOA', async () => {
@@ -120,6 +132,17 @@ describe('MediaFacade', async () => {
 
       await expect(
         facade.connect(user4).updateMedia(user4.address, newMetadata)
+      ).to.be.revertedWith('KD012')
+    })
+
+    it('should revert because the EOA has changed to others', async () => {
+      const { now, factory, registry, name, event } = await setupTests()
+      const facade = await facadeInstance(factory, name, now)
+      const newMetadata = 'sfjjrtjwjtkljwlejr;tfjk'
+      await facade.connect(user2).updateMedia(user4.address, newMetadata)
+
+      await expect(
+        facade.connect(user2).updateMedia(user4.address, newMetadata)
       ).to.be.revertedWith('KD012')
     })
   })
