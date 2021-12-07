@@ -40,7 +40,11 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		string metadata,
 		uint256 timestamp
 	);
-	event SelectProposal(uint256 tokenId, address successfulBidder);
+	event SelectProposal(
+		uint256 tokenId,
+		address successfulBidder,
+		string reason
+	);
 	event ReceiveToken(
 		uint256 tokenId,
 		uint256 price,
@@ -167,11 +171,12 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 		);
 	}
 
-	function emitSelectProposal(uint256 tokenId, address successfulBidder)
-		external
-		onlyAllowedContract
-	{
-		emit SelectProposal(tokenId, successfulBidder);
+	function emitSelectProposal(
+		uint256 tokenId,
+		address successfulBidder,
+		string memory reason
+	) external onlyAllowedContract {
+		emit SelectProposal(tokenId, successfulBidder, reason);
 	}
 
 	function emitReceiveToken(
