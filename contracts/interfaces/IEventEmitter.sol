@@ -44,8 +44,11 @@ interface IEventEmitter {
 		uint256 blockTimestamp
 	) external;
 
-	function emitSelectProposal(uint256 tokenId, address successfulBidder)
-		external;
+	function emitSelectProposal(
+		uint256 tokenId,
+		address successfulBidder,
+		string memory reason
+	) external;
 
 	function emitReceiveToken(
 		uint256 tokenId,
