@@ -840,6 +840,7 @@ describe('MediaFacade', async () => {
       )
       const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
       const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
+      const selectReason = 'sfkajijwejlaksjfajljakljdsaj'
 
       const pricing = 4
       const minPrice = parseEther('0.2')
@@ -869,12 +870,17 @@ describe('MediaFacade', async () => {
       expect(await facade.balance()).to.be.eq(parseEther('0.7'))
       expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0'))
 
-      expect(await facade.connect(user2).selectProposal(tokenId, 1, option()))
+      expect(
+        await facade
+          .connect(user2)
+          .selectProposal(tokenId, 1, selectReason, option())
+      )
         .to.emit(event, 'SelectProposal')
         .withArgs(tokenId, user4.address)
       expect(await facade.balance()).to.be.eq(parseEther('0.36'))
       expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0.36'))
       expect(await open.biddingList(tokenId)).to.deep.equal([])
+      expect(await open.reasons(tokenId)).to.be.eq(selectReason)
     })
 
     it('should select a proposal with 3 members', async () => {
@@ -887,6 +893,7 @@ describe('MediaFacade', async () => {
       const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
       const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
       const proposalMetadata3 = 'trkjsdfaj3aksjfaifasijfaji'
+      const selectReason = 'sfkajijwejlaksjfajljakljdsaj'
 
       const pricing = 4
       const minPrice = parseEther('0.2')
@@ -929,12 +936,15 @@ describe('MediaFacade', async () => {
       expect(await facade.balance()).to.be.eq(parseEther('0.9'))
       expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0'))
 
-      await facade.connect(user2).selectProposal(tokenId, 1, option())
+      await facade
+        .connect(user2)
+        .selectProposal(tokenId, 1, selectReason, option())
       const user5AfterRefunded = await user5.getBalance()
       expect(user5AfterRefunded.sub(user5AfterBid)).to.be.eq(parseEther('0.2'))
       expect(await facade.balance()).to.be.eq(parseEther('0.36'))
       expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0.36'))
       expect(await open.biddingList(tokenId)).to.deep.equal([])
+      expect(await open.reasons(tokenId)).to.be.eq(selectReason)
     })
 
     it('should not select a proposal because the auction still continues', async () => {
@@ -946,6 +956,7 @@ describe('MediaFacade', async () => {
       )
       const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
       const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
+      const selectReason = 'sfkajijwejlaksjfajljakljdsaj'
 
       const pricing = 4
       const minPrice = parseEther('0.2')
@@ -972,7 +983,7 @@ describe('MediaFacade', async () => {
       await facade.setTime(saleEndTimestamp)
       await open.setTime(saleEndTimestamp)
       await expect(
-        facade.connect(user2).selectProposal(tokenId, 1, option())
+        facade.connect(user2).selectProposal(tokenId, 1, selectReason, option())
       ).to.be.revertedWith('KD129')
     })
 
@@ -985,6 +996,7 @@ describe('MediaFacade', async () => {
       )
       const proposalMetadata = '3j34tw3jtwkejjauuwdsfj;lksja'
       const proposalMetadata2 = 'asfdjaij34rwerak13rwkeaj;lksja'
+      const selectReason = 'sfkajijwejlaksjfajljakljdsaj'
 
       const pricing = 4
       const minPrice = parseEther('0.2')
@@ -1010,9 +1022,11 @@ describe('MediaFacade', async () => {
         )
       await facade.setTime(saleEndTimestamp + 1)
       await open.setTime(saleEndTimestamp + 1)
-      await facade.connect(user2).selectProposal(tokenId, 1, option())
+      await facade
+        .connect(user2)
+        .selectProposal(tokenId, 1, selectReason, option())
       await expect(
-        facade.connect(user2).selectProposal(tokenId, 1, option())
+        facade.connect(user2).selectProposal(tokenId, 1, selectReason, option())
       ).to.be.revertedWith('KD114')
     })
   })

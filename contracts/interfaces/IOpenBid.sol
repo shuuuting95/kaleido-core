@@ -22,7 +22,12 @@ interface IOpenBid {
 	/// @dev Selects the best proposal bidded with.
 	/// @param tokenId uint256 of the token ID
 	/// @param index uint256 of the index number
-	function selectProposal(uint256 tokenId, uint256 index)
+	/// @param reason string of the reason or metadata
+	function selectProposal(
+		uint256 tokenId,
+		uint256 index,
+		string memory reason
+	)
 		external
 		returns (Sale.OpenBid memory selected, Sale.OpenBid[] memory nonSelected);
 

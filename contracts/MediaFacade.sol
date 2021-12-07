@@ -187,16 +187,16 @@ contract MediaFacade is
 	/// @dev Selects the best proposal bidded with.
 	/// @param tokenId uint256 of the token ID
 	/// @param index uint256 of the index number
-	function selectProposal(uint256 tokenId, uint256 index)
-		external
-		virtual
-		onlyMedia
-		nonReentrant
-	{
+	/// @param reason string of the reason or metadata
+	function selectProposal(
+		uint256 tokenId,
+		uint256 index,
+		string memory reason
+	) external virtual onlyMedia nonReentrant {
 		(
 			Sale.OpenBid memory selected,
 			Sale.OpenBid[] memory nonSelected
-		) = _openBid().selectProposal(tokenId, index);
+		) = _openBid().selectProposal(tokenId, index, reason);
 		_dropRight(selected.sender, tokenId);
 		_processingTotal -= selected.price;
 		_collectFees(selected.price / 10);
