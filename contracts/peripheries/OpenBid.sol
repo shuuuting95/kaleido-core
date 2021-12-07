@@ -14,6 +14,9 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 	/// @dev Maps a tokenId with appeal info
 	mapping(uint256 => Sale.OpenBid[]) internal _bidding;
 
+	/// @dev Maps a tokenId with the reason why the content is selected
+	mapping(uint256 => string) public reasons;
+
 	modifier onlyProxies() {
 		require(_mediaRegistry().ownerOf(msg.sender) != address(0x0), "KD011");
 		_;
@@ -46,7 +49,11 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 	}
 
 	/// @inheritdoc IOpenBid
-	function selectProposal(uint256 tokenId, uint256 index)
+	function selectProposal(
+		uint256 tokenId,
+		uint256 index,
+		string memory reason
+	)
 		external
 		virtual
 		onlyProxies
@@ -57,6 +64,7 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 			"KD129"
 		);
 		selected = bidding(tokenId, index);
+		reasons[tokenId] = reason;
 		delete _bidding[tokenId][index];
 		nonSelected = _bidding[tokenId];
 		delete _bidding[tokenId];
