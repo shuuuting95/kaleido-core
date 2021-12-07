@@ -68,7 +68,7 @@ contract OpenBid is IOpenBid, BlockTimestamp, NameAccessor {
 		delete _bidding[tokenId][index];
 		nonSelected = _bidding[tokenId];
 		delete _bidding[tokenId];
-		_event().emitSelectProposal(tokenId, selected.sender);
+		_event().emitSelectProposal(tokenId, selected.sender, reason);
 	}
 
 	function biddingList(uint256 tokenId)

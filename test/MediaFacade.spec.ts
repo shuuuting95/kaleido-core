@@ -876,7 +876,7 @@ describe('MediaFacade', async () => {
           .selectProposal(tokenId, 1, selectReason, option())
       )
         .to.emit(event, 'SelectProposal')
-        .withArgs(tokenId, user4.address)
+        .withArgs(tokenId, user4.address, selectReason)
       expect(await facade.balance()).to.be.eq(parseEther('0.36'))
       expect(await facade.withdrawalAmount()).to.be.eq(parseEther('0.36'))
       expect(await open.biddingList(tokenId)).to.deep.equal([])
