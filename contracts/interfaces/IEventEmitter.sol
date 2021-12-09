@@ -46,6 +46,7 @@ interface IEventEmitter {
 
 	function emitSelectProposal(
 		uint256 tokenId,
+		uint256 index,
 		address successfulBidder,
 		string memory reason
 	) external;
