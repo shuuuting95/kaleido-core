@@ -51,7 +51,7 @@ const main = async () => {
     '',
     MEDIA_METADATA_CID,
     initializer,
-    1,
+    0,
     option()
   )
   const rc = await tx.wait()
