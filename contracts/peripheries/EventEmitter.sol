@@ -42,6 +42,7 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 	);
 	event SelectProposal(
 		uint256 tokenId,
+		uint256 index,
 		address successfulBidder,
 		string reason
 	);
@@ -173,10 +174,11 @@ contract EventEmitter is IEventEmitter, NameAccessor, BlockTimestamp {
 
 	function emitSelectProposal(
 		uint256 tokenId,
+		uint256 index,
 		address successfulBidder,
 		string memory reason
 	) external onlyAllowedContract {
-		emit SelectProposal(tokenId, successfulBidder, reason);
+		emit SelectProposal(tokenId, index, successfulBidder, reason);
 	}
 
 	function emitReceiveToken(
